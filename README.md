@@ -112,11 +112,12 @@ npm run package
 ```typescript
 /**
  * 获取元素的Schema数据
- * @param params - 参数数组（来自元素的 data-schema-params 属性，用逗号分隔）
+ * @param params - 参数字符串（来自元素的 data-schema-params 属性）
  * @returns Schema对象
  */
 window.__getSchemaByParams = (params) => {
-  // params 是一个数组，例如：['param1', 'param2']
+  // params 是一个字符串，例如：'param1' 或 'param1,param2'
+  // 如需要可以用 params.split(',') 转换为数组
   // 根据参数返回对应的Schema对象
   return {
     // 你的Schema数据
@@ -130,12 +131,12 @@ window.__getSchemaByParams = (params) => {
 /**
  * 更新元素的Schema数据
  * @param schema - 新的Schema对象
- * @param params - 参数数组
+ * @param params - 参数字符串
  * @returns 是否更新成功（返回true表示成功）
  */
 window.__updateSchemaByParams = (schema, params) => {
   // 更新Schema数据
-  // params 是一个数组，可用于定位要更新的Schema
+  // params 是一个字符串，可用于定位要更新的Schema
   // ... 你的更新逻辑
   return true // 返回true表示更新成功
 }
@@ -162,7 +163,8 @@ window.__updateSchemaByParams = (schema, params) => {
 **参数格式说明：**
 - 单个参数：直接写参数值，如 `"user123"`
 - 多个参数：用逗号分隔，如 `"msg-001,comp-001,user-123"`
-- 插件会自动解析并转换为数组传递给 API 方法
+- 插件会将属性值作为字符串传递给 API 方法
+- 如需要在API中使用数组，可以使用 `params.split(',')` 转换
 
 ## 项目结构
 
