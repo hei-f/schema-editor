@@ -1,0 +1,187 @@
+import { storage } from '@/utils/storage'
+import { Button, Card, Form, Input, message, Space, Typography } from 'antd'
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+
+const { Title, Paragraph, Text } = Typography
+
+const Container = styled.div`
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+  min-height: 100vh;
+`
+
+const StyledCard = styled(Card)`
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`
+
+const CodeBlock = styled.pre`
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 13px;
+  overflow-x: auto;
+`
+
+/**
+ * 设置页面组件
+ */
+export const OptionsApp: React.FC = () => {
+  const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
+  const [attributeName, setAttributeName] = useState('schema-params')
+
+  /**
+   * 加载配置
+   */
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async () => {
+    try {
+      const name = await storage.getAttributeName()
+      setAttributeName(name)
+      form.setFieldsValue({ attributeName: name })
+    } catch (error) {
+      message.error('加载配置失败')
+    }
+  }
+
+  /**
+   * 保存配置
+   */
+  const handleSave = async (values: { attributeName: string }) => {
+    setLoading(true)
+    try {
+      await storage.setAttributeName(values.attributeName)
+      setAttributeName(values.attributeName)
+      message.success('设置已保存')
+    } catch (error) {
+      message.error('保存失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * 重置为默认值
+   */
+  const handleReset = () => {
+    const defaultName = 'schema-params'
+    form.setFieldsValue({ attributeName: defaultName })
+    handleSave({ attributeName: defaultName })
+  }
+
+  return (
+    <Container>
+      <Title level={2}>⚙️ Schema Editor 设置</Title>
+      <Paragraph type="secondary">
+        配置插件的行为参数
+      </Paragraph>
+
+      <StyledCard title="参数属性名配置">
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSave}
+          initialValues={{ attributeName: 'schema-params' }}
+        >
+          <Form.Item
+            label="属性名称"
+            name="attributeName"
+            rules={[
+              { required: true, message: '请输入属性名称' },
+              { pattern: /^[a-z][a-z0-9-]*$/, message: '属性名只能包含小写字母、数字和连字符，且必须以小写字母开头' }
+            ]}
+            extra="此属性名将用于从页面元素中提取参数，默认值为 schema-params"
+          >
+            <Input placeholder="例如: schema-params" />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                保存设置
+              </Button>
+              <Button onClick={handleReset}>
+                恢复默认
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+
+        <div style={{ marginTop: '24px' }}>
+          <Text strong>当前配置示例：</Text>
+          <CodeBlock>
+{`<!-- HTML元素属性 -->
+<div data-${attributeName}="param1,param2,param3">
+  点击此元素
+</div>
+
+<!-- 页面需要提供的全局函数 -->
+<script>
+  window.__getSchemaByParams = function(params) {
+    // params: "param1,param2,param3"
+    return { your: 'schema' };
+  };
+  
+  window.__updateSchemaByParams = function(schema, params) {
+    // schema: 修改后的数据
+    // params: "param1,param2,param3"
+    return true;
+  };
+</script>`}
+          </CodeBlock>
+        </div>
+      </StyledCard>
+
+      <StyledCard title="使用说明">
+        <Paragraph>
+          <ol>
+            <li>
+              在页面HTML元素上添加 <Text code>data-{attributeName}</Text> 属性
+            </li>
+            <li>
+              属性值为逗号分隔的参数字符串，例如：<Text code>"value1,value2,value3"</Text>
+            </li>
+            <li>
+              页面需要实现两个全局函数：
+              <ul>
+                <li><Text code>window.__getSchemaByParams(params)</Text> - 获取schema数据</li>
+                <li><Text code>window.__updateSchemaByParams(schema, params)</Text> - 更新schema数据</li>
+              </ul>
+            </li>
+            <li>
+              激活插件后，按住 <Text keyboard>Alt/Option</Text> 键悬停在元素上查看参数
+            </li>
+            <li>
+              按住 <Text keyboard>Alt/Option</Text> 键并点击元素，打开编辑器修改schema
+            </li>
+          </ol>
+        </Paragraph>
+      </StyledCard>
+
+      <StyledCard title="Schema类型支持">
+        <Paragraph>
+          Schema编辑器支持以下数据类型：
+        </Paragraph>
+        <ul>
+          <li><Text strong>字符串 (String)</Text>: <Text code>"hello world"</Text></li>
+          <li><Text strong>数字 (Number)</Text>: <Text code>123</Text> 或 <Text code>45.67</Text></li>
+          <li><Text strong>对象 (Object)</Text>: <Text code>{`{"key": "value"}`}</Text></li>
+          <li><Text strong>数组 (Array)</Text>: <Text code>[1, 2, 3]</Text></li>
+          <li><Text strong>布尔值 (Boolean)</Text>: <Text code>true</Text> 或 <Text code>false</Text></li>
+        </ul>
+        <Paragraph type="secondary" style={{ marginTop: '12px' }}>
+          注意：编辑器使用JSON格式，字符串值需要用引号包裹。null值不支持编辑。
+        </Paragraph>
+      </StyledCard>
+    </Container>
+  )
+}
+

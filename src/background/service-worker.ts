@@ -1,0 +1,91 @@
+import { MessageType, type Message } from '@/types'
+import { storage } from '@/utils/storage'
+
+/**
+ * 更新图标状态显示
+ */
+function updateIconState(isActive: boolean) {
+  // 更新图标标题
+  chrome.action.setTitle({
+    title: `Schema Editor - ${isActive ? '已激活 ✓' : '未激活'}`
+  })
+  
+  // 切换图标颜色
+  const iconSuffix = isActive ? 'active' : 'inactive'
+  chrome.action.setIcon({
+    path: {
+      16: `icons/icon-${iconSuffix}-16.png`,
+      48: `icons/icon-${iconSuffix}-48.png`,
+      128: `icons/icon-${iconSuffix}-128.png`
+    }
+  })
+}
+
+/**
+ * 监听扩展图标点击事件
+ */
+chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
+  console.log('扩展图标被点击')
+  
+  // 切换激活状态
+  const newState = await storage.toggleActiveState()
+  console.log('激活状态已切换:', newState)
+  
+  // 更新图标状态
+  updateIconState(newState)
+  
+  // 通知当前标签页的content script
+  if (tab.id) {
+    try {
+      await chrome.tabs.sendMessage(tab.id, {
+        type: MessageType.ACTIVE_STATE_CHANGED,
+        payload: { isActive: newState }
+      } as Message)
+    } catch (error) {
+      console.error('通知content script失败:', error)
+    }
+  }
+})
+
+/**
+ * 监听来自content script的消息
+ */
+chrome.runtime.onMessage.addListener((message: Message, _sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void) => {
+  console.log('Background收到消息:', message)
+  
+  // 这里可以添加更多的消息处理逻辑
+  switch (message.type) {
+    case MessageType.TOGGLE_ACTIVE:
+      storage.toggleActiveState().then((newState) => {
+        sendResponse({ success: true, isActive: newState })
+      })
+      return true // 保持消息通道开启
+      
+    default:
+      sendResponse({ success: false, error: '未知的消息类型' })
+  }
+  
+  return false
+})
+
+/**
+ * 扩展安装或更新时
+ */
+chrome.runtime.onInstalled.addListener(async (details: chrome.runtime.InstalledDetails) => {
+  console.log('Schema Editor已安装/更新:', details.reason)
+  
+  // 初始化存储和图标状态
+  const isActive = await storage.getActiveState()
+  updateIconState(isActive)
+})
+
+/**
+ * Service Worker启动时恢复图标状态
+ */
+chrome.runtime.onStartup.addListener(async () => {
+  const isActive = await storage.getActiveState()
+  updateIconState(isActive)
+})
+
+console.log('Background Service Worker已启动')
+
