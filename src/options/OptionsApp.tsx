@@ -1,9 +1,10 @@
 import { storage } from '@/utils/storage'
-import { Button, Card, Form, Input, message, Space, Typography } from 'antd'
+import { Button, Card, Collapse, Form, Input, InputNumber, message, Slider, Space, Typography } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 const { Title, Paragraph, Text } = Typography
+const { Panel } = Collapse
 
 const Container = styled.div`
   max-width: 1000px;
@@ -45,8 +46,15 @@ export const OptionsApp: React.FC = () => {
   const loadSettings = async () => {
     try {
       const name = await storage.getAttributeName()
+      const searchConfig = await storage.getSearchConfig()
+      
       setAttributeName(name)
-      form.setFieldsValue({ attributeName: name })
+      form.setFieldsValue({ 
+        attributeName: name,
+        searchDepthDown: searchConfig.searchDepthDown,
+        searchDepthUp: searchConfig.searchDepthUp,
+        throttleInterval: searchConfig.throttleInterval
+      })
     } catch (error) {
       message.error('加载配置失败')
     }
@@ -55,10 +63,15 @@ export const OptionsApp: React.FC = () => {
   /**
    * 保存配置
    */
-  const handleSave = async (values: { attributeName: string }) => {
+  const handleSave = async (values: any) => {
     setLoading(true)
     try {
       await storage.setAttributeName(values.attributeName)
+      await storage.setSearchConfig({
+        searchDepthDown: values.searchDepthDown,
+        searchDepthUp: values.searchDepthUp,
+        throttleInterval: values.throttleInterval
+      })
       setAttributeName(values.attributeName)
       message.success('设置已保存')
     } catch (error) {
@@ -72,9 +85,12 @@ export const OptionsApp: React.FC = () => {
    * 重置为默认值
    */
   const handleReset = () => {
-    const defaultName = 'schema-params'
-    form.setFieldsValue({ attributeName: defaultName })
-    handleSave({ attributeName: defaultName })
+    form.setFieldsValue({ 
+      attributeName: 'schema-params',
+      searchDepthDown: 5,
+      searchDepthUp: 3,
+      throttleInterval: 16
+    })
   }
 
   return (
@@ -89,7 +105,12 @@ export const OptionsApp: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSave}
-          initialValues={{ attributeName: 'schema-params' }}
+          initialValues={{ 
+            attributeName: 'schema-params',
+            searchDepthDown: 5,
+            searchDepthUp: 3,
+            throttleInterval: 16
+          }}
         >
           <Form.Item
             label="属性名称"
@@ -102,6 +123,34 @@ export const OptionsApp: React.FC = () => {
           >
             <Input placeholder="例如: schema-params" />
           </Form.Item>
+
+          <Collapse defaultActiveKey={['1']} style={{ marginBottom: '24px' }}>
+            <Panel header="高级搜索设置" key="1">
+              <Form.Item
+                label="向下搜索深度"
+                name="searchDepthDown"
+                extra="查找子元素的最大层数，用于处理嵌套元素"
+              >
+                <InputNumber min={1} max={10} style={{ width: '100%' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="向上搜索深度"
+                name="searchDepthUp"
+                extra="查找父元素的最大层数"
+              >
+                <InputNumber min={1} max={10} style={{ width: '100%' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="节流间隔 (毫秒)"
+                name="throttleInterval"
+                extra="控制鼠标移动检测频率，较小值响应更快但可能影响性能"
+              >
+                <Slider min={8} max={50} marks={{ 8: '8ms', 16: '16ms', 50: '50ms' }} />
+              </Form.Item>
+            </Panel>
+          </Collapse>
 
           <Form.Item>
             <Space>

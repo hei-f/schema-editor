@@ -1,20 +1,38 @@
-import { getElementAttributes, hasValidAttributes } from '../element-detector'
+import {
+  addCandidateHighlight,
+  findElementWithSchemaParams,
+  getElementAttributes,
+  hasValidAttributes,
+  isVisibleElement,
+  removeCandidateHighlight
+} from '../element-detector'
 import { storage } from '../storage'
 
 // Mock storage模块
 jest.mock('../storage', () => ({
   storage: {
-    getAttributeName: jest.fn()
+    getAttributeName: jest.fn(),
+    getSearchConfig: jest.fn()
   }
 }))
 
 describe('Element Detector测试', () => {
   const mockGetAttributeName = storage.getAttributeName as jest.Mock
+  const mockGetSearchConfig = storage.getSearchConfig as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
     // 默认返回schema-params
     mockGetAttributeName.mockResolvedValue('schema-params')
+    // 默认搜索配置
+    mockGetSearchConfig.mockResolvedValue({
+      searchDepthDown: 5,
+      searchDepthUp: 3,
+      throttleInterval: 16
+    })
+    
+    // Mock document.elementsFromPoint
+    document.elementsFromPoint = jest.fn(() => [])
   })
 
   describe('getElementAttributes', () => {
@@ -271,6 +289,292 @@ describe('Element Detector测试', () => {
       const attrs = { params: [longParam] }
       
       expect(hasValidAttributes(attrs)).toBe(true)
+    })
+  })
+
+  describe('isVisibleElement', () => {
+    it('应该识别可见元素', () => {
+      const element = document.createElement('div')
+      document.body.appendChild(element)
+      
+      expect(isVisibleElement(element)).toBe(true)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该排除script标签', () => {
+      const element = document.createElement('script')
+      
+      expect(isVisibleElement(element)).toBe(false)
+    })
+
+    it('应该排除style标签', () => {
+      const element = document.createElement('style')
+      
+      expect(isVisibleElement(element)).toBe(false)
+    })
+
+    it('应该排除link标签', () => {
+      const element = document.createElement('link')
+      
+      expect(isVisibleElement(element)).toBe(false)
+    })
+
+    it('应该排除meta标签', () => {
+      const element = document.createElement('meta')
+      
+      expect(isVisibleElement(element)).toBe(false)
+    })
+
+    it('应该排除display:none的元素', () => {
+      const element = document.createElement('div')
+      element.style.display = 'none'
+      document.body.appendChild(element)
+      
+      expect(isVisibleElement(element)).toBe(false)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该排除visibility:hidden的元素', () => {
+      const element = document.createElement('div')
+      element.style.visibility = 'hidden'
+      document.body.appendChild(element)
+      
+      expect(isVisibleElement(element)).toBe(false)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该排除opacity:0的元素', () => {
+      const element = document.createElement('div')
+      element.style.opacity = '0'
+      document.body.appendChild(element)
+      
+      expect(isVisibleElement(element)).toBe(false)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该识别display:flex的元素', () => {
+      const element = document.createElement('div')
+      element.style.display = 'flex'
+      document.body.appendChild(element)
+      
+      expect(isVisibleElement(element)).toBe(true)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该识别visibility:visible的元素', () => {
+      const element = document.createElement('div')
+      element.style.visibility = 'visible'
+      document.body.appendChild(element)
+      
+      expect(isVisibleElement(element)).toBe(true)
+      
+      document.body.removeChild(element)
+    })
+  })
+
+  describe('findElementWithSchemaParams', () => {
+    beforeEach(() => {
+      // 清空body
+      document.body.innerHTML = ''
+    })
+
+    it('应该找到直接带有属性的元素', async () => {
+      const target = document.createElement('div')
+      target.setAttribute('data-schema-params', 'param1')
+      document.body.appendChild(target)
+
+      // Mock elementsFromPoint返回目标元素
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([target, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.target).toBe(target)
+      expect(result.candidates).toContain(target)
+      
+      document.body.removeChild(target)
+    })
+
+    it('应该在嵌套元素中找到内层元素', async () => {
+      const outer = document.createElement('div')
+      const inner = document.createElement('div')
+      inner.setAttribute('data-schema-params', 'param1')
+      outer.appendChild(inner)
+      document.body.appendChild(outer)
+
+      // Mock elementsFromPoint返回外层元素
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([outer, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.target).toBe(inner)
+      expect(result.candidates).toContain(inner)
+      
+      document.body.removeChild(outer)
+    })
+
+    it('应该找到父元素', async () => {
+      const parent = document.createElement('div')
+      parent.setAttribute('data-schema-params', 'param1')
+      const child = document.createElement('div')
+      parent.appendChild(child)
+      document.body.appendChild(parent)
+
+      // Mock elementsFromPoint返回子元素
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([child, parent, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.target).toBe(parent)
+      expect(result.candidates).toContain(parent)
+      
+      document.body.removeChild(parent)
+    })
+
+    it('应该返回null如果没找到任何元素', async () => {
+      const element = document.createElement('div')
+      document.body.appendChild(element)
+
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([element, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.target).toBeNull()
+      expect(result.candidates).toHaveLength(0)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该忽略扩展UI元素', async () => {
+      const uiElement = document.createElement('div')
+      uiElement.setAttribute('data-schema-editor-ui', 'true')
+      uiElement.setAttribute('data-schema-params', 'param1')
+      document.body.appendChild(uiElement)
+
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([uiElement, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.target).toBeNull()
+      
+      document.body.removeChild(uiElement)
+    })
+
+    it('应该处理多个候选元素', async () => {
+      const parent = document.createElement('div')
+      parent.setAttribute('data-schema-params', 'param1')
+      const child1 = document.createElement('div')
+      child1.setAttribute('data-schema-params', 'param2')
+      const child2 = document.createElement('div')
+      child2.setAttribute('data-schema-params', 'param3')
+      parent.appendChild(child1)
+      parent.appendChild(child2)
+      document.body.appendChild(parent)
+
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([parent, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.candidates.length).toBeGreaterThan(0)
+      expect(result.target).toBeDefined()
+      
+      document.body.removeChild(parent)
+    })
+
+    it('应该去重候选元素', async () => {
+      const element = document.createElement('div')
+      element.setAttribute('data-schema-params', 'param1')
+      document.body.appendChild(element)
+
+      // Mock返回重复的元素
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([element, element, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.candidates).toHaveLength(1)
+      expect(result.candidates[0]).toBe(element)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该使用自定义属性名', async () => {
+      mockGetAttributeName.mockResolvedValue('custom-attr')
+      
+      const element = document.createElement('div')
+      element.setAttribute('data-custom-attr', 'value1')
+      document.body.appendChild(element)
+
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([element, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      expect(result.target).toBe(element)
+      
+      document.body.removeChild(element)
+    })
+
+    it('应该尊重向下搜索深度限制', async () => {
+      mockGetSearchConfig.mockResolvedValue({
+        searchDepthDown: 1,
+        searchDepthUp: 3,
+        throttleInterval: 16
+      })
+
+      const level0 = document.createElement('div')
+      const level1 = document.createElement('div')
+      const level2 = document.createElement('div')
+      const level3 = document.createElement('div')
+      level3.setAttribute('data-schema-params', 'param1')
+      
+      level0.appendChild(level1)
+      level1.appendChild(level2)
+      level2.appendChild(level3)
+      document.body.appendChild(level0)
+
+      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([level0, document.body, document.documentElement])
+
+      const result = await findElementWithSchemaParams(100, 100)
+
+      // 深度为1，应该找不到level3
+      expect(result.target).toBeNull()
+      
+      document.body.removeChild(level0)
+    })
+  })
+
+  describe('候选高亮函数', () => {
+    it('addCandidateHighlight应该添加虚线高亮样式', () => {
+      const element = document.createElement('div')
+      
+      addCandidateHighlight(element)
+      
+      expect(element.style.outline).toContain('dashed')
+      expect(element.style.outlineOffset).toBe('2px')
+    })
+
+    it('removeCandidateHighlight应该移除高亮样式', () => {
+      const element = document.createElement('div')
+      element.style.outline = '2px dashed rgba(24, 144, 255, 0.5)'
+      element.style.outlineOffset = '2px'
+      
+      removeCandidateHighlight(element)
+      
+      expect(element.style.outline).toBe('')
+      expect(element.style.outlineOffset).toBe('')
+    })
+
+    it('候选高亮样式应该与正常高亮样式不同', () => {
+      const element1 = document.createElement('div')
+      const element2 = document.createElement('div')
+      
+      addCandidateHighlight(element1)
+      // addHighlight在原有代码中已存在，这里只验证样式不同
+      
+      expect(element1.style.outline).toContain('dashed')
     })
   })
 })

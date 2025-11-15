@@ -100,7 +100,12 @@ describe('Storage工具测试', () => {
       expect(result).toEqual({
         isActive: false,
         drawerWidth: 800,
-        attributeName: 'schema-params'
+        attributeName: 'schema-params',
+        searchConfig: {
+          searchDepthDown: 5,
+          searchDepthUp: 3,
+          throttleInterval: 16
+        }
       })
     })
 
@@ -108,7 +113,12 @@ describe('Storage工具测试', () => {
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         isActive: true,
         drawerWidth: 1000,
-        attributeName: 'custom-attr'
+        attributeName: 'custom-attr',
+        searchConfig: {
+          searchDepthDown: 10,
+          searchDepthUp: 5,
+          throttleInterval: 8
+        }
       })
       
       const result = await storage.getAllData()
@@ -116,7 +126,12 @@ describe('Storage工具测试', () => {
       expect(result).toEqual({
         isActive: true,
         drawerWidth: 1000,
-        attributeName: 'custom-attr'
+        attributeName: 'custom-attr',
+        searchConfig: {
+          searchDepthDown: 10,
+          searchDepthUp: 5,
+          throttleInterval: 8
+        }
       })
     })
 
@@ -130,7 +145,125 @@ describe('Storage工具测试', () => {
       expect(result).toEqual({
         isActive: true,
         drawerWidth: 800,
-        attributeName: 'schema-params'
+        attributeName: 'schema-params',
+        searchConfig: {
+          searchDepthDown: 5,
+          searchDepthUp: 3,
+          throttleInterval: 16
+        }
+      })
+    })
+  })
+
+  describe('getSearchConfig', () => {
+    it('应该返回默认搜索配置', async () => {
+      const result = await storage.getSearchConfig()
+      
+      expect(result).toEqual({
+        searchDepthDown: 5,
+        searchDepthUp: 3,
+        throttleInterval: 16
+      })
+    })
+
+    it('应该返回存储的搜索配置', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        searchConfig: {
+          searchDepthDown: 10,
+          searchDepthUp: 5,
+          throttleInterval: 32
+        }
+      })
+      
+      const result = await storage.getSearchConfig()
+      
+      expect(result).toEqual({
+        searchDepthDown: 10,
+        searchDepthUp: 5,
+        throttleInterval: 32
+      })
+    })
+
+    it('应该处理部分存储的配置', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        searchConfig: {
+          searchDepthDown: 8
+        }
+      })
+      
+      const result = await storage.getSearchConfig()
+      
+      // 应该返回存储的值，因为我们存储的是整个对象
+      expect(result.searchDepthDown).toBe(8)
+    })
+  })
+
+  describe('setSearchConfig', () => {
+    it('应该保存完整的搜索配置', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        searchConfig: {
+          searchDepthDown: 5,
+          searchDepthUp: 3,
+          throttleInterval: 16
+        }
+      })
+
+      await storage.setSearchConfig({
+        searchDepthDown: 10,
+        searchDepthUp: 5,
+        throttleInterval: 32
+      })
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        searchConfig: {
+          searchDepthDown: 10,
+          searchDepthUp: 5,
+          throttleInterval: 32
+        }
+      })
+    })
+
+    it('应该支持部分更新搜索配置', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        searchConfig: {
+          searchDepthDown: 5,
+          searchDepthUp: 3,
+          throttleInterval: 16
+        }
+      })
+
+      await storage.setSearchConfig({
+        searchDepthDown: 8
+      })
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        searchConfig: {
+          searchDepthDown: 8,
+          searchDepthUp: 3,
+          throttleInterval: 16
+        }
+      })
+    })
+
+    it('应该保存throttleInterval的变更', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        searchConfig: {
+          searchDepthDown: 5,
+          searchDepthUp: 3,
+          throttleInterval: 16
+        }
+      })
+
+      await storage.setSearchConfig({
+        throttleInterval: 50
+      })
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        searchConfig: {
+          searchDepthDown: 5,
+          searchDepthUp: 3,
+          throttleInterval: 50
+        }
       })
     })
   })

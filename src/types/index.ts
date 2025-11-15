@@ -27,6 +27,18 @@ export interface ElementAttributes {
 }
 
 /**
+ * 搜索配置接口
+ */
+export interface SearchConfig {
+  /** 向下搜索深度 */
+  searchDepthDown: number
+  /** 向上搜索深度 */
+  searchDepthUp: number
+  /** 节流间隔(ms) */
+  throttleInterval: number
+}
+
+/**
  * 存储数据接口
  */
 export interface StorageData {
@@ -36,6 +48,8 @@ export interface StorageData {
   drawerWidth: number
   /** 配置的属性名 */
   attributeName: string
+  /** 搜索配置 */
+  searchConfig: SearchConfig
 }
 
 /**

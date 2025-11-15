@@ -1,4 +1,4 @@
-import type { StorageData } from '@/types'
+import type { SearchConfig, StorageData } from '@/types'
 
 /**
  * 存储管理器类
@@ -8,13 +8,19 @@ class StorageManager {
   private readonly STORAGE_KEYS = {
     IS_ACTIVE: 'isActive',
     DRAWER_WIDTH: 'drawerWidth',
-    ATTRIBUTE_NAME: 'attributeName'
+    ATTRIBUTE_NAME: 'attributeName',
+    SEARCH_CONFIG: 'searchConfig'
   }
 
   private readonly DEFAULT_VALUES: StorageData = {
     isActive: false,
     drawerWidth: 800,
-    attributeName: 'schema-params'
+    attributeName: 'schema-params',
+    searchConfig: {
+      searchDepthDown: 5,
+      searchDepthUp: 3,
+      throttleInterval: 16
+    }
   }
 
   /**
@@ -106,15 +112,44 @@ class StorageManager {
   }
 
   /**
+   * 获取搜索配置
+   */
+  async getSearchConfig(): Promise<SearchConfig> {
+    try {
+      const result = await chrome.storage.local.get(this.STORAGE_KEYS.SEARCH_CONFIG)
+      return result[this.STORAGE_KEYS.SEARCH_CONFIG] ?? this.DEFAULT_VALUES.searchConfig
+    } catch (error) {
+      console.error('获取搜索配置失败:', error)
+      return this.DEFAULT_VALUES.searchConfig
+    }
+  }
+
+  /**
+   * 设置搜索配置
+   */
+  async setSearchConfig(config: Partial<SearchConfig>): Promise<void> {
+    try {
+      const currentConfig = await this.getSearchConfig()
+      const newConfig = { ...currentConfig, ...config }
+      await chrome.storage.local.set({
+        [this.STORAGE_KEYS.SEARCH_CONFIG]: newConfig
+      })
+    } catch (error) {
+      console.error('设置搜索配置失败:', error)
+    }
+  }
+
+  /**
    * 获取所有存储数据
    */
   async getAllData(): Promise<StorageData> {
-    const [isActive, drawerWidth, attributeName] = await Promise.all([
+    const [isActive, drawerWidth, attributeName, searchConfig] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
-      this.getAttributeName()
+      this.getAttributeName(),
+      this.getSearchConfig()
     ])
-    return { isActive, drawerWidth, attributeName }
+    return { isActive, drawerWidth, attributeName, searchConfig }
   }
 }
 

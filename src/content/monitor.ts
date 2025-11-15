@@ -1,11 +1,14 @@
-import type { ElementAttributes } from '@/types'
+import type { ElementAttributes, SearchConfig } from '@/types'
 import {
   addHighlight,
+  findElementWithSchemaParams,
   getElementAttributes,
   getMousePosition,
   hasValidAttributes,
+  removeCandidateHighlight,
   removeHighlight
 } from '@/utils/element-detector'
+import { storage } from '@/utils/storage'
 
 /**
  * 元素监听器类
@@ -17,15 +20,22 @@ export class ElementMonitor {
   private tooltipElement: HTMLDivElement | null = null
   private onElementClickCallback: ((element: HTMLElement, attrs: ElementAttributes) => void) | null = null
   private isControlPressed: boolean = false
+  private rafId: number | null = null
+  private lastSearchTime: number = 0
+  private searchConfig: SearchConfig | null = null
+  private candidateElements: HTMLElement[] = []
 
   /**
    * 启动监听
    */
-  start(): void {
+  async start(): Promise<void> {
     if (this.isActive) return
     
     this.isActive = true
     console.log('元素监听器已启动 (按住 Alt/Option 键启用检测)')
+    
+    // 加载搜索配置
+    this.searchConfig = await storage.getSearchConfig()
     
     // 添加事件监听
     document.addEventListener('mousemove', this.handleMouseMove, true)
@@ -137,7 +147,7 @@ export class ElementMonitor {
   /**
    * 处理鼠标移动事件
    */
-  private handleMouseMove = async (event: MouseEvent): Promise<void> => {
+  private handleMouseMove = (event: MouseEvent): void => {
     if (!this.isActive) return
     
     // 只有在按住 Alt/Option 键时才进行检测
@@ -152,28 +162,58 @@ export class ElementMonitor {
     const target = event.target as HTMLElement
     
     // 忽略我们自己创建的元素
-    if (target === this.tooltipElement || target.closest('[data-schema-editor-ui]')) {
+    if (target === this.tooltipElement || 
+        (target instanceof HTMLElement && target.closest('[data-schema-editor-ui]'))) {
       return
     }
     
-    // 如果是同一个元素，不需要重复处理
-    if (target === this.currentElement) {
-      this.updateTooltipPosition(event)
+    // 取消之前的 RAF
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId)
+    }
+    
+    // 节流检查
+    const now = Date.now()
+    const throttleInterval = this.searchConfig?.throttleInterval ?? 16
+    if (now - this.lastSearchTime < throttleInterval) {
       return
     }
     
+    // 在下一帧执行搜索
+    this.rafId = requestAnimationFrame(() => {
+      this.performSearch(event)
+      this.lastSearchTime = Date.now()
+    })
+  }
+
+  /**
+   * 执行搜索
+   */
+  private async performSearch(event: MouseEvent): Promise<void> {
     // 清理之前的高亮
     this.clearHighlight()
     
-    // 获取元素属性
+    // 使用新的智能搜索函数
+    const { target } = await findElementWithSchemaParams(
+      event.clientX,
+      event.clientY
+    )
+    
+    if (!target) {
+      // 没找到任何元素，显示"非法目标"
+      this.showTooltip({ params: [] }, false, event)
+      return
+    }
+    
+    // 获取目标元素属性
     const attrs = await getElementAttributes(target)
     const isValid = hasValidAttributes(attrs)
     
-    // 高亮新元素
+    // 设置当前元素
     this.currentElement = target
-    addHighlight(target)
     
-    // 显示tooltip
+    // 直接高亮目标元素
+    addHighlight(target)
     this.showTooltip(attrs, isValid, event)
   }
 
@@ -186,21 +226,23 @@ export class ElementMonitor {
     // 只有在按住 Alt/Option 键时才响应点击
     if (!this.isControlPressed) return
     
-    const target = event.target as HTMLElement
-    
     // 忽略我们自己创建的元素
-    if (target === this.tooltipElement || target.closest('[data-schema-editor-ui]')) {
+    if ((event.target as HTMLElement) === this.tooltipElement || 
+        (event.target as HTMLElement).closest('[data-schema-editor-ui]')) {
       return
     }
     
+    // 使用当前已检测到的元素
+    if (!this.currentElement) return
+    
     // 获取元素属性
-    const attrs = await getElementAttributes(target)
+    const attrs = await getElementAttributes(this.currentElement)
     
     // 只有有效的元素才触发回调
     if (hasValidAttributes(attrs) && this.onElementClickCallback) {
       event.preventDefault()
       event.stopPropagation()
-      this.onElementClickCallback(target, attrs)
+      this.onElementClickCallback(this.currentElement, attrs)
     }
   }
 
@@ -231,16 +273,6 @@ export class ElementMonitor {
     // 定位tooltip
     this.positionTooltip(mousePos.x, mousePos.y)
     this.tooltipElement.style.display = 'block'
-  }
-
-  /**
-   * 更新tooltip位置
-   */
-  private updateTooltipPosition(event: MouseEvent): void {
-    if (!this.tooltipElement || this.tooltipElement.style.display === 'none') return
-    
-    const mousePos = getMousePosition(event)
-    this.positionTooltip(mousePos.x, mousePos.y)
   }
 
   /**
@@ -278,10 +310,21 @@ export class ElementMonitor {
       removeHighlight(this.currentElement)
       this.currentElement = null
     }
+    this.clearCandidateHighlights()
     
     if (this.tooltipElement) {
       this.tooltipElement.style.display = 'none'
     }
+  }
+
+  /**
+   * 清除候选元素高亮
+   */
+  private clearCandidateHighlights(): void {
+    for (const element of this.candidateElements) {
+      removeCandidateHighlight(element)
+    }
+    this.candidateElements = []
   }
 }
 
