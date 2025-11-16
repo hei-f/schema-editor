@@ -20,7 +20,7 @@ export default defineConfig({
         // CRXJS会自动处理manifest中的入口
       },
       output: {
-        // 确保 Monaco Editor 的 worker 文件被正确打包
+        // Monaco Editor配置为主线程模式，将其打包为单独chunk以优化加载
         manualChunks: (id) => {
           if (id.includes('monaco-editor')) {
             return 'monaco'
