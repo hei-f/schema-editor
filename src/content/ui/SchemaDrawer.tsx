@@ -1,9 +1,9 @@
 import type { ElementAttributes } from '@/types'
 import { deserializeJson, serializeJson } from '@/utils/json-serializer'
-import { configureMonaco } from '@/utils/monaco-loader'
 import Editor from '@monaco-editor/react'
 import { Button, Drawer, Space, Tooltip, message } from 'antd'
 import React, { useEffect, useState } from 'react'
+import { MonacoErrorBoundary } from './MonacoErrorBoundary'
 import {
   AttributeTag,
   ButtonGroup,
@@ -13,9 +13,6 @@ import {
   ParamItem,
   ParamsContainer
 } from './styles'
-
-// 配置Monaco Editor
-configureMonaco()
 
 interface SchemaDrawerProps {
   open: boolean
@@ -209,36 +206,38 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         </EditorToolbar>
 
         <EditorContainer>
-          <Editor
-            height="100%"
-            defaultLanguage="json"
-            value={editorValue}
-            onChange={handleEditorChange}
-            onMount={handleEditorDidMount}
-            theme="vs"
-            options={{
-              fontSize: 16,
-              fontFamily: 'Monaco, Menlo, Consolas, monospace',
-              lineNumbers: 'on',
-              folding: true,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              formatOnPaste: true,
-              formatOnType: true,
-              tabSize: 2,
-              insertSpaces: true,
-              autoIndent: 'full',
-              bracketPairColorization: { enabled: true },
-              matchBrackets: 'always',
-              renderLineHighlight: 'all',
-              quickSuggestions: {
-                other: true,
-                comments: false,
-                strings: true
-              }
-            }}
-          />
+          <MonacoErrorBoundary>
+            <Editor
+              height="100%"
+              defaultLanguage="json"
+              value={editorValue}
+              onChange={handleEditorChange}
+              onMount={handleEditorDidMount}
+              theme="vs"
+              options={{
+                fontSize: 16,
+                fontFamily: 'Monaco, Menlo, Consolas, monospace',
+                lineNumbers: 'on',
+                folding: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                formatOnPaste: true,
+                formatOnType: true,
+                tabSize: 2,
+                insertSpaces: true,
+                autoIndent: 'full',
+                bracketPairColorization: { enabled: true },
+                matchBrackets: 'always',
+                renderLineHighlight: 'all',
+                quickSuggestions: {
+                  other: true,
+                  comments: false,
+                  strings: true
+                }
+              }}
+            />
+          </MonacoErrorBoundary>
         </EditorContainer>
       </DrawerContentContainer>
     </Drawer>

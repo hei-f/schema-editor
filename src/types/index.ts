@@ -15,7 +15,9 @@ export enum MessageType {
   /** 元素点击事件 */
   ELEMENT_CLICKED = 'ELEMENT_CLICKED',
   /** 激活状态变更 */
-  ACTIVE_STATE_CHANGED = 'ACTIVE_STATE_CHANGED'
+  ACTIVE_STATE_CHANGED = 'ACTIVE_STATE_CHANGED',
+  /** 配置同步 */
+  CONFIG_SYNC = 'CONFIG_SYNC'
 }
 
 /**
@@ -95,6 +97,16 @@ export interface UpdateResultPayload {
   success: boolean
   message?: string
   error?: string
+}
+
+/**
+ * 配置同步载荷
+ */
+export interface ConfigSyncPayload {
+  /** 获取Schema的函数名 */
+  getFunctionName: string
+  /** 更新Schema的函数名 */
+  updateFunctionName: string
 }
 
 /**

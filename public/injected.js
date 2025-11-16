@@ -12,16 +12,7 @@
     update: '__updateSchemaByParams'
   }
 
-  /** 加载函数名配置 */
-  chrome.storage.local.get(['getFunctionName', 'updateFunctionName'], (result) => {
-    if (result.getFunctionName) {
-      functionNames.get = result.getFunctionName
-    }
-    if (result.updateFunctionName) {
-      functionNames.update = result.updateFunctionName
-    }
-    console.log('已加载函数名配置:', functionNames)
-  })
+  console.log('⚙️ 初始函数名配置:', functionNames)
 
   window.addEventListener('message', (event) => {
     if (event.source !== window) return
@@ -31,6 +22,9 @@
     console.log('📥 injected script收到消息:', { type, payload })
 
     switch (type) {
+      case 'CONFIG_SYNC':
+        handleConfigSync(payload)
+        break
       case 'GET_SCHEMA':
         handleGetSchema(payload)
         break
@@ -41,6 +35,20 @@
         console.warn('未知的消息类型:', type)
     }
   })
+
+  function handleConfigSync(payload) {
+    console.log('⚙️ 收到配置同步消息:', payload)
+    const { getFunctionName, updateFunctionName } = payload || {}
+    
+    if (getFunctionName) {
+      functionNames.get = getFunctionName
+    }
+    if (updateFunctionName) {
+      functionNames.update = updateFunctionName
+    }
+    
+    console.log('✅ 函数名配置已更新:', functionNames)
+  }
 
   function handleGetSchema(payload) {
     console.log('🔍 handleGetSchema 收到 payload:', payload)

@@ -1,5 +1,6 @@
 import { MessageType, type ElementAttributes, type Message } from '@/types'
 import { listenChromeMessages } from '@/utils/message'
+import { configureMonaco } from '@/utils/monaco-loader'
 import { storage } from '@/utils/storage'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -8,6 +9,9 @@ import { App } from './ui/App'
 
 console.log('Schema Editor Content Script已加载')
 
+// 在全局上下文中配置Monaco Editor（必须在Shadow DOM创建之前）
+configureMonaco()
+
 /**
  * 注入页面脚本
  * 使用chrome.runtime.getURL加载独立的脚本文件
@@ -15,14 +19,42 @@ console.log('Schema Editor Content Script已加载')
 function injectPageScript(): void {
   const script = document.createElement('script')
   script.src = chrome.runtime.getURL('injected.js')
-  script.onload = () => {
+  script.onload = async () => {
     console.log('✅ Injected script已成功注入')
     script.remove()
+    
+    await syncConfigToInjectedScript()
   }
   script.onerror = (error) => {
     console.error('❌ Injected script注入失败:', error)
   }
   ;(document.head || document.documentElement).appendChild(script)
+}
+
+/**
+ * 同步配置到注入脚本
+ */
+async function syncConfigToInjectedScript(): Promise<void> {
+  try {
+    const getFunctionName = await storage.getGetFunctionName()
+    const updateFunctionName = await storage.getUpdateFunctionName()
+    
+    window.postMessage(
+      {
+        source: 'schema-editor-content',
+        type: 'CONFIG_SYNC',
+        payload: {
+          getFunctionName,
+          updateFunctionName
+        }
+      },
+      '*'
+    )
+    
+    console.log('⚙️ 配置已同步到injected script:', { getFunctionName, updateFunctionName })
+  } catch (error) {
+    console.error('❌ 同步配置失败:', error)
+  }
 }
 
 /**
