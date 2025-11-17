@@ -28,7 +28,9 @@ export class MonacoErrorBoundary extends React.Component<Props, State> {
     'MonacoEnvironment.getWorker',
     'getWorkerUrl',
     'worker',
-    'monaco'
+    'monaco',
+    'Could not establish connection. Receiving end does not exist.',
+    'Uncaught SyntaxError'
   ]
 
   constructor(props: Props) {

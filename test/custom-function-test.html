@@ -73,8 +73,8 @@
 
   <div class="test-section">
     <h2>测试元素 1 - 默认函数名</h2>
-    <p>使用默认函数名：<code>window.__getSchemaByParams</code> 和 <code>window.__updateSchemaByParams</code></p>
-    <div class="test-element" data-schema-params="user,profile,default">
+    <p>使用默认函数名：<code>window.__getContentById</code> 和 <code>window.__updateContentById</code></p>
+    <div class="test-element" data-id="user,profile,default">
       点击我测试默认函数名
     </div>
   </div>
@@ -82,7 +82,7 @@
   <div class="test-section">
     <h2>测试元素 2 - 自定义函数名</h2>
     <p>使用自定义函数名：<code>window.myCustomGetSchema</code> 和 <code>window.myCustomUpdateSchema</code></p>
-    <div class="test-element" data-schema-params="product,detail,custom">
+    <div class="test-element" data-id="product,detail,custom">
       点击我测试自定义函数名
     </div>
   </div>
@@ -108,8 +108,8 @@
     }
 
     // 默认函数名实现
-    window.__getSchemaByParams = (params) => {
-      addLog('info', '🔍 调用 __getSchemaByParams (默认)', { params })
+    window.__getContentById = (params) => {
+      addLog('info', '🔍 调用 __getContentById (默认)', { params })
       return {
         type: 'default',
         params: params,
@@ -121,8 +121,8 @@
       }
     }
 
-    window.__updateSchemaByParams = (schema, params) => {
-      addLog('info', '💾 调用 __updateSchemaByParams (默认)', { schema, params })
+    window.__updateContentById = (schema, params) => {
+      addLog('info', '💾 调用 __updateContentById (默认)', { schema, params })
       addLog('success', '✅ 默认函数更新成功')
       return true
     }
@@ -149,7 +149,7 @@
     }
 
     addLog('success', '✅ 页面加载完成，所有函数已注册')
-    addLog('info', '📋 已注册函数：__getSchemaByParams, __updateSchemaByParams, myCustomGetSchema, myCustomUpdateSchema')
+    addLog('info', '📋 已注册函数：__getContentById, __updateContentById, myCustomGetSchema, myCustomUpdateSchema')
   </script>
 </body>
 </html>

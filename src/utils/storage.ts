@@ -17,14 +17,14 @@ class StorageManager {
   private readonly DEFAULT_VALUES: StorageData = {
     isActive: false,
     drawerWidth: 800,
-    attributeName: 'schema-params',
+    attributeName: 'id',
     searchConfig: {
       searchDepthDown: 5,
       searchDepthUp: 0,
       throttleInterval: 16
     },
-    getFunctionName: '__getSchemaByParams',
-    updateFunctionName: '__updateSchemaByParams'
+    getFunctionName: '__getContentById',
+    updateFunctionName: '__updateContentById'
   }
 
   /**

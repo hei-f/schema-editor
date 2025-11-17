@@ -8,8 +8,8 @@
 
   /** 函数名配置 */
   let functionNames = {
-    get: '__getSchemaByParams',
-    update: '__updateSchemaByParams'
+    get: '__getContentById',
+    update: '__updateContentById'
   }
 
   console.log('⚙️ 初始函数名配置:', functionNames)
