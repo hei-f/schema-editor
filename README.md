@@ -17,13 +17,13 @@ React 18 + TypeScript + Vite + Ant Design 5 + Monaco Editor + Manifest V3
 
 ```bash
 # 安装依赖
-tnpm install
+npm install
 
 # 开发模式
-tnpm run dev
+npm run dev
 
 # 构建
-tnpm run build
+npm run build
 
 # 打包
 npm run package
@@ -43,13 +43,13 @@ npm run package
 
 ```typescript
 // 获取Schema
-window.__getSchemaByParams = (params: string) => {
+window.__getContentById = (params: string) => {
   // params: 'param1' 或 'param1,param2'
   return { /* Schema对象 */ }
 }
 
 // 更新Schema
-window.__updateSchemaByParams = (schema: any, params: string) => {
+window.__updateContentById = (schema: any, params: string) => {
   // 更新逻辑
   return true
 }
@@ -61,13 +61,15 @@ window.__updateSchemaByParams = (schema: any, params: string) => {
 
 ```html
 <!-- 单个参数 -->
-<div data-schema-params="param1"></div>
+<div data-id="param1"></div>
 
 <!-- 多个参数 -->
-<div data-schema-params="param1,param2"></div>
+<div data-id="param1,param2"></div>
 ```
 
-属性值为参数数组的 `join(',')` 结果。属性名可在配置页面自定义。
+属性值为参数数组的 `join(',')` 结果。
+
+> **注意**：`data-id` 符合 [Agentic UI](https://github.com/ant-design/agentic-ui) 的规范，使用默认配置即可，无需用户手动配置属性名。如有特殊需求，属性名也可在配置页面自定义。
 
 ## 项目结构
 

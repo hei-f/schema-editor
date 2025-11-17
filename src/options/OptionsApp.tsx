@@ -34,9 +34,9 @@ const CodeBlock = styled.pre`
 export const OptionsApp: React.FC = () => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
-  const [attributeName, setAttributeName] = useState('schema-params')
-  const [getFunctionName, setGetFunctionName] = useState('__getSchemaByParams')
-  const [updateFunctionName, setUpdateFunctionName] = useState('__updateSchemaByParams')
+  const [attributeName, setAttributeName] = useState('id')
+  const [getFunctionName, setGetFunctionName] = useState('__getContentById')
+  const [updateFunctionName, setUpdateFunctionName] = useState('__updateContentById')
 
   /**
    * 加载配置
@@ -97,12 +97,12 @@ export const OptionsApp: React.FC = () => {
    */
   const handleReset = () => {
     form.setFieldsValue({ 
-      attributeName: 'schema-params',
+      attributeName: 'id',
       searchDepthDown: 5,
       searchDepthUp: 0,
       throttleInterval: 16,
-      getFunctionName: '__getSchemaByParams',
-      updateFunctionName: '__updateSchemaByParams'
+      getFunctionName: '__getContentById',
+      updateFunctionName: '__updateContentById'
     })
   }
 
@@ -119,12 +119,12 @@ export const OptionsApp: React.FC = () => {
           layout="vertical"
           onFinish={handleSave}
           initialValues={{ 
-            attributeName: 'schema-params',
+            attributeName: 'id',
             searchDepthDown: 5,
             searchDepthUp: 0,
             throttleInterval: 16,
-            getFunctionName: '__getSchemaByParams',
-            updateFunctionName: '__updateSchemaByParams'
+            getFunctionName: '__getContentById',
+            updateFunctionName: '__updateContentById'
           }}
         >
           <Form.Item
@@ -134,9 +134,9 @@ export const OptionsApp: React.FC = () => {
               { required: true, message: '请输入属性名称' },
               { pattern: /^[a-z][a-z0-9-]*$/, message: '属性名只能包含小写字母、数字和连字符，且必须以小写字母开头' }
             ]}
-            extra="此属性名将用于从页面元素中提取参数，默认值为 schema-params"
+            extra="此属性名将用于从页面元素中提取参数，默认值为 id"
           >
-            <Input placeholder="例如: schema-params" />
+            <Input placeholder="例如: id" />
           </Form.Item>
 
           <Collapse defaultActiveKey={['1', '2']} style={{ marginBottom: '24px' }}>
@@ -150,7 +150,7 @@ export const OptionsApp: React.FC = () => {
                 ]}
                 extra="页面需要提供的获取Schema数据的全局函数名"
               >
-                <Input placeholder="例如: __getSchemaByParams" />
+                <Input placeholder="例如: __getContentById" />
               </Form.Item>
 
               <Form.Item
@@ -162,7 +162,7 @@ export const OptionsApp: React.FC = () => {
                 ]}
                 extra="页面需要提供的更新Schema数据的全局函数名"
               >
-                <Input placeholder="例如: __updateSchemaByParams" />
+                <Input placeholder="例如: __updateContentById" />
               </Form.Item>
             </Panel>
 
