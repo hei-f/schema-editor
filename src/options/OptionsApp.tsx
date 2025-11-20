@@ -3,6 +3,7 @@ import { InfoCircleOutlined } from '@ant-design/icons'
 import { Button, Card, Collapse, Form, Input, InputNumber, message, Space, Switch, Tooltip, Typography } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+import packageJson from '../../package.json'
 
 const { Title, Paragraph, Text } = Typography
 const { Panel } = Collapse
@@ -75,15 +76,12 @@ export const OptionsApp: React.FC = () => {
   const [attributeName, setAttributeName] = useState('id')
   const [getFunctionName, setGetFunctionName] = useState('__getContentById')
   const [updateFunctionName, setUpdateFunctionName] = useState('__updateContentById')
-  const [version, setVersion] = useState('')
 
   /**
    * 加载配置
    */
   useEffect(() => {
     loadSettings()
-    const manifest = chrome.runtime.getManifest()
-    setVersion(manifest.version)
   }, [])
 
   const loadSettings = async () => {
@@ -175,7 +173,7 @@ export const OptionsApp: React.FC = () => {
           </Paragraph>
         </HeaderContent>
         <HeaderActions>
-          {version && <VersionTag>v{version}</VersionTag>}
+          <VersionTag>v{packageJson.version}</VersionTag>
           <Button onClick={handleCheckUpdate}>
             检查更新
           </Button>
