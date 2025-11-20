@@ -1,5 +1,5 @@
 import { MessageType, type Message } from '@/types'
-import { storage } from '@/utils/storage'
+import { storage } from '@/utils/browser/storage'
 
 /**
  * 更新图标状态显示
