@@ -1,4 +1,5 @@
 import type { ElementAttributes, SearchConfig } from '@/types'
+import { storage } from '@/utils/browser/storage'
 import {
   addHighlight,
   findElementWithSchemaParams,
@@ -7,8 +8,7 @@ import {
   hasValidAttributes,
   removeCandidateHighlight,
   removeHighlight
-} from '@/utils/element-detector'
-import { storage } from '@/utils/storage'
+} from '@/utils/ui/dom'
 
 /**
  * 元素监听器类

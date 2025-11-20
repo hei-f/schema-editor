@@ -1,15 +1,15 @@
-import * as elementDetector from '@/utils/element-detector'
-import { storage } from '@/utils/storage'
-import { ElementMonitor } from '../monitor'
+import { storage } from '@/utils/browser/storage'
+import * as elementDetector from '@/utils/ui/dom'
+import { ElementMonitor } from '../core/monitor'
 
 // Mock storage和element-detector
-jest.mock('@/utils/storage', () => ({
+jest.mock('@/utils/browser/storage', () => ({
   storage: {
     getSearchConfig: jest.fn()
   }
 }))
 
-jest.mock('@/utils/element-detector', () => ({
+jest.mock('@/utils/ui/dom', () => ({
   findElementWithSchemaParams: jest.fn(),
   getElementAttributes: jest.fn(),
   hasValidAttributes: jest.fn(),
@@ -27,8 +27,6 @@ describe('ElementMonitor测试', () => {
   const mockGetElementAttributes = elementDetector.getElementAttributes as jest.Mock
   const mockHasValidAttributes = elementDetector.hasValidAttributes as jest.Mock
   const mockAddHighlight = elementDetector.addHighlight as jest.Mock
-  const mockAddCandidateHighlight = elementDetector.addCandidateHighlight as jest.Mock
-  const mockRemoveCandidateHighlight = elementDetector.removeCandidateHighlight as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()

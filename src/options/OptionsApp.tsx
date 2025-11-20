@@ -1,90 +1,60 @@
-import { storage } from '@/utils/storage'
-import { InfoCircleOutlined } from '@ant-design/icons'
-import { Button, Card, Collapse, Form, Input, InputNumber, message, Space, Switch, Tooltip, Typography } from 'antd'
+import { DEFAULT_VALUES } from '@/constants/defaults'
+import { storage } from '@/utils/browser/storage'
+import { CheckCircleOutlined } from '@ant-design/icons'
+import { Button, Collapse, Form, Input, message, Space, Switch, Tooltip, Typography } from 'antd'
 import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
+import { ColorPickerField } from './ColorPickerField'
+import {
+  AutoSaveHint,
+  CodeBlock,
+  Container,
+  ExampleLabel,
+  ExampleSection,
+  FullWidthInputNumber,
+  HeaderActions,
+  HeaderContent,
+  HeaderSection,
+  HelpIcon,
+  PageDescription,
+  PageTitle,
+  SchemaNote,
+  SectionTitle,
+  StyledCard,
+  StyledCollapse,
+  VersionTag
+} from './styles'
 
-const { Title, Paragraph, Text } = Typography
 const { Panel } = Collapse
 
-const Container = styled.div`
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  background: #fff;
-  min-height: 100vh;
-`
-
-const StyledCard = styled(Card)`
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`
-
-const CodeBlock = styled.pre`
-  background: #f5f5f5;
-  padding: 12px;
-  border-radius: 4px;
-  font-family: 'Monaco', 'Consolas', monospace;
-  font-size: 13px;
-  overflow-x: auto;
-`
-
-const HeaderSection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`
-
-const HeaderContent = styled.div`
-  flex: 1;
-`
-
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-top: 4px;
-`
-
-const VersionTag = styled.span`
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
-`
+/**
+ * 打开GitHub Releases页面检查更新
+ */
+const openReleasePage = () => {
+  chrome.tabs.create({
+    url: 'https://github.com/hei-f/schema-editor/releases/',
+    active: true
+  })
+}
 
 /**
  * 设置页面组件
  */
 export const OptionsApp: React.FC = () => {
   const [form] = Form.useForm()
-  const [loading, setLoading] = useState(false)
-  const [attributeName, setAttributeName] = useState('id')
-  const [getFunctionName, setGetFunctionName] = useState('__getContentById')
-  const [updateFunctionName, setUpdateFunctionName] = useState('__updateContentById')
-  const [version, setVersion] = useState('')
+  const [attributeName, setAttributeName] = useState(DEFAULT_VALUES.attributeName)
+  const [getFunctionName, setGetFunctionName] = useState(DEFAULT_VALUES.getFunctionName)
+  const [updateFunctionName, setUpdateFunctionName] = useState(DEFAULT_VALUES.updateFunctionName)
+  
+  /** 防抖定时器 Map，为每个字段维护独立的定时器 */
+  const timeoutMapRef = React.useRef<Map<string, NodeJS.Timeout>>(new Map())
 
   /**
    * 加载配置
    */
   useEffect(() => {
     loadSettings()
-    const manifest = chrome.runtime.getManifest()
-    setVersion(manifest.version)
   }, [])
+
 
   const loadSettings = async () => {
     try {
@@ -94,19 +64,29 @@ export const OptionsApp: React.FC = () => {
       const updateFn = await storage.getUpdateFunctionName()
       const autoParse = await storage.getAutoParseString()
       const debugLog = await storage.getEnableDebugLog()
+      const toolbarButtons = await storage.getToolbarButtons()
+      const drawerWidth = await storage.getDrawerWidth()
+      const highlightColor = await storage.getHighlightColor()
       
       setAttributeName(name)
       setGetFunctionName(getFn)
       setUpdateFunctionName(updateFn)
       form.setFieldsValue({ 
         attributeName: name,
+        drawerWidth: drawerWidth,
         searchDepthDown: searchConfig.searchDepthDown,
         searchDepthUp: searchConfig.searchDepthUp,
         throttleInterval: searchConfig.throttleInterval,
         getFunctionName: getFn,
         updateFunctionName: updateFn,
         autoParseString: autoParse,
-        enableDebugLog: debugLog
+        enableDebugLog: debugLog,
+        toolbarButtonConvertToAST: toolbarButtons.convertToAST,
+        toolbarButtonConvertToMarkdown: toolbarButtons.convertToMarkdown,
+        toolbarButtonDeserialize: toolbarButtons.deserialize,
+        toolbarButtonSerialize: toolbarButtons.serialize,
+        toolbarButtonFormat: toolbarButtons.format,
+        highlightColor: highlightColor
       })
     } catch (error) {
       message.error('加载配置失败')
@@ -114,88 +94,149 @@ export const OptionsApp: React.FC = () => {
   }
 
   /**
-   * 保存配置
+   * 保存单个字段到存储
    */
-  const handleSave = async (values: any) => {
-    setLoading(true)
+  const saveField = React.useCallback(async (fieldName: string, allValues: any) => {
     try {
-      await storage.setAttributeName(values.attributeName)
-      await storage.setSearchConfig({
-        searchDepthDown: values.searchDepthDown,
-        searchDepthUp: values.searchDepthUp,
-        throttleInterval: values.throttleInterval
-      })
-      await storage.setFunctionNames(values.getFunctionName, values.updateFunctionName)
-      await storage.setAutoParseString(values.autoParseString)
-      await storage.setEnableDebugLog(values.enableDebugLog)
-      setAttributeName(values.attributeName)
-      setGetFunctionName(values.getFunctionName)
-      setUpdateFunctionName(values.updateFunctionName)
-      message.success('设置已保存')
+      switch (fieldName) {
+        case 'attributeName':
+          await storage.setAttributeName(allValues.attributeName)
+          setAttributeName(allValues.attributeName)
+          break
+        case 'drawerWidth':
+          await storage.setDrawerWidth(allValues.drawerWidth)
+          break
+        case 'searchDepthDown':
+        case 'searchDepthUp':
+        case 'throttleInterval':
+          await storage.setSearchConfig({
+            searchDepthDown: allValues.searchDepthDown,
+            searchDepthUp: allValues.searchDepthUp,
+            throttleInterval: allValues.throttleInterval
+          })
+          break
+        case 'getFunctionName':
+        case 'updateFunctionName':
+          await storage.setFunctionNames(allValues.getFunctionName, allValues.updateFunctionName)
+          setGetFunctionName(allValues.getFunctionName)
+          setUpdateFunctionName(allValues.updateFunctionName)
+          break
+        case 'autoParseString':
+          await storage.setAutoParseString(allValues.autoParseString)
+          break
+        case 'enableDebugLog':
+          await storage.setEnableDebugLog(allValues.enableDebugLog)
+          break
+        case 'highlightColor':
+          await storage.setHighlightColor(allValues.highlightColor)
+          break
+        case 'toolbarButtonConvertToAST':
+        case 'toolbarButtonConvertToMarkdown':
+        case 'toolbarButtonDeserialize':
+        case 'toolbarButtonSerialize':
+        case 'toolbarButtonFormat':
+          await storage.setToolbarButtons({
+            convertToAST: allValues.toolbarButtonConvertToAST,
+            convertToMarkdown: allValues.toolbarButtonConvertToMarkdown,
+            deserialize: allValues.toolbarButtonDeserialize,
+            serialize: allValues.toolbarButtonSerialize,
+            format: allValues.toolbarButtonFormat
+          })
+          break
+      }
+      
+      message.success('已保存', 1.5)
     } catch (error) {
       message.error('保存失败')
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [])
 
   /**
-   * 重置为默认值
+   * 防抖保存函数（用于Input类型字段）
+   * 每个字段维护独立的定时器，避免相互干扰
    */
-  const handleReset = () => {
-    form.setFieldsValue({ 
-      attributeName: 'id',
-      searchDepthDown: 5,
-      searchDepthUp: 0,
-      throttleInterval: 100,
-      getFunctionName: '__getContentById',
-      updateFunctionName: '__updateContentById',
-      autoParseString: true,
-      enableDebugLog: false
-    })
-  }
+  const debouncedSave = React.useCallback(
+    (fieldName: string, allValues: any) => {
+      const existingTimeout = timeoutMapRef.current.get(fieldName)
+      if (existingTimeout) {
+        clearTimeout(existingTimeout)
+      }
+      
+      const newTimeout = setTimeout(async () => {
+        try {
+          await form.validateFields([fieldName])
+          await saveField(fieldName, allValues)
+        } catch (error) {
+          // 验证失败，不保存，Form 会显示错误信息
+        }
+        timeoutMapRef.current.delete(fieldName)
+      }, 500)
+      
+      timeoutMapRef.current.set(fieldName, newTimeout)
+    },
+    [saveField, form]
+  )
 
   /**
-   * 检查更新
+   * 处理表单值变化
    */
-  const handleCheckUpdate = () => {
-    chrome.tabs.create({
-      url: 'https://github.com/hei-f/schema-editor/releases/',
-      active: true
-    })
+  const handleValuesChange = (changedValues: any, allValues: any) => {
+    const fieldName = Object.keys(changedValues)[0]
+    
+    const inputFields = ['attributeName', 'drawerWidth', 'getFunctionName', 'updateFunctionName']
+    const numberFields = ['searchDepthDown', 'searchDepthUp', 'throttleInterval']
+    const colorFields = ['highlightColor']
+    
+    if (inputFields.includes(fieldName) || numberFields.includes(fieldName) || colorFields.includes(fieldName)) {
+      debouncedSave(fieldName, allValues)
+    } else {
+      saveField(fieldName, allValues)
+    }
   }
 
   return (
     <Container>
       <HeaderSection>
         <HeaderContent>
-          <Title level={2} style={{ marginBottom: '8px' }}>⚙️ Schema Editor 设置</Title>
-          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+          <PageTitle level={2}>⚙️ Schema Editor 设置</PageTitle>
+          <PageDescription type="secondary">
             配置插件的行为参数
-          </Paragraph>
+          </PageDescription>
         </HeaderContent>
         <HeaderActions>
-          {version && <VersionTag>v{version}</VersionTag>}
-          <Button onClick={handleCheckUpdate}>
+          <VersionTag>v1.0.10</VersionTag>
+          <Button onClick={openReleasePage}>
             检查更新
           </Button>
         </HeaderActions>
       </HeaderSection>
 
       <StyledCard title="参数属性名配置">
+        <AutoSaveHint>
+          <CheckCircleOutlined />
+          <span>所有配置项通过验证后将自动保存</span>
+        </AutoSaveHint>
+        
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleSave}
+          onValuesChange={handleValuesChange}
           initialValues={{ 
-            attributeName: 'id',
-            searchDepthDown: 5,
-            searchDepthUp: 0,
-            throttleInterval: 100,
-            getFunctionName: '__getContentById',
-            updateFunctionName: '__updateContentById',
-            autoParseString: true,
-            enableDebugLog: false
+            attributeName: DEFAULT_VALUES.attributeName,
+            drawerWidth: DEFAULT_VALUES.drawerWidth,
+            searchDepthDown: DEFAULT_VALUES.searchConfig.searchDepthDown,
+            searchDepthUp: DEFAULT_VALUES.searchConfig.searchDepthUp,
+            throttleInterval: DEFAULT_VALUES.searchConfig.throttleInterval,
+            getFunctionName: DEFAULT_VALUES.getFunctionName,
+            updateFunctionName: DEFAULT_VALUES.updateFunctionName,
+            autoParseString: DEFAULT_VALUES.autoParseString,
+            enableDebugLog: DEFAULT_VALUES.enableDebugLog,
+            highlightColor: DEFAULT_VALUES.highlightColor,
+            toolbarButtonConvertToAST: DEFAULT_VALUES.toolbarButtons.convertToAST,
+            toolbarButtonConvertToMarkdown: DEFAULT_VALUES.toolbarButtons.convertToMarkdown,
+            toolbarButtonDeserialize: DEFAULT_VALUES.toolbarButtons.deserialize,
+            toolbarButtonSerialize: DEFAULT_VALUES.toolbarButtons.serialize,
+            toolbarButtonFormat: DEFAULT_VALUES.toolbarButtons.format
           }}
         >
           <Form.Item
@@ -205,12 +246,12 @@ export const OptionsApp: React.FC = () => {
               { required: true, message: '请输入属性名称' },
               { pattern: /^[a-z][a-z0-9-]*$/, message: '属性名只能包含小写字母、数字和连字符，且必须以小写字母开头' }
             ]}
-            extra="此属性名将用于从页面元素中提取参数，默认值为 id"
+            extra={`此属性名将用于从页面元素中提取参数，默认值为 ${DEFAULT_VALUES.attributeName}`}
           >
-            <Input placeholder="例如: id" />
+            <Input placeholder={`例如: ${DEFAULT_VALUES.attributeName}`} />
           </Form.Item>
 
-          <Title level={5} style={{ marginTop: '24px', marginBottom: '16px' }}>API函数配置</Title>
+          <SectionTitle level={5}>API函数配置</SectionTitle>
               <Form.Item
                 label="获取Schema函数名"
                 name="getFunctionName"
@@ -220,7 +261,7 @@ export const OptionsApp: React.FC = () => {
                 ]}
                 extra="页面需要提供的获取Schema数据的全局函数名"
               >
-                <Input placeholder="例如: __getContentById" />
+                <Input placeholder={`例如: ${DEFAULT_VALUES.getFunctionName}`} />
               </Form.Item>
 
               <Form.Item
@@ -232,16 +273,16 @@ export const OptionsApp: React.FC = () => {
                 ]}
                 extra="页面需要提供的更新Schema数据的全局函数名"
               >
-                <Input placeholder="例如: __updateContentById" />
+                <Input placeholder={`例如: ${DEFAULT_VALUES.updateFunctionName}`} />
               </Form.Item>
 
-          <Title level={5} style={{ marginTop: '24px', marginBottom: '16px' }}>搜索配置</Title>
+          <SectionTitle level={5}>搜索配置</SectionTitle>
               <Form.Item
                 label="向下搜索深度"
                 name="searchDepthDown"
                 extra="查找子元素的最大层数，设置为 0 则不向下搜索"
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <FullWidthInputNumber min={0} />
               </Form.Item>
 
               <Form.Item
@@ -249,7 +290,7 @@ export const OptionsApp: React.FC = () => {
                 name="searchDepthUp"
                 extra="查找父元素的最大层数，设置为 0 则不向上搜索"
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <FullWidthInputNumber min={0} />
               </Form.Item>
 
               <Form.Item
@@ -257,17 +298,17 @@ export const OptionsApp: React.FC = () => {
                 name="throttleInterval"
                 extra="控制鼠标移动检测频率，建议范围 8-200ms，较小值响应更快但可能影响性能"
               >
-                <InputNumber min={8} style={{ width: '100%' }} />
+                <FullWidthInputNumber min={8} />
           </Form.Item>
 
-          <Collapse style={{ marginTop: '24px', marginBottom: '24px' }}>
+          <StyledCollapse>
             <Panel header="高级" key="advanced">
               <Form.Item
                 label={
                   <Space>
                     字符串自动解析
                     <Tooltip title="开启后，当获取的Schema数据为字符串时，插件会自动将其解析为Markdown Elements结构。编辑完成后保存时，会将Elements结构转换回字符串。关闭则直接显示原始字符串。">
-                      <InfoCircleOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+                      <HelpIcon />
                     </Tooltip>
                   </Space>
                 }
@@ -283,7 +324,7 @@ export const OptionsApp: React.FC = () => {
                   <Space>
                     启用调试日志
                     <Tooltip title="开启后，会在浏览器控制台输出插件的调试日志，如'注入成功'、'配置已同步'等信息。生产环境建议关闭。">
-                      <InfoCircleOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+                      <HelpIcon />
                     </Tooltip>
                   </Space>
                 }
@@ -294,87 +335,155 @@ export const OptionsApp: React.FC = () => {
                 <Switch />
               </Form.Item>
             </Panel>
-          </Collapse>
 
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                保存设置
-              </Button>
-              <Button onClick={handleReset}>
-                恢复默认
-              </Button>
-            </Space>
-          </Form.Item>
+            <Panel header="外观配置" key="appearance">
+              <Form.Item
+                label="抽屉宽度"
+                name="drawerWidth"
+                rules={[
+                  { required: true, message: '请输入抽屉宽度' },
+                  { pattern: /^\d+(%|px)$/, message: '宽度格式必须为数字+px或%，例如：800px 或 50%' }
+                ]}
+                extra="设置编辑器抽屉的宽度，支持像素(px)或百分比(%)单位"
+              >
+                <Input placeholder={`例如: ${DEFAULT_VALUES.drawerWidth} 或 50%`} />
+              </Form.Item>
+
+              <Form.Item
+                label="高亮框颜色"
+                name="highlightColor"
+                extra="设置鼠标悬停时元素高亮框的颜色,影响边框和阴影"
+              >
+                <ColorPickerField
+                  presets={[
+                    {
+                      label: '推荐颜色',
+                      colors: [
+                        '#39C5BB',
+                        '#1890FF',
+                        '#52C41A',
+                        '#FAAD14',
+                        '#F5222D',
+                        '#722ED1',
+                        '#13C2C2',
+                        '#FA8C16',
+                      ],
+                    },
+                  ]}
+                />
+              </Form.Item>
+            </Panel>
+
+            <Panel header="功能项配置" key="toolbarButtons">
+              <Form.Item
+                label="转换成AST"
+                name="toolbarButtonConvertToAST"
+                valuePropName="checked"
+                extra="将Markdown文本解析转换为Elements数组(AST)结构，便于编辑和处理"
+              >
+                <Switch />
+              </Form.Item>
+
+              <Form.Item
+                label="转换成Markdown"
+                name="toolbarButtonConvertToMarkdown"
+                valuePropName="checked"
+                extra="将Elements数组(AST)结构转换回Markdown文本格式"
+              >
+                <Switch />
+              </Form.Item>
+
+              <Form.Item
+                label="反序列化"
+                name="toolbarButtonDeserialize"
+                valuePropName="checked"
+                extra="将序列化的字符串数据反序列化为可编辑的JSON对象"
+              >
+                <Switch />
+              </Form.Item>
+
+              <Form.Item
+                label="序列化"
+                name="toolbarButtonSerialize"
+                valuePropName="checked"
+                extra="将JSON对象序列化为紧凑的字符串格式"
+              >
+                <Switch />
+              </Form.Item>
+
+              <Form.Item
+                label="格式化"
+                name="toolbarButtonFormat"
+                valuePropName="checked"
+                extra="格式化JSON代码，添加缩进和换行，使其更易读"
+              >
+                <Switch />
+              </Form.Item>
+            </Panel>
+          </StyledCollapse>
         </Form>
 
-        <div style={{ marginTop: '24px' }}>
-          <Text strong>当前配置示例：</Text>
+        <ExampleSection>
+          <ExampleLabel strong>当前配置示例：</ExampleLabel>
           <CodeBlock>
-{`<!-- HTML元素属性 -->
-<div data-${attributeName}="param1,param2,param3">
-  点击此元素
-</div>
-
-<!-- 页面需要提供的全局函数 -->
-<script>
-  window.${getFunctionName} = function(params) {
-    // params: "param1,param2,param3"
-    return { your: 'schema' };
-  };
-  
-  window.${updateFunctionName} = function(schema, params) {
-    // schema: 修改后的数据
-    // params: "param1,param2,param3"
-    return true;
-  };
-</script>`}
+            <span className="comment">&lt;!-- HTML元素属性 --&gt;</span>{'\n'}
+            <span className="tag">&lt;div</span> <span className="attr-name">data-{attributeName}</span>=<span className="attr-value">"param1,param2,param3"</span><span className="tag">&gt;</span>{'\n'}
+            {'  '}点击此元素{'\n'}
+            <span className="tag">&lt;/div&gt;</span>{'\n\n'}
+            <span className="comment">&lt;!-- 页面需要提供的全局函数 --&gt;</span>{'\n'}
+            <span className="tag">&lt;script&gt;</span>{'\n'}
+            {'  '}<span className="keyword">window</span>.<span className="function">{getFunctionName}</span> = <span className="keyword">function</span>(params) {'{'}{'\n'}
+            {'    '}<span className="comment">// params: "param1,param2,param3"</span>{'\n'}
+            {'    '}<span className="keyword">return</span> {'{'} your: <span className="string">'schema'</span> {'}'};{'\n'}
+            {'  '}{'}'};{'\n\n'}
+            {'  '}<span className="keyword">window</span>.<span className="function">{updateFunctionName}</span> = <span className="keyword">function</span>(schema, params) {'{'}{'\n'}
+            {'    '}<span className="comment">// schema: 修改后的数据</span>{'\n'}
+            {'    '}<span className="comment">// params: "param1,param2,param3"</span>{'\n'}
+            {'    '}<span className="keyword">return</span> <span className="keyword">true</span>;{'\n'}
+            {'  '}{'}'};{'\n'}
+            <span className="tag">&lt;/script&gt;</span>
           </CodeBlock>
-        </div>
+        </ExampleSection>
       </StyledCard>
 
       <StyledCard title="使用说明">
-        <Paragraph>
+        <Typography.Paragraph>
           <ol>
             <li>
-              在页面HTML元素上添加 <Text code>data-{attributeName}</Text> 属性
-            </li>
-            <li>
-              属性值为逗号分隔的参数字符串，例如：<Text code>"value1,value2,value3"</Text>
+              在页面HTML元素上添加 <Typography.Text code>data-{attributeName}</Typography.Text> 属性，属性值为逗号分隔的参数字符串，例如：<Typography.Text code>"value1,value2,value3"</Typography.Text>
             </li>
             <li>
               页面需要实现两个全局函数（函数名可在上方配置）：
               <ul>
-                <li><Text code>window.{getFunctionName}(params)</Text> - 获取schema数据</li>
-                <li><Text code>window.{updateFunctionName}(schema, params)</Text> - 更新schema数据</li>
+                <li><Typography.Text code>window.{getFunctionName}(params)</Typography.Text> - 获取schema数据</li>
+                <li><Typography.Text code>window.{updateFunctionName}(schema, params)</Typography.Text> - 更新schema数据</li>
               </ul>
             </li>
             <li>
-              激活插件后，按住 <Text keyboard>Alt/Option</Text> 键悬停在元素上查看参数
+              激活插件后，按住 <Typography.Text keyboard>Alt/Option</Typography.Text> 键悬停在元素上查看参数
             </li>
             <li>
-              按住 <Text keyboard>Alt/Option</Text> 键并点击元素，打开编辑器修改schema
+              按住 <Typography.Text keyboard>Alt/Option</Typography.Text> 键并点击元素，打开编辑器修改schema
             </li>
           </ol>
-        </Paragraph>
+        </Typography.Paragraph>
       </StyledCard>
 
       <StyledCard title="Schema类型支持">
-        <Paragraph>
+        <Typography.Paragraph>
           Schema编辑器支持以下数据类型：
-        </Paragraph>
+        </Typography.Paragraph>
         <ul>
-          <li><Text strong>字符串 (String)</Text>: <Text code>"hello world"</Text></li>
-          <li><Text strong>数字 (Number)</Text>: <Text code>123</Text> 或 <Text code>45.67</Text></li>
-          <li><Text strong>对象 (Object)</Text>: <Text code>{`{"key": "value"}`}</Text></li>
-          <li><Text strong>数组 (Array)</Text>: <Text code>[1, 2, 3]</Text></li>
-          <li><Text strong>布尔值 (Boolean)</Text>: <Text code>true</Text> 或 <Text code>false</Text></li>
+          <li><Typography.Text strong>字符串 (String)</Typography.Text>: <Typography.Text code>"hello world"</Typography.Text></li>
+          <li><Typography.Text strong>数字 (Number)</Typography.Text>: <Typography.Text code>123</Typography.Text> 或 <Typography.Text code>45.67</Typography.Text></li>
+          <li><Typography.Text strong>对象 (Object)</Typography.Text>: <Typography.Text code>{`{"key": "value"}`}</Typography.Text></li>
+          <li><Typography.Text strong>数组 (Array)</Typography.Text>: <Typography.Text code>[1, 2, 3]</Typography.Text></li>
+          <li><Typography.Text strong>布尔值 (Boolean)</Typography.Text>: <Typography.Text code>true</Typography.Text> 或 <Typography.Text code>false</Typography.Text></li>
         </ul>
-        <Paragraph type="secondary" style={{ marginTop: '12px' }}>
+        <SchemaNote type="secondary">
           注意：编辑器使用JSON格式，字符串值需要用引号包裹。null值不支持编辑。
-        </Paragraph>
+        </SchemaNote>
       </StyledCard>
     </Container>
   )
 }
-

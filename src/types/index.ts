@@ -41,13 +41,29 @@ export interface SearchConfig {
 }
 
 /**
+ * 工具栏按钮配置接口
+ */
+export interface ToolbarButtonsConfig {
+  /** 转换成AST按钮 */
+  convertToAST: boolean
+  /** 转换成Markdown按钮 */
+  convertToMarkdown: boolean
+  /** 反序列化按钮 */
+  deserialize: boolean
+  /** 序列化按钮 */
+  serialize: boolean
+  /** 格式化按钮 */
+  format: boolean
+}
+
+/**
  * 存储数据接口
  */
 export interface StorageData {
   /** 插件是否激活 */
   isActive: boolean
-  /** 抽屉宽度 */
-  drawerWidth: number
+  /** 抽屉宽度（支持px和%单位） */
+  drawerWidth: string | number
   /** 配置的属性名 */
   attributeName: string
   /** 搜索配置 */
@@ -60,6 +76,10 @@ export interface StorageData {
   autoParseString: boolean
   /** 启用调试日志 */
   enableDebugLog: boolean
+  /** 工具栏按钮配置 */
+  toolbarButtons: ToolbarButtonsConfig
+  /** 高亮框颜色 */
+  highlightColor: string
 }
 
 /**

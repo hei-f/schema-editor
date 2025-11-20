@@ -99,7 +99,7 @@ def draw_ghost_icon(size, background_color):
 
 # 定义颜色配置
 colors = {
-    'active': (56, 197, 187, 255),    # 激活态：青绿色 #38C5BB
+    'active': (57, 197, 187, 255),    # 激活态：青绿色 #39C5BB
     'inactive': (41, 44, 51, 255)     # 未激活态：灰色 #292C33
 }
 
