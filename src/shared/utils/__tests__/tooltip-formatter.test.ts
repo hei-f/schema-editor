@@ -1,4 +1,4 @@
-import type { ElementAttributes } from '@/types'
+import type { ElementAttributes } from '@/shared/types'
 import { formatTooltipContent } from '../ui/tooltip'
 
 describe('Tooltip格式化工具测试', () => {
