@@ -9,10 +9,12 @@ interface DrawerToolbarProps {
   contentType: ContentType
   canParse: boolean
   toolbarButtons: ToolbarButtonsConfig
+  previewEnabled?: boolean
   onFormat: () => void
   onSerialize: () => void
   onDeserialize: () => void
   onSegmentChange: (value: string | number) => void
+  onRenderPreview?: () => void
 }
 
 /**
@@ -23,10 +25,12 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
   contentType,
   canParse,
   toolbarButtons,
+  previewEnabled = false,
   onFormat,
   onSerialize,
   onDeserialize,
-  onSegmentChange
+  onSegmentChange,
+  onRenderPreview
 }) => {
   return (
     <StyledEditorToolbar>
@@ -45,6 +49,15 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
         )}
       </ParamsContainer>
       <ButtonGroup>
+        {previewEnabled && onRenderPreview && (
+          <Button 
+            size="small" 
+            type="primary"
+            onClick={onRenderPreview}
+          >
+            更新预览
+          </Button>
+        )}
         {toolbarButtons.astRawStringToggle && (
           <Tooltip 
             title={contentType === ContentType.Other ? '当前数据类型错误' : ''}

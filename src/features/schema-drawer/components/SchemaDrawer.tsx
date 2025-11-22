@@ -1,16 +1,18 @@
 import { FavoritesManager } from '@/features/favorites/components/FavoritesManager'
-import type { ElementAttributes } from '@/shared/types'
-import { ContentType } from '@/shared/types'
+import type { ElementAttributes, PreviewFunctionResultPayload } from '@/shared/types'
+import { ContentType, MessageType } from '@/shared/types'
+import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
 import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
 import { parseMarkdownString } from '@/shared/utils/schema/transformers'
 import {
   DeleteOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
   FileTextOutlined,
   FolderOpenOutlined,
   StarOutlined
 } from '@ant-design/icons'
-import Editor from '@monaco-editor/react'
 import { Button, Drawer, Space, Tooltip, message } from 'antd'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useContentDetection } from '../hooks/useContentDetection'
@@ -30,8 +32,8 @@ import {
 } from '../styles/drawer.styles'
 import { EditorContainer } from '../styles/editor.styles'
 import { LightSuccessNotification } from '../styles/notifications.styles'
+import { CodeMirrorEditor } from './CodeMirrorEditor'
 import { DrawerToolbar } from './DrawerToolbar'
-import { MonacoErrorBoundary } from './MonacoErrorBoundary'
 
 interface SchemaDrawerProps {
   open: boolean
@@ -62,12 +64,27 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     astRawStringToggle: true,
     deserialize: true,
     serialize: true,
-    format: true
+    format: true,
+    preview: true
   })
   const [autoSaveDraft, setAutoSaveDraft] = useState(false)
   
+  // 预览相关状态
+  const [previewEnabled, setPreviewEnabled] = useState(false)
+  const [hasPreviewFunction, setHasPreviewFunction] = useState(false)
+  const [previewConfig, setPreviewConfig] = useState({
+    previewWidth: 40,
+    updateDelay: 500,
+    rememberState: false,
+    autoUpdate: false
+  })
+  const [previewWidth, setPreviewWidth] = useState(40) // 预览区域宽度百分比
+  const [isDragging, setIsDragging] = useState(false)
+  
   const paramsKey = attributes.params.join(',')
   const isFirstLoadRef = useRef(true)
+  const previewPlaceholderRef = useRef<HTMLDivElement>(null)
+  const previewContainerRef = useRef<HTMLDivElement>(null)
 
   /** 内容类型检测 */
   const { 
@@ -172,12 +189,14 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   useEffect(() => {
     const loadConfigs = async () => {
       try {
-        const [toolbarConfig, autoSave] = await Promise.all([
+        const [toolbarConfig, autoSave, preview] = await Promise.all([
           storage.getToolbarButtons(),
-          storage.getAutoSaveDraft()
+          storage.getAutoSaveDraft(),
+          storage.getPreviewConfig()
         ])
         setToolbarButtons(toolbarConfig)
         setAutoSaveDraft(autoSave)
+        setPreviewConfig(preview)
       } catch (error) {
         logger.error('加载配置失败:', error)
       }
@@ -369,6 +388,219 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   }
 
   /**
+   * 检查预览函数是否存在
+   */
+  useEffect(() => {
+    if (!open) return
+    
+    const cleanup = listenPageMessages((msg) => {
+      if (msg.type === MessageType.PREVIEW_FUNCTION_RESULT) {
+        const payload = msg.payload as PreviewFunctionResultPayload
+        setHasPreviewFunction(payload.exists)
+        logger.log('预览函数检测结果:', payload.exists)
+      }
+    })
+    
+    // 发送检测消息
+    postMessageToPage({
+      type: MessageType.CHECK_PREVIEW_FUNCTION
+    })
+    
+    return cleanup
+  }, [open])
+
+  /**
+   * 抽屉关闭时清除预览
+   */
+  useEffect(() => {
+    if (!open && previewEnabled) {
+      handleClearPreview()
+    }
+  }, [open])
+
+  /**
+   * 切换预览状态
+   */
+  const handleTogglePreview = () => {
+    if (!hasPreviewFunction) {
+      message.warning('页面未提供 __previewContent 函数')
+      return
+    }
+    
+    if (previewEnabled) {
+      handleClearPreview()
+    } else {
+      setPreviewEnabled(true)
+    }
+  }
+
+  /**
+   * 当预览开启时，自动渲染第一次
+   */
+  useEffect(() => {
+    if (previewEnabled && hasPreviewFunction) {
+      // 延迟一小段时间等待 Drawer 宽度动画完成
+      const timer = setTimeout(() => {
+        handleRenderPreview()
+      }, 300)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [previewEnabled, hasPreviewFunction])
+
+  /**
+   * 自动更新预览（当开启自动更新时）
+   */
+  useEffect(() => {
+    // 只有当预览开启、自动更新开启、且有预览函数时才自动更新
+    if (!previewEnabled || !previewConfig.autoUpdate || !hasPreviewFunction) {
+      return
+    }
+    
+    // 使用防抖延迟自动更新预览
+    const timer = setTimeout(() => {
+      handleRenderPreview(true) // 传入 true 表示自动更新
+    }, previewConfig.updateDelay)
+    
+    return () => clearTimeout(timer)
+  }, [editorValue, previewEnabled, previewConfig.autoUpdate, previewConfig.updateDelay, hasPreviewFunction])
+
+  /**
+   * 手动渲染预览
+   */
+  const handleRenderPreview = (isAutoUpdate = false) => {
+    if (!previewEnabled || !hasPreviewFunction) {
+      return
+    }
+    
+    try {
+      // 解析编辑器内容
+      const parsedData = JSON.parse(editorValue)
+      
+      // 计算预览区域位置
+      const rect = previewPlaceholderRef.current?.getBoundingClientRect()
+      if (!rect) {
+        message.error('无法获取预览区域位置')
+        return
+      }
+      
+      // 发送渲染消息
+      postMessageToPage({
+        type: MessageType.RENDER_PREVIEW,
+        payload: {
+          data: parsedData,
+          position: {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height
+          }
+        }
+      })
+      
+      // 如果是自动更新，显示轻量提示
+      if (isAutoUpdate) {
+        showLightNotification('预览已更新')
+      }
+      
+      logger.log('预览渲染请求已发送')
+    } catch (error: any) {
+      message.error('JSON 格式错误：' + error.message)
+    }
+  }
+
+  /**
+   * 清除预览
+   */
+  const handleClearPreview = () => {
+    postMessageToPage({
+      type: MessageType.CLEAR_PREVIEW
+    })
+    setPreviewEnabled(false)
+    logger.log('预览已清除')
+  }
+
+  /**
+   * 开始拖拽分隔条
+   */
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  /**
+   * 拖拽中 - 计算并更新预览宽度
+   */
+  useEffect(() => {
+    if (!isDragging) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!previewContainerRef.current) return
+
+      const containerRect = previewContainerRef.current.getBoundingClientRect()
+      const containerWidth = containerRect.width
+      const mouseX = e.clientX - containerRect.left
+
+      // 计算新的预览宽度百分比
+      let newWidth = (mouseX / containerWidth) * 100
+
+      // 限制在 20% - 80% 之间
+      newWidth = Math.max(20, Math.min(80, newWidth))
+
+      setPreviewWidth(newWidth)
+
+      // 实时更新预览容器位置
+      if (previewPlaceholderRef.current) {
+        const rect = previewPlaceholderRef.current.getBoundingClientRect()
+        postMessageToPage({
+          type: MessageType.RENDER_PREVIEW,
+          payload: {
+            data: JSON.parse(editorValue || '{}'),
+            position: {
+              left: rect.left,
+              top: rect.top,
+              width: rect.width,
+              height: rect.height
+            }
+          }
+        })
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      
+      // 保存用户自定义的宽度到配置
+      storage.setPreviewConfig({
+        ...previewConfig,
+        previewWidth: Math.round(previewWidth)
+      })
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, previewWidth, editorValue, previewConfig])
+
+  /**
+   * 加载用户保存的预览宽度
+   */
+  useEffect(() => {
+    if (previewConfig.previewWidth) {
+      setPreviewWidth(previewConfig.previewWidth)
+    }
+  }, [previewConfig.previewWidth])
+
+  /**
+   * 计算抽屉宽度
+   */
+  const drawerWidth = previewEnabled ? '100vw' : width
+
+  /**
    * 处理编辑器挂载
    */
   // const handleEditorDidMount = () => {
@@ -395,6 +627,26 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             </DrawerTitleLeft>
             <DrawerTitleActions>
               <Space size="small">
+                {toolbarButtons.preview && (
+                  <Tooltip title={
+                    !hasPreviewFunction 
+                      ? '页面未提供 __previewContent 函数' 
+                      : previewEnabled 
+                        ? '关闭预览' 
+                        : '开启预览'
+                  }>
+                    <Button
+                      size="small"
+                      type={previewEnabled ? 'primary' : 'text'}
+                      icon={previewEnabled ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                      onClick={handleTogglePreview}
+                      disabled={!hasPreviewFunction}
+                    >
+                      预览
+                    </Button>
+                  </Tooltip>
+                )}
+                
                 {hasDraft && (
                   <>
                     <Tooltip title="加载草稿">
@@ -416,7 +668,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           </DrawerTitleContainer>
         }
         placement="right"
-        width={width}
+        width={drawerWidth}
+        mask={!previewEnabled}
         onClose={onClose}
         open={open}
         destroyOnClose={false}
@@ -454,15 +707,114 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         }
       >
         <DrawerContentContainer>
+          {previewEnabled ? (
+            // 预览模式：工具栏在顶部，预览和编辑器并排
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              {/* 工具栏横跨整个宽度 */}
           <DrawerToolbar
             attributes={attributes}
             contentType={contentType}
             canParse={canParse}
             toolbarButtons={toolbarButtons}
+                previewEnabled={previewEnabled}
             onFormat={handleFormat}
             onSerialize={handleSerialize}
             onDeserialize={handleDeserialize}
             onSegmentChange={handleSegmentChange}
+                onRenderPreview={handleRenderPreview}
+              />
+              
+              {/* 预览区域和编辑器并排 */}
+              <div 
+                ref={previewContainerRef} 
+                style={{ 
+                  display: 'flex', 
+                  flex: 1,
+                  width: '100%',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* 左侧预览占位区域 */}
+                <div
+                  ref={previewPlaceholderRef}
+                  style={{
+                    width: `${previewWidth}%`,
+                    background: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#999',
+                    fontSize: '14px',
+                    flexShrink: 0,
+                    position: 'relative'
+                  }}
+                >
+                  预览区域（在主页面渲染）
+                </div>
+                
+                {/* 可拖拽的分隔条 */}
+                <div
+                  style={{
+                    width: '8px',
+                    height: '100%',
+                    background: isDragging ? '#1890ff' : '#d9d9d9',
+                    cursor: 'col-resize',
+                    flexShrink: 0,
+                    position: 'relative',
+                    transition: 'background 0.2s',
+                    borderLeft: '1px solid #bfbfbf',
+                    borderRight: '1px solid #bfbfbf',
+                    userSelect: 'none',
+                    zIndex: 10
+                  }}
+                  onMouseDown={handleResizeStart}
+                  onMouseEnter={(e) => {
+                    if (!isDragging) {
+                      e.currentTarget.style.background = '#1890ff'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isDragging) {
+                      e.currentTarget.style.background = '#d9d9d9'
+                    }
+                  }}
+                />
+                
+                {/* 右侧编辑器（不包含工具栏） */}
+                <EditorContainer style={{ flex: 1, minWidth: 0 }}>
+                  {lightNotifications.map((notification, index) => (
+                    <LightSuccessNotification 
+                      key={notification.id} 
+                      style={{ top: `${16 + index * 48}px` }}
+                    >
+                      ✓ {notification.text}
+                    </LightSuccessNotification>
+                  ))}
+                  <CodeMirrorEditor
+                    height="100%"
+                    value={editorValue}
+                    onChange={handleEditorChange}
+                    theme="light"
+                    placeholder="在此输入 JSON Schema..."
+                  />
+                </EditorContainer>
+              </div>
+            </div>
+          ) : (
+            // 普通编辑模式
+            <>
+              <DrawerToolbar
+                attributes={attributes}
+                contentType={contentType}
+                canParse={canParse}
+                toolbarButtons={toolbarButtons}
+                previewEnabled={previewEnabled}
+                onFormat={handleFormat}
+                onSerialize={handleSerialize}
+                onDeserialize={handleDeserialize}
+                onSegmentChange={handleSegmentChange}
+                onRenderPreview={handleRenderPreview}
           />
 
           <EditorContainer>
@@ -474,43 +826,16 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                 ✓ {notification.text}
               </LightSuccessNotification>
             ))}
-            <MonacoErrorBoundary>
-              <Editor
-                height="100%"
-                defaultLanguage="json"
-                value={editorValue}
-                onChange={handleEditorChange}
-                // onMount={handleEditorDidMount}
-                theme="vs"
-                options={{
-                  fontSize: 16,
-                  fontFamily: 'Monaco, Menlo, Consolas, monospace',
-                  lineNumbers: 'on',
-                  folding: true,
-                  showFoldingControls: 'always',
-                  foldingStrategy: 'indentation',
-                  foldingHighlight: true,
-                  unfoldOnClickAfterEndOfLine: true,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  formatOnPaste: true,
-                  formatOnType: true,
-                  tabSize: 2,
-                  insertSpaces: true,
-                  autoIndent: 'full',
-                  bracketPairColorization: { enabled: true },
-                  matchBrackets: 'always',
-                  renderLineHighlight: 'all',
-                  quickSuggestions: {
-                    other: true,
-                    comments: false,
-                    strings: true
-                  }
-                }}
-              />
-            </MonacoErrorBoundary>
+            <CodeMirrorEditor
+              height="100%"
+              value={editorValue}
+              onChange={handleEditorChange}
+              theme="light"
+              placeholder="在此输入 JSON Schema..."
+            />
           </EditorContainer>
+            </>
+          )}
         </DrawerContentContainer>
       </Drawer>
 

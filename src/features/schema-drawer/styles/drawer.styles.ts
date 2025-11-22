@@ -102,3 +102,33 @@ export const DrawerTitleActions = styled.div`
   flex-shrink: 0;
 `
 
+/**
+ * 预览区域可拖拽分隔条
+ */
+export const PreviewResizer = styled.div<{ $isDragging?: boolean }>`
+  width: 8px;
+  height: 100%;
+  background: ${props => props.$isDragging ? '#1890ff' : '#d9d9d9'};
+  cursor: col-resize;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.2s;
+  border-left: 1px solid #bfbfbf;
+  border-right: 1px solid #bfbfbf;
+  user-select: none;
+  
+  &:hover {
+    background: #1890ff;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -4px;
+    right: -4px;
+    bottom: 0;
+    cursor: col-resize;
+  }
+`
+
