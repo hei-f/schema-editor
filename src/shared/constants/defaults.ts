@@ -21,13 +21,20 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     astRawStringToggle: true,
     deserialize: false,
     serialize: false,
-    format: true
+    format: true,
+    preview: true
   },
   highlightColor: '#39C5BB',
   maxFavoritesCount: 50,
   draftRetentionDays: 1,
   autoSaveDraft: false,
-  draftAutoSaveDebounce: 3000
+  draftAutoSaveDebounce: 3000,
+  previewConfig: {
+    previewWidth: 40,
+    updateDelay: 500,
+    rememberState: false,
+    autoUpdate: false
+  }
 } as const
 
 /**
@@ -48,6 +55,7 @@ export const STORAGE_KEYS = {
   DRAFT_RETENTION_DAYS: 'draftRetentionDays',
   AUTO_SAVE_DRAFT: 'autoSaveDraft',
   DRAFT_AUTO_SAVE_DEBOUNCE: 'draftAutoSaveDebounce',
+  PREVIEW_CONFIG: 'previewConfig',
   DRAFTS_PREFIX: 'draft:',
   FAVORITES: 'favorites'
 } as const
@@ -70,8 +78,13 @@ export const FORM_FIELD_NAMES = {
   TOOLBAR_BUTTON_DESERIALIZE: 'toolbarButtonDeserialize',
   TOOLBAR_BUTTON_SERIALIZE: 'toolbarButtonSerialize',
   TOOLBAR_BUTTON_FORMAT: 'toolbarButtonFormat',
+  TOOLBAR_BUTTON_PREVIEW: 'toolbarButtonPreview',
   MAX_FAVORITES_COUNT: 'maxFavoritesCount',
-  AUTO_SAVE_DRAFT: 'autoSaveDraft'
+  AUTO_SAVE_DRAFT: 'autoSaveDraft',
+  PREVIEW_WIDTH: 'previewWidth',
+  PREVIEW_UPDATE_DELAY: 'previewUpdateDelay',
+  PREVIEW_REMEMBER_STATE: 'previewRememberState',
+  PREVIEW_AUTO_UPDATE: 'previewAutoUpdate'
 } as const
 
 /**
@@ -99,7 +112,10 @@ export const FORM_FIELD_GROUPS = {
     FORM_FIELD_NAMES.TOOLBAR_BUTTON_DESERIALIZE,
     FORM_FIELD_NAMES.TOOLBAR_BUTTON_SERIALIZE,
     FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT,
-    FORM_FIELD_NAMES.AUTO_SAVE_DRAFT
+    FORM_FIELD_NAMES.TOOLBAR_BUTTON_PREVIEW,
+    FORM_FIELD_NAMES.AUTO_SAVE_DRAFT,
+    FORM_FIELD_NAMES.PREVIEW_REMEMBER_STATE,
+    FORM_FIELD_NAMES.PREVIEW_AUTO_UPDATE
   ],
   DRAFT_AND_FAVORITES_FIELDS: [
     FORM_FIELD_NAMES.MAX_FAVORITES_COUNT,

@@ -86,7 +86,12 @@ export const SIMPLE_STORAGE_FIELDS = {
   draftAutoSaveDebounce: {
     key: STORAGE_KEYS.DRAFT_AUTO_SAVE_DEBOUNCE,
     defaultValue: DEFAULT_VALUES.draftAutoSaveDebounce
-  } as StorageFieldConfig<number>
+  } as StorageFieldConfig<number>,
+
+  previewConfig: {
+    key: STORAGE_KEYS.PREVIEW_CONFIG,
+    defaultValue: DEFAULT_VALUES.previewConfig
+  } as StorageFieldConfig<import('@/shared/types').PreviewConfig>
 }
 
 /**

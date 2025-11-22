@@ -2,6 +2,7 @@ import { DEFAULT_VALUES, STORAGE_KEYS } from '@/shared/constants/defaults'
 import { draftManager } from '@/shared/managers/draft-manager'
 import { favoritesManager } from '@/shared/managers/favorites-manager'
 import type { Draft, Favorite, SearchConfig, StorageData, ToolbarButtonsConfig } from '@/shared/types'
+import { logger } from '@/shared/utils/logger'
 import { SIMPLE_STORAGE_FIELDS, type StorageFieldName } from './storage-config'
 
 /**
@@ -232,7 +233,7 @@ class StorageManager {
    * 获取所有存储数据
    */
   async getAllData(): Promise<StorageData> {
-    const [isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce] = await Promise.all([
+    const [isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
       this.getAttributeName(),
@@ -246,9 +247,10 @@ class StorageManager {
       this.getMaxFavoritesCount(),
       this.getDraftRetentionDays(),
       this.getAutoSaveDraft(),
-      this.getDraftAutoSaveDebounce()
+      this.getDraftAutoSaveDebounce(),
+      this.getPreviewConfig()
     ])
-    return { isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce }
+    return { isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig }
   }
 
   /**
@@ -305,6 +307,20 @@ class StorageManager {
    */
   async setDraftAutoSaveDebounce(ms: number): Promise<void> {
     return this.setSimple('draftAutoSaveDebounce', ms)
+  }
+
+  /**
+   * 获取预览配置
+   */
+  async getPreviewConfig(): Promise<import('@/shared/types').PreviewConfig> {
+    return this.getSimple<import('@/shared/types').PreviewConfig>('previewConfig')
+  }
+
+  /**
+   * 设置预览配置
+   */
+  async setPreviewConfig(config: import('@/shared/types').PreviewConfig): Promise<void> {
+    return this.setSimple('previewConfig', config)
   }
 
   /**
@@ -455,7 +471,7 @@ class StorageManager {
       )
       
       if (cleanedCount > 0) {
-        console.log(`已清理 ${cleanedCount} 个最少使用的收藏`)
+        logger.log(`已清理 ${cleanedCount} 个最少使用的收藏`)
       }
     } catch (error) {
       console.error('清理收藏失败:', error)

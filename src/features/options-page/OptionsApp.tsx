@@ -1,7 +1,7 @@
 import { DEFAULT_VALUES, FORM_FIELD_NAMES } from '@/shared/constants/defaults'
 import { storage } from '@/shared/utils/browser/storage'
-import { CheckCircleOutlined } from '@ant-design/icons'
-import { Button, Collapse, Form, Input, message, Space, Switch, Tooltip, Typography } from 'antd'
+import { CheckCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Button, Collapse, Form, Input, InputNumber, message, Slider, Space, Switch, Tooltip, Typography } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { ColorPickerField } from './components/ColorPickerField'
 import { DEBOUNCE_FIELDS, FIELD_GROUPS, FIELD_STORAGE_MAP } from './config/field-config'
@@ -67,6 +67,7 @@ export const OptionsApp: React.FC = () => {
       const highlightColor = await storage.getHighlightColor()
       const maxFavoritesCount = await storage.getMaxFavoritesCount()
       const autoSaveDraft = await storage.getAutoSaveDraft()
+      const previewConfig = await storage.getPreviewConfig()
       
       setAttributeName(name)
       setGetFunctionName(getFn)
@@ -85,9 +86,14 @@ export const OptionsApp: React.FC = () => {
         [FORM_FIELD_NAMES.TOOLBAR_BUTTON_DESERIALIZE]: toolbarButtons.deserialize,
         [FORM_FIELD_NAMES.TOOLBAR_BUTTON_SERIALIZE]: toolbarButtons.serialize,
         [FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT]: toolbarButtons.format,
+        [FORM_FIELD_NAMES.TOOLBAR_BUTTON_PREVIEW]: toolbarButtons.preview,
         [FORM_FIELD_NAMES.HIGHLIGHT_COLOR]: highlightColor,
         [FORM_FIELD_NAMES.MAX_FAVORITES_COUNT]: maxFavoritesCount,
-        [FORM_FIELD_NAMES.AUTO_SAVE_DRAFT]: autoSaveDraft
+        [FORM_FIELD_NAMES.AUTO_SAVE_DRAFT]: autoSaveDraft,
+        [FORM_FIELD_NAMES.PREVIEW_WIDTH]: previewConfig.previewWidth,
+        [FORM_FIELD_NAMES.PREVIEW_UPDATE_DELAY]: previewConfig.updateDelay,
+        [FORM_FIELD_NAMES.PREVIEW_REMEMBER_STATE]: previewConfig.rememberState,
+        [FORM_FIELD_NAMES.PREVIEW_AUTO_UPDATE]: previewConfig.autoUpdate
       })
     } catch (error) {
       message.error('加载配置失败')
@@ -167,7 +173,7 @@ export const OptionsApp: React.FC = () => {
           </PageDescription>
         </HeaderContent>
         <HeaderActions>
-          <VersionTag>v1.1.0</VersionTag>
+          <VersionTag>v1.2.0</VersionTag>
           <Button onClick={openReleasePage}>
             检查更新
           </Button>
@@ -199,8 +205,13 @@ export const OptionsApp: React.FC = () => {
             [FORM_FIELD_NAMES.TOOLBAR_BUTTON_DESERIALIZE]: DEFAULT_VALUES.toolbarButtons.deserialize,
             [FORM_FIELD_NAMES.TOOLBAR_BUTTON_SERIALIZE]: DEFAULT_VALUES.toolbarButtons.serialize,
             [FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT]: DEFAULT_VALUES.toolbarButtons.format,
+            [FORM_FIELD_NAMES.TOOLBAR_BUTTON_PREVIEW]: DEFAULT_VALUES.toolbarButtons.preview,
             [FORM_FIELD_NAMES.MAX_FAVORITES_COUNT]: DEFAULT_VALUES.maxFavoritesCount,
-            [FORM_FIELD_NAMES.AUTO_SAVE_DRAFT]: DEFAULT_VALUES.autoSaveDraft
+            [FORM_FIELD_NAMES.AUTO_SAVE_DRAFT]: DEFAULT_VALUES.autoSaveDraft,
+            [FORM_FIELD_NAMES.PREVIEW_WIDTH]: DEFAULT_VALUES.previewConfig.previewWidth,
+            [FORM_FIELD_NAMES.PREVIEW_UPDATE_DELAY]: DEFAULT_VALUES.previewConfig.updateDelay,
+            [FORM_FIELD_NAMES.PREVIEW_REMEMBER_STATE]: DEFAULT_VALUES.previewConfig.rememberState,
+            [FORM_FIELD_NAMES.PREVIEW_AUTO_UPDATE]: DEFAULT_VALUES.previewConfig.autoUpdate
           }}
         >
           <Form.Item
@@ -315,42 +326,75 @@ export const OptionsApp: React.FC = () => {
               </Form.Item>
             </Panel>
 
-            <Panel header="功能项配置" key="toolbarButtons">
-              <Form.Item
-                label="AST/RawString切换"
-                name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_AST_RAW_STRING_TOGGLE}
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
+            <Panel 
+              header={
+                <span>
+                  功能项配置 
+                  <Tooltip title="开启/关闭对应的功能">
+                    <QuestionCircleOutlined style={{ marginLeft: '8px', color: '#999' }} />
+                  </Tooltip>
+                </span>
+              } 
+              key="toolbarButtons"
+            >
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>AST/RawString切换:</span>
+                  <Form.Item
+                    name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_AST_RAW_STRING_TOGGLE}
+                    valuePropName="checked"
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </div>
 
-              <Form.Item
-                label="反序列化"
-                name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_DESERIALIZE}
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>反序列化:</span>
+                  <Form.Item
+                    name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_DESERIALIZE}
+                    valuePropName="checked"
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </div>
 
-              <Form.Item
-                label="序列化"
-                name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_SERIALIZE}
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>序列化:</span>
+                  <Form.Item
+                    name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_SERIALIZE}
+                    valuePropName="checked"
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </div>
 
-              <Form.Item
-                label="格式化"
-                name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT}
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>格式化:</span>
+                  <Form.Item
+                    name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT}
+                    valuePropName="checked"
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>预览:</span>
+                  <Form.Item
+                    name={FORM_FIELD_NAMES.TOOLBAR_BUTTON_PREVIEW}
+                    valuePropName="checked"
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </div>
+              </div>
             </Panel>
-          </StyledCollapse>
 
-          <StyledCollapse defaultActiveKey={['draft-favorites']}>
             <Panel header="草稿与收藏配置" key="draft-favorites">
               <SectionTitle level={5} $noMarginTop>草稿配置</SectionTitle>
               
@@ -375,6 +419,55 @@ export const OptionsApp: React.FC = () => {
                 extra={`收藏列表的最大容量，默认值为 ${DEFAULT_VALUES.maxFavoritesCount}`}
               >
                 <FullWidthInputNumber min={10} max={200} step={10} placeholder="50" />
+              </Form.Item>
+            </Panel>
+
+            <Panel header="实时预览配置" key="preview">
+              <Form.Item
+                label="自动更新预览"
+                name={FORM_FIELD_NAMES.PREVIEW_AUTO_UPDATE}
+                valuePropName="checked"
+                extra="编辑器内容变化时自动更新预览（使用下面设置的延迟）"
+              >
+                <Switch />
+              </Form.Item>
+              
+              <Form.Item
+                label="更新延迟（毫秒）"
+                name={FORM_FIELD_NAMES.PREVIEW_UPDATE_DELAY}
+                extra="编辑后多久更新预览，避免频繁渲染"
+              >
+                <InputNumber 
+                  min={100} 
+                  max={2000} 
+                  step={100}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+              
+              <Form.Item
+                label="预览区域宽度"
+                name={FORM_FIELD_NAMES.PREVIEW_WIDTH}
+                extra="预览区域占抽屉的百分比（10-60%）"
+              >
+                <Slider 
+                  min={10} 
+                  max={60} 
+                  marks={{ 
+                    10: '10%', 
+                    30: '30%', 
+                    40: '40%', 
+                    60: '60%' 
+                  }}
+                />
+              </Form.Item>
+                            <Form.Item
+                label="记住预览状态"
+                name={FORM_FIELD_NAMES.PREVIEW_REMEMBER_STATE}
+                valuePropName="checked"
+                extra="下次打开抽屉时自动恢复预览状态"
+              >
+                <Switch />
               </Form.Item>
             </Panel>
           </StyledCollapse>

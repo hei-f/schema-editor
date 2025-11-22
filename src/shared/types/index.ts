@@ -17,7 +17,15 @@ export enum MessageType {
   /** 激活状态变更 */
   ACTIVE_STATE_CHANGED = 'ACTIVE_STATE_CHANGED',
   /** 配置同步 */
-  CONFIG_SYNC = 'CONFIG_SYNC'
+  CONFIG_SYNC = 'CONFIG_SYNC',
+  /** 渲染预览 */
+  RENDER_PREVIEW = 'RENDER_PREVIEW',
+  /** 清除预览 */
+  CLEAR_PREVIEW = 'CLEAR_PREVIEW',
+  /** 检查预览函数是否存在 */
+  CHECK_PREVIEW_FUNCTION = 'CHECK_PREVIEW_FUNCTION',
+  /** 预览函数检查结果 */
+  PREVIEW_FUNCTION_RESULT = 'PREVIEW_FUNCTION_RESULT'
 }
 
 /**
@@ -64,6 +72,22 @@ export interface ToolbarButtonsConfig {
   serialize: boolean
   /** 格式化按钮 */
   format: boolean
+  /** 预览按钮 */
+  preview: boolean
+}
+
+/**
+ * 预览配置接口
+ */
+export interface PreviewConfig {
+  /** 预览区域宽度（百分比，10-60） */
+  previewWidth: number
+  /** 更新延迟（毫秒，100-2000） */
+  updateDelay: number
+  /** 是否记住预览状态 */
+  rememberState: boolean
+  /** 是否自动更新预览 */
+  autoUpdate: boolean
 }
 
 /**
@@ -98,6 +122,8 @@ export interface StorageData {
   autoSaveDraft: boolean
   /** 草稿自动保存防抖时间（毫秒） */
   draftAutoSaveDebounce: number
+  /** 预览配置 */
+  previewConfig: PreviewConfig
 }
 
 /**
@@ -190,6 +216,34 @@ export interface ElementPosition {
 }
 
 /**
+ * 预览位置信息
+ */
+export interface PreviewPosition {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+/**
+ * 渲染预览载荷
+ */
+export interface RenderPreviewPayload {
+  /** 预览数据 */
+  data: any
+  /** 预览位置 */
+  position: PreviewPosition
+}
+
+/**
+ * 预览函数检查结果载荷
+ */
+export interface PreviewFunctionResultPayload {
+  /** 预览函数是否存在 */
+  exists: boolean
+}
+
+/**
  * 获取Schema的函数类型
  * @template T Schema数据类型，不能是 null 或 undefined
  */
@@ -211,6 +265,8 @@ declare global {
     __getSchemaByParams?: GetSchemaFunction
     /** 默认的更新Schema函数 */
     __updateSchemaByParams?: UpdateSchemaFunction
+    /** 预览内容函数 - 返回 React 节点 */
+    __previewContent?: (data: any) => React.ReactNode
     /** 支持自定义函数名的索引签名 */
     [key: string]: GetSchemaFunction | UpdateSchemaFunction | any
   }

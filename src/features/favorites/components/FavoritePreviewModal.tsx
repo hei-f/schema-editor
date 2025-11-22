@@ -1,4 +1,4 @@
-import Editor from '@monaco-editor/react'
+import { CodeMirrorEditor } from '@/features/schema-drawer/components/CodeMirrorEditor'
 import { Button, Modal } from 'antd'
 import React from 'react'
 import { PreviewEditorContainer } from '../styles/modals.styles'
@@ -40,33 +40,11 @@ export const FavoritePreviewModal: React.FC<FavoritePreviewModalProps> = ({
       }}
     >
       <PreviewEditorContainer>
-        <Editor
+        <CodeMirrorEditor
           height="100%"
-          defaultLanguage="json"
           value={content}
-          theme="vs"
-          options={{
-            readOnly: true,
-            fontSize: 14,
-            fontFamily: 'Monaco, Menlo, Consolas, monospace',
-            lineNumbers: 'on',
-            folding: true,
-            showFoldingControls: 'always',
-            foldingStrategy: 'indentation',
-            foldingHighlight: true,
-            unfoldOnClickAfterEndOfLine: true,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            renderLineHighlight: 'none',
-            contextmenu: false,
-            quickSuggestions: false,
-            parameterHints: { enabled: false },
-            suggestOnTriggerCharacters: false,
-            acceptSuggestionOnEnter: 'off',
-            tabCompletion: 'off',
-            wordBasedSuggestions: 'off'
-          }}
+          theme="light"
+          readOnly={true}
         />
       </PreviewEditorContainer>
     </Modal>

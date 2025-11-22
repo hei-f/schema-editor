@@ -36,14 +36,32 @@ export const FIELD_GROUPS = {
       FORM_FIELD_NAMES.TOOLBAR_BUTTON_AST_RAW_STRING_TOGGLE,
       FORM_FIELD_NAMES.TOOLBAR_BUTTON_DESERIALIZE,
       FORM_FIELD_NAMES.TOOLBAR_BUTTON_SERIALIZE,
-      FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT
+      FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT,
+      FORM_FIELD_NAMES.TOOLBAR_BUTTON_PREVIEW
     ]),
     save: async (allValues: any) => {
       await storage.setToolbarButtons({
         astRawStringToggle: allValues[FORM_FIELD_NAMES.TOOLBAR_BUTTON_AST_RAW_STRING_TOGGLE],
         deserialize: allValues[FORM_FIELD_NAMES.TOOLBAR_BUTTON_DESERIALIZE],
         serialize: allValues[FORM_FIELD_NAMES.TOOLBAR_BUTTON_SERIALIZE],
-        format: allValues[FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT]
+        format: allValues[FORM_FIELD_NAMES.TOOLBAR_BUTTON_FORMAT],
+        preview: allValues[FORM_FIELD_NAMES.TOOLBAR_BUTTON_PREVIEW]
+      })
+    }
+  },
+  previewConfig: {
+    fields: new Set<string>([
+      FORM_FIELD_NAMES.PREVIEW_WIDTH,
+      FORM_FIELD_NAMES.PREVIEW_UPDATE_DELAY,
+      FORM_FIELD_NAMES.PREVIEW_REMEMBER_STATE,
+      FORM_FIELD_NAMES.PREVIEW_AUTO_UPDATE
+    ]),
+    save: async (allValues: any) => {
+      await storage.setPreviewConfig({
+        previewWidth: allValues[FORM_FIELD_NAMES.PREVIEW_WIDTH],
+        updateDelay: allValues[FORM_FIELD_NAMES.PREVIEW_UPDATE_DELAY],
+        rememberState: allValues[FORM_FIELD_NAMES.PREVIEW_REMEMBER_STATE],
+        autoUpdate: allValues[FORM_FIELD_NAMES.PREVIEW_AUTO_UPDATE]
       })
     }
   }
