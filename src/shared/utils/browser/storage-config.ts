@@ -91,7 +91,15 @@ export const SIMPLE_STORAGE_FIELDS = {
   previewConfig: {
     key: STORAGE_KEYS.PREVIEW_CONFIG,
     defaultValue: DEFAULT_VALUES.previewConfig
-  } as StorageFieldConfig<import('@/shared/types').PreviewConfig>
+  } as StorageFieldConfig<import('@/shared/types').PreviewConfig>,
+
+  maxHistoryCount: {
+    key: STORAGE_KEYS.MAX_HISTORY_COUNT,
+    defaultValue: DEFAULT_VALUES.maxHistoryCount,
+    validator: (value: any): value is number => {
+      return typeof value === 'number' && value >= 10 && value <= 200
+    }
+  } as StorageFieldConfig<number>
 }
 
 /**

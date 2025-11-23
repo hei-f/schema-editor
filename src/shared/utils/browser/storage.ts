@@ -233,7 +233,7 @@ class StorageManager {
    * 获取所有存储数据
    */
   async getAllData(): Promise<StorageData> {
-    const [isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig] = await Promise.all([
+    const [isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig, maxHistoryCount] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
       this.getAttributeName(),
@@ -248,9 +248,10 @@ class StorageManager {
       this.getDraftRetentionDays(),
       this.getAutoSaveDraft(),
       this.getDraftAutoSaveDebounce(),
-      this.getPreviewConfig()
+      this.getPreviewConfig(),
+      this.getMaxHistoryCount()
     ])
-    return { isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig }
+    return { isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig, maxHistoryCount }
   }
 
   /**
@@ -476,6 +477,20 @@ class StorageManager {
     } catch (error) {
       console.error('清理收藏失败:', error)
     }
+  }
+
+  /**
+   * 获取历史记录上限配置
+   */
+  async getMaxHistoryCount(): Promise<number> {
+    return this.getSimple<number>('maxHistoryCount')
+  }
+
+  /**
+   * 设置历史记录上限
+   */
+  async setMaxHistoryCount(count: number): Promise<void> {
+    return this.setSimple('maxHistoryCount', count)
   }
 }
 
