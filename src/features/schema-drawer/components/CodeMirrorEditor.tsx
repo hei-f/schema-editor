@@ -1,4 +1,4 @@
-import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
+import { autocompletion, closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
 import { cursorMatchingBracket, defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { json, jsonParseLinter } from '@codemirror/lang-json'
 import { bracketMatching, foldGutter, foldKeymap, indentOnInput, syntaxHighlighting } from '@codemirror/language'
@@ -14,6 +14,7 @@ import {
   jsonLightHighlight,
   SelectionStats
 } from '../styles/codemirror.styles'
+import { createAstCompletionSource } from '../utils/ast-completion'
 
 interface CodeMirrorEditorProps {
   /** 初始值 */
@@ -24,6 +25,10 @@ interface CodeMirrorEditorProps {
   theme?: 'light' | 'dark'
   readOnly?: boolean
   placeholder?: string
+  /** 是否启用 AST 类型提示 */
+  enableAstHints?: boolean
+  /** 判断当前内容是否为 AST 类型 */
+  isAstContent?: () => boolean
 }
 
 /**
@@ -142,11 +147,15 @@ export const CodeMirrorEditor = forwardRef<CodeMirrorEditorHandle, CodeMirrorEdi
   height = '100%',
   theme = 'light',
   readOnly = false,
-  placeholder: placeholderText = ''
+  placeholder: placeholderText = '',
+  enableAstHints = false,
+  isAstContent = () => false
 }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const onChangeRef = useRef(onChange)
+  const enableAstHintsRef = useRef(enableAstHints)
+  const isAstContentRef = useRef(isAstContent)
   
   // 选中文本统计状态
   const [selectionStats, setSelectionStats] = useState({
@@ -155,10 +164,18 @@ export const CodeMirrorEditor = forwardRef<CodeMirrorEditorHandle, CodeMirrorEdi
     selected: false
   })
 
-  // 更新 onChange ref
+  // 更新 refs
   useEffect(() => {
     onChangeRef.current = onChange
   }, [onChange])
+  
+  useEffect(() => {
+    enableAstHintsRef.current = enableAstHints
+  }, [enableAstHints])
+  
+  useEffect(() => {
+    isAstContentRef.current = isAstContent
+  }, [isAstContent])
 
   // 暴露命令式 API
   useImperativeHandle(ref, () => ({
@@ -214,6 +231,23 @@ export const CodeMirrorEditor = forwardRef<CodeMirrorEditorHandle, CodeMirrorEdi
         indentOnInput(),
         bracketMatching(),
         closeBrackets(),
+        // AST 类型补全（智能补全）
+        // 使用 override 提供自定义补全，但当条件不满足时返回 null 让默认补全生效
+        autocompletion({
+          override: [
+            createAstCompletionSource(
+              () => enableAstHintsRef.current,
+              () => isAstContentRef.current()
+            )
+          ],
+          activateOnTyping: true,
+          closeOnBlur: true,
+          maxRenderedOptions: 20,
+          // 设置更低的延迟以提高响应速度
+          interactionDelay: 50,
+          // 更快地显示补全
+          updateSyncTime: 50
+        }),
         // 搜索和选择高亮
         highlightSelectionMatches(),
         // 缩进引导线
@@ -222,6 +256,28 @@ export const CodeMirrorEditor = forwardRef<CodeMirrorEditorHandle, CodeMirrorEdi
         placeholderText ? placeholder(placeholderText) : [],
         // 键盘快捷键
         keymap.of([
+          // 自定义补全快捷键（解决系统快捷键冲突）
+          {
+            key: 'Ctrl-.',
+            mac: 'Cmd-.',
+            run: (view: EditorView) => {
+              // 手动触发补全
+              import('@codemirror/autocomplete').then(({ startCompletion }) => {
+                startCompletion(view)
+              })
+              return true
+            }
+          },
+          // 备用快捷键
+          {
+            key: 'Alt-/',
+            run: (view: EditorView) => {
+              import('@codemirror/autocomplete').then(({ startCompletion }) => {
+                startCompletion(view)
+              })
+              return true
+            }
+          },
           ...defaultKeymap,
           ...historyKeymap,  // 增强的历史记录快捷键
           ...foldKeymap,

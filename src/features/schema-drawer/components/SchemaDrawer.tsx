@@ -86,6 +86,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   // 历史记录配置
   const [maxHistoryCount, setMaxHistoryCount] = useState(50)
   
+  // AST 类型提示配置
+  const [enableAstTypeHints, setEnableAstTypeHints] = useState(true)
+  
   const paramsKey = attributes.params.join(',')
   const isFirstLoadRef = useRef(true)
   const editorRef = useRef<CodeMirrorEditorHandle>(null) // 编辑器命令式 API
@@ -237,16 +240,18 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   useEffect(() => {
     const loadConfigs = async () => {
       try {
-        const [toolbarConfig, autoSave, preview, historyCount] = await Promise.all([
+        const [toolbarConfig, autoSave, preview, historyCount, astHints] = await Promise.all([
           storage.getToolbarButtons(),
           storage.getAutoSaveDraft(),
           storage.getPreviewConfig(),
-          storage.getMaxHistoryCount()
+          storage.getMaxHistoryCount(),
+          storage.getEnableAstTypeHints()
         ])
         setToolbarButtons(toolbarConfig)
         setAutoSaveDraft(autoSave)
         setPreviewConfig(preview)
         setMaxHistoryCount(historyCount)
+        setEnableAstTypeHints(astHints)
       } catch (error) {
         logger.error('加载配置失败:', error)
       }
@@ -902,6 +907,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                     onChange={handleEditorChange}
                     theme="light"
                     placeholder="在此输入 JSON Schema..."
+                    enableAstHints={enableAstTypeHints}
+                    isAstContent={() => contentType === ContentType.Ast}
                   />
                 </EditorContainer>
               </div>
@@ -938,6 +945,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               onChange={handleEditorChange}
               theme="light"
               placeholder="在此输入 JSON Schema..."
+              enableAstHints={enableAstTypeHints}
+              isAstContent={() => contentType === ContentType.Ast}
             />
           </EditorContainer>
             </>
