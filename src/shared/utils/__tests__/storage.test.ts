@@ -128,7 +128,12 @@ describe('Storage工具测试', () => {
           rememberState: false,
           autoUpdate: false
         },
-        maxHistoryCount: 50
+        maxHistoryCount: 50,
+        highlightAllConfig: {
+          enabled: true,
+          keyBinding: 'a',
+          maxHighlightCount: 500
+        }
       })
     })
 
@@ -180,7 +185,12 @@ describe('Storage工具测试', () => {
           rememberState: false,
           autoUpdate: false
         },
-        maxHistoryCount: 50
+        maxHistoryCount: 50,
+        highlightAllConfig: {
+          enabled: true,
+          keyBinding: 'a',
+          maxHighlightCount: 500
+        }
       })
     })
 
@@ -222,7 +232,12 @@ describe('Storage工具测试', () => {
           rememberState: false,
           autoUpdate: false
         },
-        maxHistoryCount: 50
+        maxHistoryCount: 50,
+        highlightAllConfig: {
+          enabled: true,
+          keyBinding: 'a',
+          maxHighlightCount: 500
+        }
       })
     })
   })
@@ -443,7 +458,12 @@ describe('Storage工具测试', () => {
           rememberState: false,
           autoUpdate: false
         },
-        maxHistoryCount: 50
+        maxHistoryCount: 50,
+        highlightAllConfig: {
+          enabled: true,
+          keyBinding: 'a',
+          maxHighlightCount: 500
+        }
       })
     })
   })
@@ -1008,6 +1028,191 @@ describe('Storage工具测试', () => {
       ;(chrome.storage.local.remove as jest.Mock).mockRejectedValue(new Error('Remove error'))
 
       await expect(storage.deleteDraft('test-key')).resolves.not.toThrow()
+    })
+  })
+
+  describe('高亮所有元素配置', () => {
+    it('getHighlightAllConfig应该返回默认配置', async () => {
+      const result = await storage.getHighlightAllConfig()
+      
+      expect(result).toEqual({
+        enabled: true,
+        keyBinding: 'a',
+        maxHighlightCount: 500
+      })
+    })
+
+    it('getHighlightAllConfig应该返回存储的配置', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'highlightAllConfig': {
+          enabled: false,
+          keyBinding: 'h',
+          maxHighlightCount: 300
+        }
+      })
+
+      const result = await storage.getHighlightAllConfig()
+      expect(result).toEqual({
+        enabled: false,
+        keyBinding: 'h',
+        maxHighlightCount: 300
+      })
+    })
+
+    it('getHighlightAllConfig应该验证配置格式', async () => {
+      // 返回无效配置（keyBinding不是单个字母）
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'highlightAllConfig': {
+          enabled: true,
+          keyBinding: 'ab', // 无效：多个字符
+          maxHighlightCount: 500
+        }
+      })
+
+      const result = await storage.getHighlightAllConfig()
+      // 应该返回默认值
+      expect(result).toEqual({
+        enabled: true,
+        keyBinding: 'a',
+        maxHighlightCount: 500
+      })
+    })
+
+    it('getHighlightAllConfig应该验证keyBinding必须是字母或数字', async () => {
+      // 返回无效配置（keyBinding是特殊字符）
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'highlightAllConfig': {
+          enabled: true,
+          keyBinding: '@', // 无效：特殊字符
+          maxHighlightCount: 500
+        }
+      })
+
+      const result = await storage.getHighlightAllConfig()
+      // 应该返回默认值
+      expect(result).toEqual({
+        enabled: true,
+        keyBinding: 'a',
+        maxHighlightCount: 500
+      })
+    })
+
+    it('getHighlightAllConfig应该接受大写字母', async () => {
+      // 大写字母是有效的
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'highlightAllConfig': {
+          enabled: true,
+          keyBinding: 'H',
+          maxHighlightCount: 300
+        }
+      })
+
+      const result = await storage.getHighlightAllConfig()
+      // 应该接受大写字母
+      expect(result).toEqual({
+        enabled: true,
+        keyBinding: 'H',
+        maxHighlightCount: 300
+      })
+    })
+
+    it('getHighlightAllConfig应该接受数字', async () => {
+      // 数字是有效的
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'highlightAllConfig': {
+          enabled: true,
+          keyBinding: '1',
+          maxHighlightCount: 400
+        }
+      })
+
+      const result = await storage.getHighlightAllConfig()
+      // 应该接受数字
+      expect(result).toEqual({
+        enabled: true,
+        keyBinding: '1',
+        maxHighlightCount: 400
+      })
+    })
+
+    it('getHighlightAllConfig应该验证maxHighlightCount范围', async () => {
+      // 返回无效配置（maxHighlightCount超出范围）
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'highlightAllConfig': {
+          enabled: true,
+          keyBinding: 'a',
+          maxHighlightCount: 50 // 无效：小于100
+        }
+      })
+
+      const result = await storage.getHighlightAllConfig()
+      // 应该返回默认值
+      expect(result).toEqual({
+        enabled: true,
+        keyBinding: 'a',
+        maxHighlightCount: 500
+      })
+    })
+
+    it('getHighlightAllConfig应该验证maxHighlightCount上限', async () => {
+      // 返回无效配置（maxHighlightCount超出上限）
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'highlightAllConfig': {
+          enabled: true,
+          keyBinding: 'a',
+          maxHighlightCount: 1500 // 无效：大于1000
+        }
+      })
+
+      const result = await storage.getHighlightAllConfig()
+      // 应该返回默认值
+      expect(result).toEqual({
+        enabled: true,
+        keyBinding: 'a',
+        maxHighlightCount: 500
+      })
+    })
+
+    it('setHighlightAllConfig应该设置配置', async () => {
+      const config = {
+        enabled: false,
+        keyBinding: 'h',
+        maxHighlightCount: 300
+      }
+      
+      await storage.setHighlightAllConfig(config)
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        'highlightAllConfig': config
+      })
+    })
+
+    it('setHighlightAllConfig应该接受边界值', async () => {
+      const config = {
+        enabled: true,
+        keyBinding: 'z',
+        maxHighlightCount: 100 // 最小值
+      }
+      
+      await storage.setHighlightAllConfig(config)
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        'highlightAllConfig': config
+      })
+    })
+
+    it('setHighlightAllConfig应该接受最大边界值', async () => {
+      const config = {
+        enabled: true,
+        keyBinding: 'a',
+        maxHighlightCount: 1000 // 最大值
+      }
+      
+      await storage.setHighlightAllConfig(config)
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        'highlightAllConfig': config
+      })
     })
   })
 })
