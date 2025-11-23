@@ -608,7 +608,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     setPreviewEnabled(false)
     logger.log('预览已清除')
   }
-
+  
   /**
    * 开始拖拽分隔条
    */
@@ -748,7 +748,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                 {hasDraft && (
                   <>
                     <Tooltip title="加载草稿">
-                      <Button size="small" type="text" icon={<FileTextOutlined />} onClick={handleLoadDraft} />
+                      <Button size="small" type="text" icon={<FileTextOutlined />} onClick={handleLoadDraft}>
+                        草稿
+                      </Button>
                     </Tooltip>
                     <Tooltip title="删除草稿">
                       <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={handleDeleteDraft} />
@@ -756,7 +758,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                   </>
                 )}
                 <Tooltip title="添加到收藏">
-                  <Button size="small" type="text" icon={<StarOutlined />} onClick={handleOpenAddFavorite} />
+                  <Button size="small" type="text" icon={<StarOutlined />} onClick={handleOpenAddFavorite}>
+                    收藏
+                  </Button>
                 </Tooltip>
                 <Tooltip title="浏览收藏">
                   <Button size="small" type="text" icon={<FolderOpenOutlined />} onClick={handleOpenFavorites} />
