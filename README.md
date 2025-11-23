@@ -2,7 +2,7 @@
 
 Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ## 功能
@@ -12,6 +12,7 @@ Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 - 👁️ **实时预览**: 支持在编辑时实时预览Schema效果，可自定义预览组件
 - 🤖 **智能解析**: 自动解析 Markdown 字符串为结构化数据，完美适配 AI 智能体对话场景
 - 💾 **实时更新**: 修改后直接同步到页面
+- 📜 **编辑历史**: 自动记录编辑历史，支持版本回退和对比，标记保存/草稿/收藏等特殊版本
 - 💿 **草稿功能**: 支持手动保存和自动保存草稿，防止数据丢失
 - ⭐ **收藏管理**: 快速保存和应用常用Schema配置
 - ⚙️ **灵活配置**: 可自定义属性名、搜索深度、节流间隔等参数
