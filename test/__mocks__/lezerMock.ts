@@ -5,10 +5,14 @@
 const mockExtension = () => ({})
 
 export const HighlightStyle = {
-  define: (specs: any) => mockExtension()
+  define: (_specs: any) => mockExtension()
 }
 
+// 添加 styleTags 函数
+export const styleTags = (_tags: any) => mockExtension()
+
 export const tags = {
+  special: (_tag: any) => 'special',
   propertyName: 'propertyName',
   string: 'string',
   number: 'number',

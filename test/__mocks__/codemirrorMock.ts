@@ -144,7 +144,7 @@ export const codemirrorMocks = {
   lineNumbers: mockExtension,
   highlightActiveLine: mockExtension,
   highlightActiveLineGutter: mockExtension,
-  placeholder: (text: string) => mockExtension(),
+  placeholder: (_text: string) => mockExtension(),
   
   // @codemirror/commands
   defaultKeymap: [],
@@ -181,7 +181,7 @@ export const codemirrorMocks = {
   
   // @lezer/highlight
   HighlightStyle: {
-    define: (specs: any) => mockExtension()
+    define: (_specs: any) => mockExtension()
   },
   tags: {
     propertyName: 'propertyName',
