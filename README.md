@@ -2,7 +2,7 @@
 
 Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 
-![Version](https://img.shields.io/badge/version-1.4.1-blue)
+![Version](https://img.shields.io/badge/version-1.5.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ## 功能
@@ -10,6 +10,7 @@ Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 - 🎯 **智能元素检测**: 按住 Alt/Option 键时自动检测和高亮目标元素
 - 🔦 **批量高亮**: 支持快捷键（Alt+字母/数字）一键高亮页面所有可编辑元素，可配置快捷键和数量上限
 - 📝 **Schema编辑器**: 内置CodeMirror编辑器，支持JSON格式化和校验
+- 🧠 **AST 智能补全**: 编辑 AST 类型数据时提供字段名和类型的智能提示，支持快捷键触发
 - 👁️ **实时预览**: 支持在编辑时实时预览Schema效果，可自定义预览组件
 - 🤖 **智能解析**: 自动解析 Markdown 字符串为结构化数据，完美适配 AI 智能体对话场景
 - 💾 **实时更新**: 修改后直接同步到页面
@@ -150,6 +151,25 @@ window.__getContentById = (params: string) => {
 ```
 
 插件会自动将 Markdown 字符串解析为结构化的 Elements 数组进行编辑，保存时自动转换回 Markdown 字符串。该功能默认开启，符合 [Agentic UI](https://github.com/ant-design/agentic-ui) 的数据规范，可在配置页面【高级】选项中关闭。
+
+### AST 智能类型提示 (v1.5.0+)
+
+编辑 AST (Elements[]) 类型数据时，插件提供字段名和类型的智能补全功能：
+
+**功能特性：**
+- 🎯 **上下文感知**: 根据当前光标位置智能推断可用字段
+- ⚡ **实时补全**: 输入时自动触发补全提示
+- ⌨️ **快捷键支持**: 
+  - `Cmd/Ctrl + .` 手动触发补全
+  - `Alt + /` 备用快捷键
+- 📚 **类型提示**: 显示字段类型和描述信息
+- 🔧 **可配置**: 可在配置页面开启/关闭该功能
+
+**支持的字段类型：**
+- Element 对象：`type`, `children`, `text`, `bold`, `url`, `code`, `italic` 等
+- 类型值：`paragraph`, `heading-one`, `heading-two`, `link` 等
+
+该功能默认开启，可在配置页面【编辑器】选项中调整。
 
 ## 项目结构
 
