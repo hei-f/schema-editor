@@ -4,6 +4,7 @@ import { ContentType, HistoryEntryType, MessageType } from '@/shared/types'
 import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
 import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { parseMarkdownString } from '@/shared/utils/schema/transformers'
 import {
   DeleteOutlined,
@@ -44,7 +45,6 @@ interface SchemaDrawerProps {
   onClose: () => void
   onSave: (data: any) => Promise<void>
   width: number | string
-  shadowRoot: ShadowRoot
 }
 
 /**
@@ -56,8 +56,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   attributes, 
   onClose, 
   onSave, 
-  width,
-  shadowRoot
+  width
 }) => {
   const [editorValue, setEditorValue] = useState<string>('')
   const [isModified, setIsModified] = useState(false)
@@ -232,7 +231,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   /**
    * Portal组件的容器获取函数
    */
-  const getPortalContainer = () => shadowRoot as unknown as HTMLElement
+  const getPortalContainer = shadowRootManager.getContainer
 
   /**
    * 加载工具栏按钮配置和草稿配置
@@ -955,7 +954,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       </Drawer>
 
       <FavoritesManager
-        shadowRoot={shadowRoot}
         addFavoriteModalVisible={addFavoriteModalVisible}
         favoriteNameInput={favoriteNameInput}
         favoritesModalVisible={favoritesModalVisible}

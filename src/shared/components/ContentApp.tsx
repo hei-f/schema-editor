@@ -3,7 +3,8 @@ import type { ElementAttributes, Message, SchemaResponsePayload, UpdateResultPay
 import { MessageType } from '@/shared/types'
 import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
 import { storage } from '@/shared/utils/browser/storage'
-import { ConfigProvider, message as antdMessage } from 'antd'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
+import { App as AntdApp, ConfigProvider, message as antdMessage } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import React, { useEffect, useState } from 'react'
 import { StyleSheetManager } from 'styled-components'
@@ -16,6 +17,9 @@ interface AppProps {
  * Schema Editor主应用
  */
 export const App: React.FC<AppProps> = ({ shadowRoot }) => {
+  // 初始化 shadowRoot 全局管理器
+  shadowRootManager.init(shadowRoot)
+  
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [schemaData, setSchemaData] = useState<any>(null)
   const [currentAttributes, setCurrentAttributes] = useState<ElementAttributes>({ params: [] })
@@ -151,15 +155,16 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         locale={zhCN}
         getPopupContainer={() => shadowRoot as unknown as HTMLElement}
       >
-        <SchemaDrawer
-          open={drawerOpen}
-          schemaData={schemaData}
-          attributes={currentAttributes}
-          onClose={handleCloseDrawer}
-          onSave={handleSave}
-          width={drawerWidth}
-          shadowRoot={shadowRoot}
-        />
+        <AntdApp>
+          <SchemaDrawer
+            open={drawerOpen}
+            schemaData={schemaData}
+            attributes={currentAttributes}
+            onClose={handleCloseDrawer}
+            onSave={handleSave}
+            width={drawerWidth}
+          />
+        </AntdApp>
       </ConfigProvider>
     </StyleSheetManager>
   )

@@ -1,4 +1,5 @@
 import { CodeMirrorEditor } from '@/features/schema-drawer/components/CodeMirrorEditor'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { Button, Modal } from 'antd'
 import React from 'react'
 import { PreviewEditorContainer } from '../styles/modals.styles'
@@ -7,7 +8,6 @@ interface FavoritePreviewModalProps {
   visible: boolean
   title: string
   content: string
-  shadowRoot: ShadowRoot
   onClose: () => void
 }
 
@@ -18,11 +18,8 @@ export const FavoritePreviewModal: React.FC<FavoritePreviewModalProps> = ({
   visible,
   title,
   content,
-  shadowRoot,
   onClose
 }) => {
-  const getContainer = () => shadowRoot as any
-
   return (
     <Modal
       title={`预览：${title}`}
@@ -34,7 +31,7 @@ export const FavoritePreviewModal: React.FC<FavoritePreviewModalProps> = ({
         </Button>
       ]}
       width={900}
-      getContainer={getContainer}
+      getContainer={shadowRootManager.getContainer}
       styles={{
         body: { padding: 0, height: '600px' }
       }}

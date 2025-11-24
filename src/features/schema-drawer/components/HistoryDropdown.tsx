@@ -1,4 +1,5 @@
 import type { HistoryEntry, HistoryEntryType } from '@/shared/types'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { ClearOutlined, HistoryOutlined } from '@ant-design/icons'
 import { Button, Dropdown, type MenuProps } from 'antd'
 import React, { useMemo } from 'react'
@@ -150,7 +151,7 @@ export const HistoryDropdown: React.FC<HistoryDropdownProps> = ({
       open={open}
       onOpenChange={setOpen}
       placement="bottomRight"
-      getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
+      getPopupContainer={shadowRootManager.getContainer}
       overlayStyle={{ maxHeight: '500px', overflow: 'auto' }}
     >
       <Button

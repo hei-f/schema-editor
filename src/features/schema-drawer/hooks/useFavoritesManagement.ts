@@ -1,5 +1,6 @@
 import type { Favorite } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { Modal } from 'antd'
 import { useCallback, useState } from 'react'
 
@@ -123,6 +124,7 @@ export const useFavoritesManagement = ({
         content: '当前内容未保存，应用收藏将替换当前内容，确认吗？',
         okText: '应用',
         cancelText: '取消',
+        getContainer: shadowRootManager.getContainer,
         onOk: () => {
           applyFavoriteContent(favorite)
         }

@@ -5,7 +5,6 @@ import { FavoritePreviewModal } from './FavoritePreviewModal'
 import { FavoritesListModal } from './FavoritesListModal'
 
 interface FavoritesManagerProps {
-  shadowRoot: ShadowRoot
   addFavoriteModalVisible: boolean
   favoriteNameInput: string
   favoritesModalVisible: boolean
@@ -27,7 +26,6 @@ interface FavoritesManagerProps {
  * 收藏功能管理器 - 组合所有收藏相关的模态框
  */
 export const FavoritesManager: React.FC<FavoritesManagerProps> = ({
-  shadowRoot,
   addFavoriteModalVisible,
   favoriteNameInput,
   favoritesModalVisible,
@@ -49,7 +47,6 @@ export const FavoritesManager: React.FC<FavoritesManagerProps> = ({
       <AddFavoriteModal
         visible={addFavoriteModalVisible}
         favoriteNameInput={favoriteNameInput}
-        shadowRoot={shadowRoot}
         onInputChange={onAddFavoriteInputChange}
         onAdd={onAddFavorite}
         onClose={onCloseAddFavoriteModal}
@@ -58,7 +55,6 @@ export const FavoritesManager: React.FC<FavoritesManagerProps> = ({
       <FavoritesListModal
         visible={favoritesModalVisible}
         favoritesList={favoritesList}
-        shadowRoot={shadowRoot}
         onPreview={onPreviewFavorite}
         onApply={onApplyFavorite}
         onDelete={onDeleteFavorite}
@@ -69,7 +65,6 @@ export const FavoritesManager: React.FC<FavoritesManagerProps> = ({
         visible={previewModalVisible}
         title={previewTitle}
         content={previewContent}
-        shadowRoot={shadowRoot}
         onClose={onClosePreviewModal}
       />
     </>
