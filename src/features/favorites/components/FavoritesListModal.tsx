@@ -1,12 +1,12 @@
 import type { Favorite } from '@/shared/types'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import type { TableColumnsType } from 'antd'
-import { Button, Modal, Space, Table } from 'antd'
-import React from 'react'
+import { Button, Input, Modal, Space, Table } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
 
 interface FavoritesListModalProps {
   visible: boolean
   favoritesList: Favorite[]
-  shadowRoot: ShadowRoot
   onPreview: (favorite: Favorite) => void
   onApply: (favorite: Favorite) => void
   onDelete: (id: string) => Promise<void>
@@ -19,13 +19,44 @@ interface FavoritesListModalProps {
 export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
   visible,
   favoritesList,
-  shadowRoot,
   onPreview,
   onApply,
   onDelete,
   onClose
 }) => {
-  const getContainer = () => shadowRoot as any
+  /** 搜索关键词状态 */
+  const [searchKeyword, setSearchKeyword] = useState('')
+  /** 防抖后的搜索关键词 */
+  const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState('')
+  
+  /**
+   * 搜索防抖逻辑（300ms）
+   */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchKeyword(searchKeyword)
+    }, 300)
+    
+    return () => clearTimeout(timer)
+  }, [searchKeyword])
+  
+  /**
+   * 过滤收藏列表
+   * 支持搜索名称、来源参数和内容
+   */
+  const filteredFavoritesList = useMemo(() => {
+    if (!debouncedSearchKeyword.trim()) {
+      return favoritesList
+    }
+    
+    const keyword = debouncedSearchKeyword.toLowerCase()
+    return favoritesList.filter((favorite) => {
+      const nameMatch = favorite.name.toLowerCase().includes(keyword)
+      const paramsMatch = favorite.sourceParams.toLowerCase().includes(keyword)
+      const contentMatch = favorite.content.toLowerCase().includes(keyword)
+      return nameMatch || paramsMatch || contentMatch
+    })
+  }, [favoritesList, debouncedSearchKeyword])
 
   const favoritesColumns: TableColumnsType<Favorite> = [
     {
@@ -76,10 +107,19 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
       onCancel={onClose}
       footer={null}
       width={800}
-      getContainer={getContainer}
+      getContainer={shadowRootManager.getContainer}
     >
+      <Space direction="vertical" style={{ width: '100%', marginBottom: 16 }}>
+        <Input.Search
+          placeholder="搜索收藏名称、来源参数或内容..."
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          allowClear
+          style={{ width: '100%' }}
+        />
+      </Space>
       <Table
-        dataSource={favoritesList}
+        dataSource={filteredFavoritesList}
         rowKey="id"
         pagination={{ pageSize: 10 }}
         columns={favoritesColumns}
