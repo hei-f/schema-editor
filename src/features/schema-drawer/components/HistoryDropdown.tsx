@@ -150,8 +150,14 @@ export const HistoryDropdown: React.FC<HistoryDropdownProps> = ({
       open={open}
       onOpenChange={setOpen}
       placement="bottomRight"
-      getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
-      overlayStyle={{ maxHeight: '500px', overflow: 'auto' }}
+      getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+      overlayStyle={{ 
+        maxHeight: '500px', 
+        overflow: 'auto',
+        boxShadow: '0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)',
+        borderRadius: '8px',
+        backgroundColor: '#ffffff'
+      }}
     >
       <Button
         size="small"

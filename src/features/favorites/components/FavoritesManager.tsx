@@ -1,55 +1,56 @@
 import type { Favorite } from '@/shared/types'
 import React from 'react'
 import { AddFavoriteModal } from './AddFavoriteModal'
-import { FavoritePreviewModal } from './FavoritePreviewModal'
+import { FavoriteEditModal } from './FavoriteEditModal'
 import { FavoritesListModal } from './FavoritesListModal'
 
 interface FavoritesManagerProps {
-  shadowRoot: ShadowRoot
   addFavoriteModalVisible: boolean
   favoriteNameInput: string
   favoritesModalVisible: boolean
   favoritesList: Favorite[]
-  previewModalVisible: boolean
-  previewTitle: string
-  previewContent: string
+  editModalVisible: boolean
+  editingFavoriteId: string | null
+  editingName: string
+  editingContent: string
   onAddFavoriteInputChange: (value: string) => void
   onAddFavorite: () => Promise<void>
   onCloseAddFavoriteModal: () => void
   onCloseFavoritesModal: () => void
-  onPreviewFavorite: (favorite: Favorite) => void
+  onEditFavorite: (favorite: Favorite) => void
   onApplyFavorite: (favorite: Favorite) => void
   onDeleteFavorite: (id: string) => Promise<void>
-  onClosePreviewModal: () => void
+  onSaveEdit: (id: string, name: string, content: string) => Promise<void>
+  onCloseEditModal: () => void
 }
 
 /**
  * 收藏功能管理器 - 组合所有收藏相关的模态框
  */
 export const FavoritesManager: React.FC<FavoritesManagerProps> = ({
-  shadowRoot,
   addFavoriteModalVisible,
   favoriteNameInput,
   favoritesModalVisible,
   favoritesList,
-  previewModalVisible,
-  previewTitle,
-  previewContent,
+  editModalVisible,
+  editingFavoriteId,
+  editingName,
+  editingContent,
   onAddFavoriteInputChange,
   onAddFavorite,
   onCloseAddFavoriteModal,
   onCloseFavoritesModal,
-  onPreviewFavorite,
+  onEditFavorite,
   onApplyFavorite,
   onDeleteFavorite,
-  onClosePreviewModal
+  onSaveEdit,
+  onCloseEditModal
 }) => {
   return (
     <>
       <AddFavoriteModal
         visible={addFavoriteModalVisible}
         favoriteNameInput={favoriteNameInput}
-        shadowRoot={shadowRoot}
         onInputChange={onAddFavoriteInputChange}
         onAdd={onAddFavorite}
         onClose={onCloseAddFavoriteModal}
@@ -58,19 +59,19 @@ export const FavoritesManager: React.FC<FavoritesManagerProps> = ({
       <FavoritesListModal
         visible={favoritesModalVisible}
         favoritesList={favoritesList}
-        shadowRoot={shadowRoot}
-        onPreview={onPreviewFavorite}
+        onEdit={onEditFavorite}
         onApply={onApplyFavorite}
         onDelete={onDeleteFavorite}
         onClose={onCloseFavoritesModal}
       />
 
-      <FavoritePreviewModal
-        visible={previewModalVisible}
-        title={previewTitle}
-        content={previewContent}
-        shadowRoot={shadowRoot}
-        onClose={onClosePreviewModal}
+      <FavoriteEditModal
+        visible={editModalVisible}
+        favoriteId={editingFavoriteId}
+        initialName={editingName}
+        initialContent={editingContent}
+        onSave={onSaveEdit}
+        onClose={onCloseEditModal}
       />
     </>
   )

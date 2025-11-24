@@ -1,5 +1,6 @@
 import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { Modal } from 'antd'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -111,6 +112,7 @@ export const useDraftManagement = ({
         content: '当前内容未保存，是否加载草稿？',
         okText: '加载',
         cancelText: '取消',
+        getContainer: shadowRootManager.getContainer,
         onOk: async () => {
           await loadDraftContent()
         }
@@ -130,6 +132,7 @@ export const useDraftManagement = ({
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
+      getContainer: shadowRootManager.getContainer,
       onOk: async () => {
         try {
           await storage.deleteDraft(paramsKey)

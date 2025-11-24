@@ -110,12 +110,17 @@ describe('Storage工具测试', () => {
         updateFunctionName: '__updateContentById',
         autoParseString: true,
         enableDebugLog: false,
+        enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
           deserialize: false,
           serialize: false,
           format: true,
-          preview: true
+          preview: true,
+          importExport: true
+        },
+        exportConfig: {
+          customFileName: false
         },
         highlightColor: '#39C5BB',
         maxFavoritesCount: 50,
@@ -167,12 +172,17 @@ describe('Storage工具测试', () => {
         updateFunctionName: 'myUpdateFn',
         autoParseString: true,
         enableDebugLog: false,
+        enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
           deserialize: false,
           serialize: false,
           format: true,
-          preview: true
+          preview: true,
+          importExport: true
+        },
+        exportConfig: {
+          customFileName: false
         },
         highlightColor: '#39C5BB',
         maxFavoritesCount: 50,
@@ -214,12 +224,17 @@ describe('Storage工具测试', () => {
         updateFunctionName: '__updateContentById',
         autoParseString: true,
         enableDebugLog: false,
+        enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
           deserialize: false,
           serialize: false,
           format: true,
-          preview: true
+          preview: true,
+          importExport: true
+        },
+        exportConfig: {
+          customFileName: false
         },
         highlightColor: '#39C5BB',
         maxFavoritesCount: 50,
@@ -440,12 +455,17 @@ describe('Storage工具测试', () => {
         updateFunctionName: 'updateMySchema',
         autoParseString: true,
         enableDebugLog: false,
+        enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
           deserialize: false,
           serialize: false,
           format: true,
-          preview: true
+          preview: true,
+          importExport: true
+        },
+        exportConfig: {
+          customFileName: false
         },
         highlightColor: '#39C5BB',
         maxFavoritesCount: 50,
@@ -507,7 +527,8 @@ describe('Storage工具测试', () => {
         deserialize: false,
         serialize: false,
         format: true,
-        preview: true
+        preview: true,
+        importExport: true
       })
     })
 
@@ -709,7 +730,6 @@ describe('Storage工具测试', () => {
           name: 'Test',
           content: 'content',
           timestamp: Date.now(),
-          sourceParams: 'params',
           lastUsedTime: Date.now()
         }
       ]
@@ -766,7 +786,8 @@ describe('Storage工具测试', () => {
         deserialize: false,
         serialize: false,
         format: true,
-        preview: true
+        preview: true,
+        importExport: true
       })
     })
 

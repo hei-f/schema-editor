@@ -1,4 +1,5 @@
 import { HistoryEntryType } from '@/shared/types'
+import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HistoryDropdown } from '../HistoryDropdown'
@@ -22,6 +23,20 @@ describe('HistoryDropdown组件测试', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    
+    // 初始化 shadowRootManager，并将容器添加到 document.body
+    const mockShadowRoot = document.createElement('div') as unknown as ShadowRoot
+    document.body.appendChild(mockShadowRoot as unknown as HTMLElement)
+    shadowRootManager.init(mockShadowRoot)
+  })
+  
+  afterEach(() => {
+    // 清理 shadowRoot 容器
+    const container = document.querySelector('div') as HTMLElement
+    if (container && container.parentNode === document.body) {
+      document.body.removeChild(container)
+    }
+    shadowRootManager.reset()
   })
 
   describe('基本渲染', () => {
@@ -54,17 +69,19 @@ describe('HistoryDropdown组件测试', () => {
       const button = screen.getByRole('button', { name: /历史/ })
       await user.click(button)
       
+      // 验证历史记录的描述文本和清除按钮是否显示
       await waitFor(() => {
-        expect(screen.getByText('本次编辑历史')).toBeInTheDocument()
+        expect(screen.getByText('手动保存的版本')).toBeInTheDocument()
+        expect(screen.getByText('清除历史')).toBeInTheDocument()
       })
     })
 
     it('应该显示历史记录数量', async () => {
       const user = userEvent.setup()
       const multipleHistory = [
-        { ...mockHistoryEntry, id: 'entry_1' },
-        { ...mockHistoryEntry, id: 'entry_2', timestamp: Date.now() - 120000 },
-        { ...mockHistoryEntry, id: 'entry_3', timestamp: Date.now() - 180000 }
+        { ...mockHistoryEntry, id: 'entry_1', description: '版本1' },
+        { ...mockHistoryEntry, id: 'entry_2', description: '版本2', timestamp: Date.now() - 120000 },
+        { ...mockHistoryEntry, id: 'entry_3', description: '版本3', timestamp: Date.now() - 180000 }
       ]
       
       render(<HistoryDropdown {...defaultProps} history={multipleHistory} />)
@@ -72,8 +89,11 @@ describe('HistoryDropdown组件测试', () => {
       const button = screen.getByRole('button', { name: /历史/ })
       await user.click(button)
       
+      // 验证所有3个历史记录条目都显示了
       await waitFor(() => {
-        expect(screen.getByText('3 条')).toBeInTheDocument()
+        expect(screen.getByText('版本1')).toBeInTheDocument()
+        expect(screen.getByText('版本2')).toBeInTheDocument()
+        expect(screen.getByText('版本3')).toBeInTheDocument()
       })
     })
   })
@@ -177,12 +197,14 @@ describe('HistoryDropdown组件测试', () => {
       const button = screen.getByRole('button', { name: /历史/ })
       await user.click(button)
       
+      let historyItem: HTMLElement
       await waitFor(() => {
-        expect(screen.getByText('手动保存的版本')).toBeInTheDocument()
+        historyItem = screen.getByText('手动保存的版本')
+        expect(historyItem).toBeInTheDocument()
       })
       
-      const historyItem = screen.getByRole('button', { name: /加载历史版本/ })
-      await user.click(historyItem)
+      // 点击历史记录项
+      await user.click(historyItem!)
       
       await waitFor(() => {
         expect(onLoadVersion).toHaveBeenCalledWith(0)
@@ -217,16 +239,17 @@ describe('HistoryDropdown组件测试', () => {
       const button = screen.getByRole('button', { name: /历史/ })
       await user.click(button)
       
+      let historyItem: HTMLElement
       await waitFor(() => {
-        expect(screen.getByText('手动保存的版本')).toBeInTheDocument()
+        historyItem = screen.getByText('手动保存的版本')
+        expect(historyItem).toBeInTheDocument()
       })
       
-      const historyItem = screen.getByRole('button', { name: /加载历史版本/ })
-      await user.click(historyItem)
+      // 点击历史记录项
+      await user.click(historyItem!)
       
-      // Popover应该在短暂延迟后关闭
+      // 验证回调被调用
       await waitFor(() => {
-        // 检查Popover内容是否消失（这个测试可能不太可靠，取决于Ant Design实现）
         expect(defaultProps.onLoadVersion).toHaveBeenCalled()
       })
     })
@@ -311,10 +334,16 @@ describe('HistoryDropdown组件测试', () => {
       render(<HistoryDropdown {...defaultProps} history={manyHistory} />)
       
       const button = screen.getByRole('button', { name: /历史/ })
+      
+      // 验证按钮文本包含正确的历史记录数量
+      expect(button).toHaveTextContent('历史 (100)')
+      
       await user.click(button)
       
+      // 验证菜单能够打开并显示历史记录
       await waitFor(() => {
-        expect(screen.getByText('100 条')).toBeInTheDocument()
+        expect(screen.getByText('版本 1')).toBeInTheDocument()
+        expect(screen.getByText('清除历史')).toBeInTheDocument()
       })
     })
 

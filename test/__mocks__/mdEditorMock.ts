@@ -1,5 +1,5 @@
 /**
- * @ant-design/md-editor mock
+ * @ant-design/agentic-ui mock
  */
 
 export interface Elements {
