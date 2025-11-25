@@ -7,8 +7,8 @@ export const HistoryDropdownMenuItemContent = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 0;
-  min-width: 300px;
+  padding: 4px 8px;
+  width: 220px;
 `
 
 /**
@@ -56,6 +56,39 @@ export const HistoryDropdownCheck = styled.span`
   font-size: 16px;
   font-weight: bold;
   flex-shrink: 0;
+`
+
+/**
+ * 历史下拉容器
+ */
+export const HistoryDropdownContainer = styled.div`
+  width: 260px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+`
+
+/**
+ * 历史列表容器
+ */
+export const HistoryDropdownList = styled.div`
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 0;
+`
+
+/**
+ * 历史列表项
+ */
+export const HistoryDropdownItem = styled.div<{ $isActive: boolean }>`
+  padding: 8px 12px;
+  cursor: pointer;
+  background: ${props => props.$isActive ? '#e6f4ff' : 'transparent'};
+  
+  &:hover {
+    background: ${props => props.$isActive ? '#e6f4ff' : '#f5f5f5'};
+  }
 `
 
 /**
