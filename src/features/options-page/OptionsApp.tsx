@@ -178,7 +178,7 @@ export const OptionsApp: React.FC = () => {
           </PageDescription>
         </HeaderContent>
         <HeaderActions>
-          <VersionTag>v1.6.1</VersionTag>
+          <VersionTag>v1.6.2</VersionTag>
           <Button onClick={openReleasePage}>
             检查更新
           </Button>
