@@ -102,9 +102,9 @@ describe('Storage工具测试', () => {
         drawerWidth: '800px',
         attributeName: 'id',
         searchConfig: {
-          searchDepthDown: 5,
-          searchDepthUp: 0,
-          throttleInterval: 100
+          limitUpwardSearch: false,
+          searchDepthUp: 5,
+          throttleInterval: 16
         },
         getFunctionName: '__getContentById',
         updateFunctionName: '__updateContentById',
@@ -216,9 +216,9 @@ describe('Storage工具测试', () => {
         drawerWidth: '800px',
         attributeName: 'id',
         searchConfig: {
-          searchDepthDown: 5,
-          searchDepthUp: 0,
-          throttleInterval: 100
+          limitUpwardSearch: false,
+          searchDepthUp: 5,
+          throttleInterval: 16
         },
         getFunctionName: '__getContentById',
         updateFunctionName: '__updateContentById',
@@ -262,17 +262,17 @@ describe('Storage工具测试', () => {
       const result = await storage.getSearchConfig()
       
       expect(result).toEqual({
-        searchDepthDown: 5,
-        searchDepthUp: 0,
-        throttleInterval: 100
+        limitUpwardSearch: false,
+        searchDepthUp: 5,
+        throttleInterval: 16
       })
     })
 
     it('应该返回存储的搜索配置', async () => {
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         searchConfig: {
-          searchDepthDown: 10,
-          searchDepthUp: 5,
+          limitUpwardSearch: true,
+          searchDepthUp: 10,
           throttleInterval: 32
         }
       })
@@ -280,8 +280,8 @@ describe('Storage工具测试', () => {
       const result = await storage.getSearchConfig()
       
       expect(result).toEqual({
-        searchDepthDown: 10,
-        searchDepthUp: 5,
+        limitUpwardSearch: true,
+        searchDepthUp: 10,
         throttleInterval: 32
       })
     })

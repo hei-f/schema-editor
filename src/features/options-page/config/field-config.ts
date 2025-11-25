@@ -18,7 +18,7 @@ interface FieldGroup {
 export const FIELD_GROUPS: Record<string, FieldGroup> = {
   searchConfig: {
     fieldPaths: [
-      FORM_PATHS.searchConfig.searchDepthDown,
+      FORM_PATHS.searchConfig.limitUpwardSearch,
       FORM_PATHS.searchConfig.searchDepthUp,
       FORM_PATHS.searchConfig.throttleInterval
     ],
@@ -88,7 +88,6 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
 export const DEBOUNCE_FIELD_PATHS: readonly (readonly string[])[] = [
   FORM_PATHS.attributeName,
   FORM_PATHS.drawerWidth,
-  FORM_PATHS.searchConfig.searchDepthDown,
   FORM_PATHS.searchConfig.searchDepthUp,
   FORM_PATHS.searchConfig.throttleInterval,
   FORM_PATHS.getFunctionName,

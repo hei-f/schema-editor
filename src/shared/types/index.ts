@@ -52,9 +52,9 @@ export interface ElementAttributes {
  * 搜索配置接口
  */
 export interface SearchConfig {
-  /** 向下搜索深度 */
-  searchDepthDown: number
-  /** 向上搜索深度 */
+  /** 是否限制向上搜索层级（false表示搜索到根元素） */
+  limitUpwardSearch: boolean
+  /** 向上搜索深度（仅在limitUpwardSearch为true时生效） */
   searchDepthUp: number
   /** 节流间隔(ms) */
   throttleInterval: number

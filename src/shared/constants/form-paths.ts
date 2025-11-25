@@ -27,8 +27,8 @@ export const FORM_PATHS = {
   
   /** 搜索配置 */
   searchConfig: {
-    /** 向下搜索深度 */
-    searchDepthDown: ['searchConfig', 'searchDepthDown'],
+    /** 是否限制向上搜索层级 */
+    limitUpwardSearch: ['searchConfig', 'limitUpwardSearch'],
     /** 向上搜索深度 */
     searchDepthUp: ['searchConfig', 'searchDepthUp'],
     /** 节流间隔 */

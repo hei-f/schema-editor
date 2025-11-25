@@ -1,11 +1,9 @@
 import { storage } from '../browser/storage'
 import {
-  addCandidateHighlight,
   findElementWithSchemaParams,
   getElementAttributes,
   hasValidAttributes,
-  isVisibleElement,
-  removeCandidateHighlight
+  isVisibleElement
 } from '../ui/dom'
 
 // Mock storage模块
@@ -28,9 +26,9 @@ describe('Element Detector测试', () => {
     mockGetAttributeName.mockResolvedValue('schema-params')
     // 默认搜索配置
     mockGetSearchConfig.mockResolvedValue({
-      searchDepthDown: 5,
-      searchDepthUp: 3,
-      throttleInterval: 100
+      limitUpwardSearch: false,
+      searchDepthUp: 5,
+      throttleInterval: 16
     })
     // 默认高亮颜色
     mockGetHighlightColor.mockResolvedValue('#39C5BB')
@@ -403,24 +401,6 @@ describe('Element Detector测试', () => {
       document.body.removeChild(target)
     })
 
-    it('应该在嵌套元素中找到内层元素', async () => {
-      const outer = document.createElement('div')
-      const inner = document.createElement('div')
-      inner.setAttribute('data-schema-params', 'param1')
-      outer.appendChild(inner)
-      document.body.appendChild(outer)
-
-      // Mock elementsFromPoint返回外层元素
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([outer, document.body, document.documentElement])
-
-      const result = await findElementWithSchemaParams(100, 100)
-
-      expect(result.target).toBe(inner)
-      expect(result.candidates).toContain(inner)
-      
-      document.body.removeChild(outer)
-    })
-
     it('应该找到父元素', async () => {
       const parent = document.createElement('div')
       parent.setAttribute('data-schema-params', 'param1')
@@ -550,35 +530,5 @@ describe('Element Detector测试', () => {
     })
   })
 
-  describe('候选高亮函数', () => {
-    it('addCandidateHighlight应该添加虚线高亮样式', async () => {
-      const element = document.createElement('div')
-      
-      await addCandidateHighlight(element)
-      
-      expect(element.style.outline).toContain('dashed')
-      expect(element.style.outlineOffset).toBe('2px')
-    })
-
-  it('removeCandidateHighlight应该移除高亮样式', () => {
-    const element = document.createElement('div')
-    element.style.outline = '2px dashed rgba(56, 197, 187, 0.5)'
-    element.style.outlineOffset = '2px'
-    
-    removeCandidateHighlight(element)
-    
-    expect(element.style.outline).toBe('')
-    expect(element.style.outlineOffset).toBe('')
-  })
-
-    it('候选高亮样式应该与正常高亮样式不同', async () => {
-      const element1 = document.createElement('div')
-      
-      await addCandidateHighlight(element1)
-      // addHighlight在原有代码中已存在，这里只验证样式不同
-      
-      expect(element1.style.outline).toContain('dashed')
-    })
-  })
 })
 

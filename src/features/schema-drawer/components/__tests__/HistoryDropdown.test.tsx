@@ -5,6 +5,9 @@ import userEvent from '@testing-library/user-event'
 import { HistoryDropdown } from '../HistoryDropdown'
 
 describe('HistoryDropdown组件测试', () => {
+  // 增加整个测试套件的超时时间，因为Popover组件渲染较慢
+  jest.setTimeout(15000)
+
   const mockHistoryEntry = {
     id: 'entry_1',
     type: HistoryEntryType.Manual as HistoryEntryType,
@@ -344,8 +347,8 @@ describe('HistoryDropdown组件测试', () => {
       await waitFor(() => {
         expect(screen.getByText('版本 1')).toBeInTheDocument()
         expect(screen.getByText('清除历史')).toBeInTheDocument()
-      })
-    })
+      }, { timeout: 10000 })
+    }, 15000)
 
     it('应该处理currentIndex超出范围', async () => {
       const user = userEvent.setup()

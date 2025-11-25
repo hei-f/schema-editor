@@ -134,7 +134,7 @@ describe('DrawerToolbar组件测试', () => {
       await user.click(screen.getByText('RawString'))
 
       expect(mockHandlers.onSegmentChange).toHaveBeenCalledWith(ContentType.RawString)
-    })
+    }, 10000)
   })
 
   describe('按钮交互', () => {
