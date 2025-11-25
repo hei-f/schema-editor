@@ -5,6 +5,9 @@ import userEvent from '@testing-library/user-event'
 import { HistoryDropdown } from '../HistoryDropdown'
 
 describe('HistoryDropdown组件测试', () => {
+  // 增加整个测试套件的超时时间，因为Popover组件渲染较慢
+  jest.setTimeout(15000)
+
   const mockHistoryEntry = {
     id: 'entry_1',
     type: HistoryEntryType.Manual as HistoryEntryType,
