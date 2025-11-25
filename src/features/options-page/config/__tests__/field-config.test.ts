@@ -45,7 +45,7 @@ describe('field-config测试', () => {
 
   describe('find Field Group', () => {
     it('应该找到searchConfig字段组', () => {
-      const result = findFieldGroup(['searchConfig', 'searchDepthDown'])
+      const result = findFieldGroup(['searchConfig', 'limitUpwardSearch'])
       expect(result).toBeDefined()
       expect(result?.save).toBeDefined()
     })
@@ -95,8 +95,8 @@ describe('field-config测试', () => {
       expect(result).toBe(true)
     })
 
-    it('searchConfig.searchDepthDown应该使用防抖', () => {
-      const result = isDebounceField(['searchConfig', 'searchDepthDown'])
+    it('searchConfig.searchDepthUp应该使用防抖', () => {
+      const result = isDebounceField(['searchConfig', 'searchDepthUp'])
       expect(result).toBe(true)
     })
 

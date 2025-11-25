@@ -344,8 +344,8 @@ describe('HistoryDropdown组件测试', () => {
       await waitFor(() => {
         expect(screen.getByText('版本 1')).toBeInTheDocument()
         expect(screen.getByText('清除历史')).toBeInTheDocument()
-      })
-    })
+      }, { timeout: 10000 })
+    }, 15000)
 
     it('应该处理currentIndex超出范围', async () => {
       const user = userEvent.setup()

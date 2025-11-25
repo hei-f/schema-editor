@@ -185,11 +185,11 @@ describe('OptionsApp组件测试', () => {
   })
 
   describe('配置项显示', () => {
-    it('应该显示API函数配置标题', async () => {
+    it('应该显示基础集成配置标题', async () => {
       render(<OptionsApp />)
       
       await waitFor(() => {
-        expect(screen.getByText('API函数配置')).toBeInTheDocument()
+        expect(screen.getByText('基础集成配置')).toBeInTheDocument()
       }, { timeout: 5000 })
     })
 
