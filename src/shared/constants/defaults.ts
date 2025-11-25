@@ -9,9 +9,9 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
   drawerWidth: '800px',
   attributeName: 'id',
   searchConfig: {
-    searchDepthDown: 5,
-    searchDepthUp: 0,
-    throttleInterval: 100
+    limitUpwardSearch: false,
+    searchDepthUp: 5,
+    throttleInterval: 16
   },
   getFunctionName: '__getContentById',
   updateFunctionName: '__updateContentById',

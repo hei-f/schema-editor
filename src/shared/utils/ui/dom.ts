@@ -7,16 +7,6 @@ const UI_ELEMENT_SELECTOR = '[data-schema-editor-ui]'
 const UI_ELEMENT_ATTR = 'data-schema-editor-ui'
 
 /**
- * 将 hex 颜色转换为 rgba 格式
- */
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
-
-/**
  * 检查元素是否可见
  */
 export function isVisibleElement(element: HTMLElement): boolean {
@@ -37,50 +27,6 @@ export function isVisibleElement(element: HTMLElement): boolean {
   }
 
   return true
-}
-
-/**
- * BFS向下搜索子元素
- */
-function searchDescendants(
-  element: HTMLElement,
-  maxDepth: number,
-  dataAttrName: string
-): HTMLElement[] {
-  const results: HTMLElement[] = []
-  const queue: Array<{ el: HTMLElement; depth: number }> = [{ el: element, depth: 0 }]
-  let queueIndex = 0
-
-  while (queueIndex < queue.length) {
-    const { el, depth } = queue[queueIndex++]
-
-    // 超过最大深度则停止
-    if (depth > maxDepth) continue
-
-    // 直接遍历children，避免Array.from转换
-    const children = el.children
-    for (let i = 0; i < children.length; i++) {
-      const child = children[i] as HTMLElement
-      
-      // 跳过不可见元素
-      if (!isVisibleElement(child)) continue
-
-      // 跳过扩展UI元素
-      if (child.hasAttribute(UI_ELEMENT_ATTR) || child.closest(UI_ELEMENT_SELECTOR)) {
-        continue
-      }
-
-      // 如果有目标属性，加入结果
-      if (child.hasAttribute(dataAttrName)) {
-        results.push(child)
-      }
-
-      // 继续向下搜索
-      queue.push({ el: child, depth: depth + 1 })
-    }
-  }
-
-  return results
 }
 
 /**
@@ -117,7 +63,7 @@ function searchAncestors(
 
 /**
  * 查找带有schema-params的元素
- * 使用elementsFromPoint获取鼠标位置下的所有元素，然后向下和向上搜索
+ * 使用elementsFromPoint获取鼠标位置下的所有元素，然后根据配置向上搜索
  */
 export async function findElementWithSchemaParams(
   mouseX: number,
@@ -151,21 +97,15 @@ export async function findElementWithSchemaParams(
       allCandidates.push(element)
     }
 
-    // 向下搜索（深度为0时跳过）
-    if (searchConfig.searchDepthDown > 0) {
-      const descendants = searchDescendants(
-        element,
-        searchConfig.searchDepthDown,
-        dataAttrName
-      )
-      allCandidates.push(...descendants)
-    }
-
-    // 向上搜索（深度为0时跳过）
-    if (searchConfig.searchDepthUp > 0) {
+    // 向上搜索（根据配置决定是否限制层数）
+    const maxDepth = searchConfig.limitUpwardSearch 
+      ? searchConfig.searchDepthUp 
+      : 999 // 不限制时搜索到根元素
+    
+    if (maxDepth > 0) {
       const ancestors = searchAncestors(
         element,
-        searchConfig.searchDepthUp,
+        maxDepth,
         dataAttrName
       )
       allCandidates.push(...ancestors)
@@ -249,41 +189,4 @@ export function isClickInside(
   )
 }
 
-/**
- * 为元素添加高亮效果
- */
-export async function addHighlight(element: HTMLElement): Promise<void> {
-  const color = await storage.getHighlightColor()
-  element.style.outline = `2px solid ${color}`
-  element.style.outlineOffset = '2px'
-  element.style.boxShadow = `0 0 10px ${hexToRgba(color, 0.5)}`
-}
-
-/**
- * 移除元素的高亮效果
- */
-export function removeHighlight(element: HTMLElement): void {
-  element.style.outline = ''
-  element.style.outlineOffset = ''
-  element.style.boxShadow = ''
-}
-
-/**
- * 为候选元素添加高亮效果
- */
-export async function addCandidateHighlight(element: HTMLElement): Promise<void> {
-  const color = await storage.getHighlightColor()
-  element.style.outline = `2px dashed ${hexToRgba(color, 0.5)}`
-  element.style.outlineOffset = '2px'
-  element.style.boxShadow = `0 0 5px ${hexToRgba(color, 0.3)}`
-}
-
-/**
- * 移除候选元素的高亮效果
- */
-export function removeCandidateHighlight(element: HTMLElement): void {
-  element.style.outline = ''
-  element.style.outlineOffset = ''
-  element.style.boxShadow = ''
-}
 
