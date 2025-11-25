@@ -4,9 +4,8 @@ import { Form, Switch, Tooltip } from 'antd'
 import React from 'react'
 import { SectionCard } from '../components/SectionCard'
 import { 
-  FullWidthInputNumber, 
-  SectionSubTitle, 
-  SectionTitle,
+  FixedWidthInputNumber,
+  FormSectionLabel,
   InlineFormRow,
   FormLabel,
   ZeroMarginFormItem,
@@ -14,18 +13,26 @@ import {
   SpacedAlert
 } from '../styles/layout.styles'
 
+interface DataManagementSectionProps {
+  /** 恢复默认回调 */
+  onResetDefault?: () => void
+}
+
 /**
  * 数据管理配置区块
  * 包含草稿、收藏、历史记录、导出等配置
  */
-export const DataManagementSection: React.FC = () => {
+export const DataManagementSection: React.FC<DataManagementSectionProps> = (props) => {
+  const { onResetDefault } = props
+
   return (
     <SectionCard
       title="数据管理配置"
       subtitle="管理草稿、收藏和历史记录"
       panelKey="data-management"
+      onResetDefault={onResetDefault}
     >
-      <SectionTitle level={5} $noMarginTop>草稿配置</SectionTitle>
+      <FormSectionLabel $noMarginTop>草稿配置</FormSectionLabel>
       
       <Form.Item
         label="草稿自动保存"
@@ -36,7 +43,7 @@ export const DataManagementSection: React.FC = () => {
         <Switch />
       </Form.Item>
 
-      <SectionSubTitle level={5}>收藏配置</SectionSubTitle>
+      <FormSectionLabel>收藏配置</FormSectionLabel>
       
       <Form.Item
         label="最大收藏数量"
@@ -47,10 +54,10 @@ export const DataManagementSection: React.FC = () => {
         ]}
         extra={`收藏列表的最大容量，默认值为 ${DEFAULT_VALUES.maxFavoritesCount}`}
       >
-        <FullWidthInputNumber min={10} max={200} step={10} placeholder="50" />
+        <FixedWidthInputNumber min={10} max={200} step={10} placeholder="50" $width={120} />
       </Form.Item>
 
-      <SectionSubTitle level={5}>历史记录配置</SectionSubTitle>
+      <FormSectionLabel>历史记录配置</FormSectionLabel>
 
       <Form.Item
         label="历史记录上限"
@@ -61,11 +68,12 @@ export const DataManagementSection: React.FC = () => {
           { type: 'number', min: 10, max: 200, message: '请输入 10-200 之间的数字' }
         ]}
       >
-        <FullWidthInputNumber
+        <FixedWidthInputNumber
           min={10}
           max={200}
           step={10}
-          addonAfter="条"
+          $width={120}
+          suffix="条"
         />
       </Form.Item>
       
@@ -77,7 +85,7 @@ export const DataManagementSection: React.FC = () => {
         $marginBottom={24}
       />
 
-      <SectionSubTitle level={5}>导出配置</SectionSubTitle>
+      <FormSectionLabel>导出配置</FormSectionLabel>
 
       <InlineFormRow>
         <FormLabel>导出时自定义文件名:</FormLabel>

@@ -326,9 +326,9 @@
           }
         };
 
-        // 实现预览函数
-        window.__previewContent = (data) => {
-          addLog('info', '🎨 调用 __previewContent', { data });
+        // 实现预览函数（新名称）
+        window.__getContentPreview = (data) => {
+          addLog('info', '🎨 调用 __getContentPreview', { data });
           
           try {
             // 创建预览组件
@@ -472,7 +472,7 @@
           }
         };
 
-        addLog('info', '🚀 测试页面已加载', { message: '全局方法已注册（包括预览函数）' });
+        addLog('info', '🚀 测试页面已加载', { message: '全局方法已注册' });
       }, []);
 
       const testElements = [

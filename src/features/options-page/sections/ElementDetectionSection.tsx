@@ -4,8 +4,7 @@ import React from 'react'
 import { ColorPickerField } from '../components/ColorPickerField'
 import { SectionCard } from '../components/SectionCard'
 import { 
-  FullWidthInputNumber, 
-  SectionTitle,
+  FormSectionLabel,
   FixedWidthInput,
   FixedWidthInputNumber,
   SpacedAlert
@@ -14,6 +13,8 @@ import {
 interface ElementDetectionSectionProps {
   /** 当前属性名（用于Alert提示） */
   attributeName: string
+  /** 恢复默认回调 */
+  onResetDefault?: () => void
 }
 
 /**
@@ -21,20 +22,21 @@ interface ElementDetectionSectionProps {
  * 包含搜索配置、高亮颜色、快捷键高亮等
  */
 export const ElementDetectionSection: React.FC<ElementDetectionSectionProps> = (props) => {
-  const { attributeName } = props
+  const { attributeName, onResetDefault } = props
 
   return (
     <SectionCard
       title="元素检测与高亮"
       subtitle="配置鼠标交互和元素识别行为"
       panelKey="element-detection"
+      onResetDefault={onResetDefault}
     >
       <Form.Item
         label="节流间隔 (毫秒)"
         name={FORM_PATHS.searchConfig.throttleInterval}
         extra="控制鼠标移动检测频率，16ms约为60fps，建议范围 8-100ms"
       >
-        <FullWidthInputNumber min={8} />
+        <FixedWidthInputNumber min={8} $width={120} />
       </Form.Item>
 
       <Form.Item
@@ -60,7 +62,7 @@ export const ElementDetectionSection: React.FC<ElementDetectionSectionProps> = (
               name={FORM_PATHS.searchConfig.searchDepthUp}
               extra="查找父元素的最大层数（仅在限制层级时生效）"
             >
-              <FullWidthInputNumber min={1} max={20} disabled={!limitUpwardSearch} />
+              <FixedWidthInputNumber min={1} max={100} disabled={!limitUpwardSearch} $width={120} />
             </Form.Item>
           )
         }}
@@ -74,7 +76,7 @@ export const ElementDetectionSection: React.FC<ElementDetectionSectionProps> = (
         <ColorPickerField />
       </Form.Item>
 
-      <SectionTitle level={5}>快捷键高亮所有元素</SectionTitle>
+      <FormSectionLabel>快捷键高亮所有元素</FormSectionLabel>
 
       <Form.Item
         label="启用功能"
@@ -117,7 +119,7 @@ export const ElementDetectionSection: React.FC<ElementDetectionSectionProps> = (
           max={1000}
           step={50}
           $width={150}
-          addonAfter="个"
+          suffix="个"
         />
       </Form.Item>
 

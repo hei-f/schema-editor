@@ -5,15 +5,23 @@ import React from 'react'
 import { SectionCard } from '../components/SectionCard'
 import { HelpIcon } from '../styles/layout.styles'
 
+interface EditorConfigSectionProps {
+  /** 恢复默认回调 */
+  onResetDefault?: () => void
+}
+
 /**
  * 编辑器配置区块
  */
-export const EditorConfigSection: React.FC = () => {
+export const EditorConfigSection: React.FC<EditorConfigSectionProps> = (props) => {
+  const { onResetDefault } = props
+
   return (
     <SectionCard
       title="编辑器配置"
       subtitle="定制编辑器界面和功能"
       panelKey="editor-config"
+      onResetDefault={onResetDefault}
     >
       <Form.Item
         label="抽屉宽度"

@@ -130,7 +130,6 @@ describe('Storage工具测试', () => {
         previewConfig: {
           previewWidth: 40,
           updateDelay: 500,
-          rememberState: false,
           autoUpdate: false
         },
         maxHistoryCount: 50,
@@ -139,7 +138,8 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
-        editorTheme: 'schemaEditorDark'
+        editorTheme: 'schemaEditorDark',
+        previewFunctionName: '__getContentPreview'
       })
     })
 
@@ -193,7 +193,6 @@ describe('Storage工具测试', () => {
         previewConfig: {
           previewWidth: 40,
           updateDelay: 500,
-          rememberState: false,
           autoUpdate: false
         },
         maxHistoryCount: 50,
@@ -202,7 +201,8 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
-        editorTheme: 'schemaEditorDark'
+        editorTheme: 'schemaEditorDark',
+        previewFunctionName: '__getContentPreview'
       })
     })
 
@@ -246,7 +246,6 @@ describe('Storage工具测试', () => {
         previewConfig: {
           previewWidth: 40,
           updateDelay: 500,
-          rememberState: false,
           autoUpdate: false
         },
         maxHistoryCount: 50,
@@ -255,7 +254,8 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
-        editorTheme: 'schemaEditorDark'
+        editorTheme: 'schemaEditorDark',
+        previewFunctionName: '__getContentPreview'
       })
     })
   })
@@ -406,12 +406,13 @@ describe('Storage工具测试', () => {
   })
 
   describe('setFunctionNames', () => {
-    it('应该保存两个函数名', async () => {
-      await storage.setFunctionNames('myGetFn', 'myUpdateFn')
+    it('应该保存三个函数名', async () => {
+      await storage.setFunctionNames('myGetFn', 'myUpdateFn', 'myPreviewFn')
       
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
         getFunctionName: 'myGetFn',
-        updateFunctionName: 'myUpdateFn'
+        updateFunctionName: 'myUpdateFn',
+        previewFunctionName: 'myPreviewFn'
       })
     })
   })
@@ -478,7 +479,6 @@ describe('Storage工具测试', () => {
         previewConfig: {
           previewWidth: 40,
           updateDelay: 500,
-          rememberState: false,
           autoUpdate: false
         },
         maxHistoryCount: 50,
@@ -487,7 +487,8 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
-        editorTheme: 'schemaEditorDark'
+        editorTheme: 'schemaEditorDark',
+        previewFunctionName: '__getContentPreview'
       })
     })
   })
@@ -778,7 +779,7 @@ describe('Storage工具测试', () => {
     it('setFunctionNames失败时不应该抛出错误', async () => {
       ;(chrome.storage.local.set as jest.Mock).mockRejectedValue(new Error('Storage error'))
       
-      await expect(storage.setFunctionNames('fn1', 'fn2')).resolves.not.toThrow()
+      await expect(storage.setFunctionNames('fn1', 'fn2', 'fn3')).resolves.not.toThrow()
     })
 
     it('getToolbarButtons失败时应该返回默认值', async () => {
@@ -904,12 +905,13 @@ describe('Storage工具测试', () => {
       })
     })
 
-    it('setFunctionNames应该同时设置两个函数名', async () => {
-      await storage.setFunctionNames('getFunc', 'updateFunc')
+    it('setFunctionNames应该同时设置三个函数名', async () => {
+      await storage.setFunctionNames('getFunc', 'updateFunc', 'previewFunc')
       
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
         'getFunctionName': 'getFunc',
-        'updateFunctionName': 'updateFunc'
+        'updateFunctionName': 'updateFunc',
+        'previewFunctionName': 'previewFunc'
       })
     })
 

@@ -98,19 +98,29 @@ window.__updateContentById = (schema: any, params: string) => {
 
 函数名可在配置页面自定义。
 
-### 预览功能 (v1.2.0+)
+### 扩展 API (v1.8.0+)
 
-插件支持实时预览Schema效果。页面可提供 `__previewContent` 函数自定义预览渲染：
+除了核心 API（`__getContentById` 和 `__updateContentById`），插件还支持以下可选的扩展 API：
 
 ```typescript
-// 预览函数（可选）
-window.__previewContent = (data: any) => {
-  // 返回 React 组件或 JSX
+/**
+ * 预览函数（可选）
+ * 用于自定义预览渲染，返回 React 组件
+ */
+window.__getContentPreview = (data: any) => {
   return React.createElement('div', { 
     style: { padding: '20px' } 
   }, JSON.stringify(data, null, 2))
 }
 ```
+
+| API 名称 | 类型 | 用途 | 默认行为 |
+|---------|------|------|---------|
+| `__getContentPreview` | 同步 | 自定义预览渲染 | 不提供则禁用预览 |
+
+函数名可在配置页面自定义。
+
+### 预览功能 (v1.2.0+)
 
 使用方式：
 1. 在编辑器工具栏点击"预览"按钮开启预览
@@ -118,7 +128,7 @@ window.__previewContent = (data: any) => {
 3. 可拖拽分隔条调整预览/编辑器宽度
 4. 支持手动更新或自动更新预览（可在配置页面设置）
 
-如果页面未提供 `__previewContent` 函数，预览按钮将被禁用。
+如果页面未提供预览函数，预览按钮将被禁用。
 
 ### 元素标记
 
