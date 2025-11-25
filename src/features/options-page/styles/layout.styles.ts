@@ -251,8 +251,8 @@ export const InlineFormRow = styled.div`
  */
 export const FormRowContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 160px);
-  gap: 16px 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 32px;
 `
 
 /**
@@ -264,6 +264,9 @@ export const FormLabel = styled.span`
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  display: inline-block;
+  min-width: 90px;
+  text-align: right;
 `
 
 /**
