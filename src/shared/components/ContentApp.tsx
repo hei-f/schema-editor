@@ -1,4 +1,5 @@
 import { SchemaDrawer } from '@/features/schema-drawer'
+import { shadowDomTheme } from '@/shared/constants/theme'
 import type { ElementAttributes, Message, SchemaResponsePayload, UpdateResultPayload } from '@/shared/types'
 import { MessageType } from '@/shared/types'
 import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
@@ -153,6 +154,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     <StyleSheetManager target={shadowRoot as unknown as HTMLElement}>
       <ConfigProvider
         locale={zhCN}
+        theme={shadowDomTheme}
         getPopupContainer={() => shadowRoot as unknown as HTMLElement}
       >
         <AntdApp>

@@ -27,7 +27,6 @@ export const SectionCard: React.FC<SectionCardProps> = (props) => {
   return (
     <StyledCollapse 
       defaultActiveKey={defaultActive ? [panelKey] : []}
-      style={{ marginBottom: 24 }}
     >
       <Panel header={title} key={panelKey}>
         {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
