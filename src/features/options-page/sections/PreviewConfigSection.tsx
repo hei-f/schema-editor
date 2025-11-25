@@ -41,7 +41,7 @@ export const PreviewConfigSection: React.FC<PreviewConfigSectionProps> = (props)
           min={100} 
           max={2000} 
           step={100}
-          $width={200}
+          $width={120}
         />
       </Form.Item>
       
@@ -53,7 +53,7 @@ export const PreviewConfigSection: React.FC<PreviewConfigSectionProps> = (props)
         <FixedWidthInputNumber 
           min={10} 
           max={60}
-          $width={200}
+          $width={120}
           suffix="%"
         />
       </Form.Item>

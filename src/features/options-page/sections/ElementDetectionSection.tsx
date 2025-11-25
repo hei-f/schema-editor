@@ -36,7 +36,7 @@ export const ElementDetectionSection: React.FC<ElementDetectionSectionProps> = (
         name={FORM_PATHS.searchConfig.throttleInterval}
         extra="控制鼠标移动检测频率，16ms约为60fps，建议范围 8-100ms"
       >
-        <FixedWidthInputNumber min={8} $width={200} />
+        <FixedWidthInputNumber min={8} $width={120} />
       </Form.Item>
 
       <Form.Item
@@ -62,7 +62,7 @@ export const ElementDetectionSection: React.FC<ElementDetectionSectionProps> = (
               name={FORM_PATHS.searchConfig.searchDepthUp}
               extra="查找父元素的最大层数（仅在限制层级时生效）"
             >
-              <FixedWidthInputNumber min={1} max={100} disabled={!limitUpwardSearch} $width={200} />
+              <FixedWidthInputNumber min={1} max={100} disabled={!limitUpwardSearch} $width={120} />
             </Form.Item>
           )
         }}

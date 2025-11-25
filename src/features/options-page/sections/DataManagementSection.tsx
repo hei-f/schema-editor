@@ -55,7 +55,7 @@ export const DataManagementSection: React.FC<DataManagementSectionProps> = (prop
         ]}
         extra={`收藏列表的最大容量，默认值为 ${DEFAULT_VALUES.maxFavoritesCount}`}
       >
-        <FixedWidthInputNumber min={10} max={200} step={10} placeholder="50" $width={200} />
+        <FixedWidthInputNumber min={10} max={200} step={10} placeholder="50" $width={120} />
       </Form.Item>
 
       <SectionSubTitle level={5}>历史记录配置</SectionSubTitle>
@@ -73,7 +73,7 @@ export const DataManagementSection: React.FC<DataManagementSectionProps> = (prop
           min={10}
           max={200}
           step={10}
-          $width={200}
+          $width={120}
           suffix="条"
         />
       </Form.Item>

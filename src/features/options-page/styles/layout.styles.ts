@@ -251,9 +251,8 @@ export const InlineFormRow = styled.div`
  */
 export const FormRowContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, auto);
-  gap: 16px 48px;
-  justify-content: start;
+  grid-template-columns: repeat(3, 160px);
+  gap: 16px 24px;
 `
 
 /**

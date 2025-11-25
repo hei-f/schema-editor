@@ -46,7 +46,7 @@ export const BasicIntegrationSection: React.FC<BasicIntegrationSectionProps> = (
         <Input placeholder={`例如: ${DEFAULT_VALUES.attributeName}`} />
       </Form.Item>
 
-      <Divider><Text type="secondary">核心 API（必需）</Text></Divider>
+      <Divider orientation="left"><Text type="secondary">核心 API（必需）</Text></Divider>
 
       <Form.Item
         label="获取Schema函数名"
@@ -72,7 +72,7 @@ export const BasicIntegrationSection: React.FC<BasicIntegrationSectionProps> = (
         <Input placeholder={`例如: ${DEFAULT_VALUES.updateFunctionName}`} />
       </Form.Item>
 
-      <Divider><Text type="secondary">扩展 API（可选）</Text></Divider>
+      <Divider orientation="left"><Text type="secondary">扩展 API（可选）</Text></Divider>
 
       <Form.Item
         label="预览函数名"
