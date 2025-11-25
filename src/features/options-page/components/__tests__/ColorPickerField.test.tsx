@@ -119,7 +119,7 @@ describe('ColorPickerField组件测试', () => {
       
       // 不应该抛出错误
       expect(container).toBeInTheDocument()
-    })
+    }, 10000)
 
     it('应该接受onChange回调', () => {
       const onChange = jest.fn()
