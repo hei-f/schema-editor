@@ -237,13 +237,13 @@ export const SectionDivider = styled.div`
 
 /**
  * 表单区块子标题
- * 用于表单内部分组的标签，无分割线
+ * 用于表单内部分组的标签，加粗样式
  */
 export const FormSectionLabel = styled.div<{ $noMarginTop?: boolean }>`
   font-size: 13px;
-  color: #8c8c8c;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
   margin: ${props => props.$noMarginTop ? '0' : '24px'} 0 16px;
-  padding-left: 2px;
 `
 
 /**
@@ -254,7 +254,6 @@ export const InlineFormRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  position: relative;
 `
 
 /**
@@ -291,13 +290,10 @@ export const ZeroMarginFormItem = styled(Form.Item)`
 /**
  * 帮助提示图标
  * 用于表单项旁的帮助说明，带悬停效果
- * 使用绝对定位避免影响对齐
  */
 export const HelpTooltipIcon = styled(QuestionCircleOutlined)`
   color: #999;
   cursor: pointer;
-  position: absolute;
-  right: -20px;
   
   &:hover {
     color: #666;
