@@ -1,5 +1,5 @@
-import { InfoCircleOutlined } from '@ant-design/icons'
-import { Card, Collapse, InputNumber, Typography } from 'antd'
+import { InfoCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Alert, Card, Collapse, Form, Input, InputNumber, Typography } from 'antd'
 import styled from 'styled-components'
 
 const { Text, Title, Paragraph } = Typography
@@ -155,6 +155,14 @@ export const FullWidthInputNumber = styled(InputNumber)`
 export const StyledCollapse = styled(Collapse)`
   margin-top: 24px;
   margin-bottom: 24px;
+  
+  /* 防止折叠面板标题被选中 */
+  .ant-collapse-header {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
 `
 
 export const HelpIcon = styled(InfoCircleOutlined)`
@@ -177,5 +185,116 @@ export const SchemaNote = styled(Paragraph)`
   &.ant-typography {
     margin-top: 12px;
   }
+`
+
+/**
+ * 配置卡片副标题
+ */
+export const CardSubtitle = styled(Text)`
+  &.ant-typography {
+    display: block;
+    font-size: 14px;
+    color: #8c8c8c;
+    margin-bottom: 16px;
+  }
+`
+
+/**
+ * 卡片标题容器（带 emoji）
+ */
+export const CardTitleContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+`
+
+/**
+ * 配置区块分隔线（用于卡片内小标题上方）
+ */
+export const SectionDivider = styled.div`
+  height: 1px;
+  background: #f0f0f0;
+  margin: 24px 0 16px;
+`
+
+/**
+ * 横向表单行容器
+ * 用于将标签、输入框、帮助图标等元素横向排列
+ */
+export const InlineFormRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+/**
+ * 可换行表单容器
+ * 用于多个表单项的网格布局，支持自动换行
+ */
+export const FormRowContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+`
+
+/**
+ * 不可选中的表单标签
+ * 用于表单项前的文本标签，防止用户选中文本
+ */
+export const FormLabel = styled.span`
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+`
+
+/**
+ * 零边距Form.Item
+ * 用于内联表单项，移除默认的下边距
+ */
+export const ZeroMarginFormItem = styled(Form.Item)`
+  &.ant-form-item {
+    margin-bottom: 0;
+  }
+`
+
+/**
+ * 帮助提示图标
+ * 用于表单项旁的帮助说明，带悬停效果
+ */
+export const HelpTooltipIcon = styled(QuestionCircleOutlined)`
+  color: #999;
+  cursor: pointer;
+  
+  &:hover {
+    color: #666;
+  }
+`
+
+/**
+ * 固定宽度输入框
+ * 支持通过 $width 属性自定义宽度
+ */
+export const FixedWidthInput = styled(Input)<{ $width?: number }>`
+  width: ${props => props.$width || 100}px;
+`
+
+/**
+ * 固定宽度数字输入框
+ * 支持通过 $width 属性自定义宽度
+ */
+export const FixedWidthInputNumber = styled(InputNumber)<{ $width?: number }>`
+  width: ${props => props.$width || 100}px;
+`
+
+/**
+ * 带可配置间距的Alert
+ * 支持通过 $marginTop 和 $marginBottom 属性自定义上下间距
+ */
+export const SpacedAlert = styled(Alert)<{ $marginTop?: number; $marginBottom?: number }>`
+  ${props => props.$marginTop ? `margin-top: ${props.$marginTop}px;` : ''}
+  ${props => props.$marginBottom ? `margin-bottom: ${props.$marginBottom}px;` : ''}
 `
 
