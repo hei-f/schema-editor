@@ -4,7 +4,7 @@ import { Form, Switch, Tooltip } from 'antd'
 import React from 'react'
 import { SectionCard } from '../components/SectionCard'
 import { 
-  FullWidthInputNumber, 
+  FixedWidthInputNumber,
   SectionSubTitle, 
   SectionTitle,
   InlineFormRow,
@@ -14,16 +14,24 @@ import {
   SpacedAlert
 } from '../styles/layout.styles'
 
+interface DataManagementSectionProps {
+  /** 恢复默认回调 */
+  onResetDefault?: () => void
+}
+
 /**
  * 数据管理配置区块
  * 包含草稿、收藏、历史记录、导出等配置
  */
-export const DataManagementSection: React.FC = () => {
+export const DataManagementSection: React.FC<DataManagementSectionProps> = (props) => {
+  const { onResetDefault } = props
+
   return (
     <SectionCard
       title="数据管理配置"
       subtitle="管理草稿、收藏和历史记录"
       panelKey="data-management"
+      onResetDefault={onResetDefault}
     >
       <SectionTitle level={5} $noMarginTop>草稿配置</SectionTitle>
       
@@ -47,7 +55,7 @@ export const DataManagementSection: React.FC = () => {
         ]}
         extra={`收藏列表的最大容量，默认值为 ${DEFAULT_VALUES.maxFavoritesCount}`}
       >
-        <FullWidthInputNumber min={10} max={200} step={10} placeholder="50" />
+        <FixedWidthInputNumber min={10} max={200} step={10} placeholder="50" $width={200} />
       </Form.Item>
 
       <SectionSubTitle level={5}>历史记录配置</SectionSubTitle>
@@ -61,11 +69,12 @@ export const DataManagementSection: React.FC = () => {
           { type: 'number', min: 10, max: 200, message: '请输入 10-200 之间的数字' }
         ]}
       >
-        <FullWidthInputNumber
+        <FixedWidthInputNumber
           min={10}
           max={200}
           step={10}
-          addonAfter="条"
+          $width={200}
+          suffix="条"
         />
       </Form.Item>
       

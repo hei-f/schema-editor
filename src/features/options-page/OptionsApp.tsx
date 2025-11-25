@@ -1,10 +1,10 @@
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import { storage } from '@/shared/utils/browser/storage'
 import { getChangedFieldPath, getValueByPath, pathToString } from '@/shared/utils/form-path'
-import { CheckCircleOutlined } from '@ant-design/icons'
-import { Button, Form, message } from 'antd'
-import React, { useEffect, useState } from 'react'
-import { FIELD_PATH_STORAGE_MAP, findFieldGroup, isDebounceField } from './config/field-config'
+import { CheckCircleOutlined, UndoOutlined } from '@ant-design/icons'
+import { Button, Form, message, Popconfirm } from 'antd'
+import React, { useCallback, useEffect, useState } from 'react'
+import { FIELD_PATH_STORAGE_MAP, findFieldGroup, SECTION_DEFAULT_KEYS, SECTION_KEYS, type SectionKey } from './config/field-config'
 import { BasicIntegrationSection } from './sections/BasicIntegrationSection'
 import { DataManagementSection } from './sections/DataManagementSection'
 import { DebugSection } from './sections/DebugSection'
@@ -35,14 +35,14 @@ const openReleasePage = () => {
 }
 
 /**
- * 设置页面组件（重构版）
- * 原491行的巨型组件已通过拆分hooks和配置进行优化
+ * 设置页面组件
  */
 export const OptionsApp: React.FC = () => {
   const [form] = Form.useForm()
   const [attributeName, setAttributeName] = useState(DEFAULT_VALUES.attributeName)
   const [getFunctionName, setGetFunctionName] = useState(DEFAULT_VALUES.getFunctionName)
   const [updateFunctionName, setUpdateFunctionName] = useState(DEFAULT_VALUES.updateFunctionName)
+  const [previewFunctionName, setPreviewFunctionName] = useState(DEFAULT_VALUES.previewFunctionName)
   
   const timeoutMapRef = React.useRef<Map<string, NodeJS.Timeout>>(new Map())
 
@@ -69,10 +69,12 @@ export const OptionsApp: React.FC = () => {
       const enableAstTypeHints = await storage.getEnableAstTypeHints()
       const exportConfig = await storage.getExportConfig()
       const editorTheme = await storage.getEditorTheme()
+      const previewFunctionName = await storage.getPreviewFunctionName()
       
       setAttributeName(attributeName)
       setGetFunctionName(getFunctionName)
       setUpdateFunctionName(updateFunctionName)
+      setPreviewFunctionName(previewFunctionName)
       
       form.setFieldsValue({
         attributeName,
@@ -91,33 +93,34 @@ export const OptionsApp: React.FC = () => {
         highlightAllConfig,
         enableAstTypeHints,
         exportConfig,
-        editorTheme
+        editorTheme,
+        previewFunctionName
       })
     } catch (error) {
       message.error('加载配置失败')
     }
   }
 
-  const saveField = React.useCallback(async (fieldPath: string[], allValues: any) => {
+  const saveField = useCallback(async (fieldPath: string[], allValues: any) => {
     try {
-      // 查找字段所属的分组
       const fieldGroup = findFieldGroup(fieldPath)
       
       if (fieldGroup) {
-        // 如果属于分组，使用分组的保存方法
         await fieldGroup.save(allValues)
         
-        // 更新特定的 state
         if (fieldPath[0] === 'getFunctionName' || fieldPath[0] === 'updateFunctionName') {
           setGetFunctionName(allValues.getFunctionName)
           setUpdateFunctionName(allValues.updateFunctionName)
+        }
+        
+        if (fieldPath[0] === 'previewFunctionName') {
+          setPreviewFunctionName(allValues.previewFunctionName)
         }
         
         message.success('已保存', 1.5)
         return
       }
       
-      // 独立字段的保存逻辑
       const pathKey = pathToString(fieldPath)
       const storageMethod = FIELD_PATH_STORAGE_MAP[pathKey]
       
@@ -125,7 +128,6 @@ export const OptionsApp: React.FC = () => {
         const fieldValue = getValueByPath(allValues, fieldPath)
         await (storage as any)[storageMethod](fieldValue)
         
-        // 更新特定的 state
         if (pathKey === 'attributeName') {
           setAttributeName(fieldValue)
         }
@@ -137,7 +139,7 @@ export const OptionsApp: React.FC = () => {
     }
   }, [])
 
-  const debouncedSave = React.useCallback(
+  const debouncedSave = useCallback(
     (fieldPath: string[], allValues: any) => {
       const pathKey = pathToString(fieldPath)
       const existingTimeout = timeoutMapRef.current.get(pathKey)
@@ -150,7 +152,7 @@ export const OptionsApp: React.FC = () => {
           await form.validateFields([fieldPath])
           await saveField(fieldPath, allValues)
         } catch (error) {
-          // 验证失败，不保存
+          console.debug('表单验证失败，不保存:', error)
         }
         timeoutMapRef.current.delete(pathKey)
       }, 500)
@@ -159,6 +161,16 @@ export const OptionsApp: React.FC = () => {
     },
     [saveField, form]
   )
+
+  const isDebounceField = useCallback((fieldPath: string[]) => {
+    const debounceFields = [
+      'attributeName', 'drawerWidth', 'getFunctionName', 'updateFunctionName', 
+      'previewFunctionName', 'maxFavoritesCount', 'highlightColor', 'maxHistoryCount'
+    ]
+    return debounceFields.includes(fieldPath[0]) || 
+           (fieldPath[0] === 'searchConfig' && ['searchDepthUp', 'throttleInterval'].includes(fieldPath[1])) ||
+           (fieldPath[0] === 'highlightAllConfig' && ['keyBinding', 'maxHighlightCount'].includes(fieldPath[1]))
+  }, [])
 
   const handleValuesChange = (changedValues: any, allValues: any) => {
     const fieldPath = getChangedFieldPath(changedValues)
@@ -169,6 +181,72 @@ export const OptionsApp: React.FC = () => {
       saveField(fieldPath, allValues)
     }
   }
+
+  /**
+   * 恢复指定卡片的默认配置
+   */
+  const resetSectionToDefault = useCallback(async (sectionKey: SectionKey) => {
+    const keys = SECTION_DEFAULT_KEYS[sectionKey]
+    const defaultValues: Record<string, any> = {}
+    
+    for (const key of keys) {
+      defaultValues[key] = (DEFAULT_VALUES as any)[key]
+    }
+    
+    form.setFieldsValue(defaultValues)
+    
+    // 保存到 storage
+    for (const key of keys) {
+      const value = (DEFAULT_VALUES as any)[key]
+      const storageMethod = `set${key.charAt(0).toUpperCase()}${key.slice(1)}`
+      if ((storage as any)[storageMethod]) {
+        await (storage as any)[storageMethod](value)
+      }
+    }
+    
+    // 更新 state
+    if (sectionKey === SECTION_KEYS.BASIC_INTEGRATION) {
+      setAttributeName(DEFAULT_VALUES.attributeName)
+      setGetFunctionName(DEFAULT_VALUES.getFunctionName)
+      setUpdateFunctionName(DEFAULT_VALUES.updateFunctionName)
+      setPreviewFunctionName(DEFAULT_VALUES.previewFunctionName)
+    }
+    
+    message.success('已恢复默认配置')
+  }, [form])
+
+  /**
+   * 恢复全部默认配置
+   */
+  const resetAllToDefault = useCallback(async () => {
+    form.setFieldsValue(DEFAULT_VALUES)
+    
+    // 保存所有默认值到 storage
+    await storage.setAttributeName(DEFAULT_VALUES.attributeName)
+    await storage.setDrawerWidth(DEFAULT_VALUES.drawerWidth)
+    await storage.setSearchConfig(DEFAULT_VALUES.searchConfig)
+    await storage.setFunctionNames(DEFAULT_VALUES.getFunctionName, DEFAULT_VALUES.updateFunctionName, DEFAULT_VALUES.previewFunctionName)
+    await storage.setAutoParseString(DEFAULT_VALUES.autoParseString)
+    await storage.setEnableDebugLog(DEFAULT_VALUES.enableDebugLog)
+    await storage.setToolbarButtons(DEFAULT_VALUES.toolbarButtons)
+    await storage.setHighlightColor(DEFAULT_VALUES.highlightColor)
+    await storage.setMaxFavoritesCount(DEFAULT_VALUES.maxFavoritesCount)
+    await storage.setAutoSaveDraft(DEFAULT_VALUES.autoSaveDraft)
+    await storage.setPreviewConfig(DEFAULT_VALUES.previewConfig)
+    await storage.setMaxHistoryCount(DEFAULT_VALUES.maxHistoryCount)
+    await storage.setHighlightAllConfig(DEFAULT_VALUES.highlightAllConfig)
+    await storage.setEnableAstTypeHints(DEFAULT_VALUES.enableAstTypeHints)
+    await storage.setExportConfig(DEFAULT_VALUES.exportConfig)
+    await storage.setEditorTheme(DEFAULT_VALUES.editorTheme)
+    
+    // 更新 state
+    setAttributeName(DEFAULT_VALUES.attributeName)
+    setGetFunctionName(DEFAULT_VALUES.getFunctionName)
+    setUpdateFunctionName(DEFAULT_VALUES.updateFunctionName)
+    setPreviewFunctionName(DEFAULT_VALUES.previewFunctionName)
+    
+    message.success('已恢复全部默认配置')
+  }, [form])
 
   return (
     <Container>
@@ -187,46 +265,60 @@ export const OptionsApp: React.FC = () => {
         </HeaderActions>
       </HeaderSection>
 
-        <AutoSaveHint>
-          <CheckCircleOutlined />
-          <span>所有配置项通过验证后将自动保存</span>
-        </AutoSaveHint>
-        
-        <Form
-          form={form}
-          layout="vertical"
-          onValuesChange={handleValuesChange}
-          initialValues={DEFAULT_VALUES}
+      <AutoSaveHint>
+        <CheckCircleOutlined />
+        <span>所有配置项通过验证后将自动保存</span>
+        <Popconfirm
+          title="恢复默认配置"
+          description="确定要将所有配置恢复为默认值吗？"
+          onConfirm={resetAllToDefault}
+          okText="确定"
+          cancelText="取消"
         >
-        {/* 卡片1: 基础集成配置 */}
+          <Button type="link" icon={<UndoOutlined />}>
+            恢复全部默认
+          </Button>
+        </Popconfirm>
+      </AutoSaveHint>
+        
+      <Form
+        form={form}
+        layout="vertical"
+        onValuesChange={handleValuesChange}
+        initialValues={DEFAULT_VALUES}
+      >
+        {/* 卡片1: 基础集成配置 - 属性名、核心API函数名、扩展API函数名 */}
         <BasicIntegrationSection 
           attributeName={attributeName}
           getFunctionName={getFunctionName}
           updateFunctionName={updateFunctionName}
+          previewFunctionName={previewFunctionName}
+          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.BASIC_INTEGRATION)}
         />
 
-        {/* 卡片2: 元素检测与高亮 */}
-        <ElementDetectionSection attributeName={attributeName} />
+        {/* 卡片2: 元素检测与高亮 - 搜索配置、高亮颜色、快捷键高亮 */}
+        <ElementDetectionSection 
+          attributeName={attributeName} 
+          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.ELEMENT_DETECTION)}
+        />
 
-        {/* 卡片3: 编辑器配置 */}
-        <EditorConfigSection />
+        {/* 卡片3: 编辑器配置 - 抽屉宽度、字符串解析、AST提示、主题 */}
+        <EditorConfigSection onResetDefault={() => resetSectionToDefault(SECTION_KEYS.EDITOR_CONFIG)} />
 
-        {/* 卡片4: 功能开关 */}
-        <FeatureToggleSection />
+        {/* 卡片4: 功能开关 - 工具栏按钮显示/隐藏 */}
+        <FeatureToggleSection onResetDefault={() => resetSectionToDefault(SECTION_KEYS.FEATURE_TOGGLE)} />
 
-        {/* 卡片5: 实时预览配置 */}
-        <PreviewConfigSection />
+        {/* 卡片5: 实时预览配置 - 自动更新、防抖延迟、预览宽度 */}
+        <PreviewConfigSection onResetDefault={() => resetSectionToDefault(SECTION_KEYS.PREVIEW_CONFIG)} />
 
-        {/* 卡片6: 数据管理配置 */}
-        <DataManagementSection />
+        {/* 卡片6: 数据管理配置 - 草稿、收藏、历史记录、导出 */}
+        <DataManagementSection onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DATA_MANAGEMENT)} />
 
-        {/* 卡片7: 开发调试 */}
-        <DebugSection />
-        </Form>
+        {/* 卡片7: 开发调试 - 调试日志等开发者选项 */}
+        <DebugSection onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DEBUG)} />
+      </Form>
 
-      {/* 卡片8: 使用指南 */}
       <UsageGuideSection attributeName={attributeName} />
     </Container>
   )
 }
-

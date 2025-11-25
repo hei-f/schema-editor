@@ -104,6 +104,20 @@ export const VersionTag = styled.span`
   box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
 `
 
+/** SectionCard 面板标题容器 */
+export const PanelHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+`
+
+/** SectionCard 面板标题文本 */
+export const PanelTitle = styled(Typography.Text)`
+  font-weight: 600;
+  font-size: 14px;
+`
+
 export const AutoSaveHint = styled.div`
   display: flex;
   align-items: center;
@@ -119,6 +133,12 @@ export const AutoSaveHint = styled.div`
   .anticon {
     font-size: 16px;
     color: #3b82f6;
+  }
+  
+  .ant-btn-link {
+    margin-left: auto;
+    padding: 0;
+    height: auto;
   }
 `
 
@@ -146,10 +166,6 @@ export const SectionSubTitle = styled(Title)`
     margin-top: 24px;
     margin-bottom: 16px;
   }
-`
-
-export const FullWidthInputNumber = styled(InputNumber)`
-  width: 100%;
 `
 
 export const StyledCollapse = styled(Collapse)`
@@ -234,9 +250,10 @@ export const InlineFormRow = styled.div`
  * 用于多个表单项的网格布局，支持自动换行
  */
 export const FormRowContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 16px 48px;
+  justify-content: start;
 `
 
 /**

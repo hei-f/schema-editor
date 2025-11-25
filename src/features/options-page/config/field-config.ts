@@ -3,6 +3,37 @@ import { storage } from '@/shared/utils/browser/storage'
 import { pathEqual } from '@/shared/utils/form-path'
 
 /**
+ * 配置区块标识常量
+ * 用于标识各个配置卡片及其对应的默认值键
+ */
+export const SECTION_KEYS = {
+  BASIC_INTEGRATION: 'basicIntegration',
+  ELEMENT_DETECTION: 'elementDetection',
+  EDITOR_CONFIG: 'editorConfig',
+  FEATURE_TOGGLE: 'featureToggle',
+  PREVIEW_CONFIG: 'previewConfig',
+  DATA_MANAGEMENT: 'dataManagement',
+  DEBUG: 'debug'
+} as const
+
+export type SectionKey = typeof SECTION_KEYS[keyof typeof SECTION_KEYS]
+
+/**
+ * 各卡片对应的默认值键映射
+ * key: 区块标识
+ * value: 该区块包含的配置字段名数组
+ */
+export const SECTION_DEFAULT_KEYS: Record<SectionKey, readonly string[]> = {
+  [SECTION_KEYS.BASIC_INTEGRATION]: ['attributeName', 'getFunctionName', 'updateFunctionName', 'previewFunctionName'],
+  [SECTION_KEYS.ELEMENT_DETECTION]: ['searchConfig', 'highlightColor', 'highlightAllConfig'],
+  [SECTION_KEYS.EDITOR_CONFIG]: ['drawerWidth', 'enableAstTypeHints', 'editorTheme'],
+  [SECTION_KEYS.FEATURE_TOGGLE]: ['toolbarButtons'],
+  [SECTION_KEYS.PREVIEW_CONFIG]: ['previewConfig'],
+  [SECTION_KEYS.DATA_MANAGEMENT]: ['maxFavoritesCount', 'autoSaveDraft', 'maxHistoryCount', 'exportConfig'],
+  [SECTION_KEYS.DEBUG]: ['enableDebugLog', 'autoParseString']
+}
+
+/**
  * 字段分组接口
  */
 interface FieldGroup {
@@ -29,12 +60,14 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
   functionNames: {
     fieldPaths: [
       FORM_PATHS.getFunctionName,
-      FORM_PATHS.updateFunctionName
+      FORM_PATHS.updateFunctionName,
+      FORM_PATHS.previewFunctionName
     ],
     save: async (allValues: any) => {
       await storage.setFunctionNames(
         allValues.getFunctionName,
-        allValues.updateFunctionName
+        allValues.updateFunctionName,
+        allValues.previewFunctionName
       )
     }
   },
@@ -55,7 +88,6 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
     fieldPaths: [
       FORM_PATHS.previewConfig.previewWidth,
       FORM_PATHS.previewConfig.updateDelay,
-      FORM_PATHS.previewConfig.rememberState,
       FORM_PATHS.previewConfig.autoUpdate
     ],
     save: async (allValues: any) => {
@@ -79,7 +111,7 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
     save: async (allValues: any) => {
       await storage.setExportConfig(allValues.exportConfig)
     }
-  }
+  },
 }
 
 /**
@@ -92,6 +124,7 @@ export const DEBOUNCE_FIELD_PATHS: readonly (readonly string[])[] = [
   FORM_PATHS.searchConfig.throttleInterval,
   FORM_PATHS.getFunctionName,
   FORM_PATHS.updateFunctionName,
+  FORM_PATHS.previewFunctionName,
   FORM_PATHS.maxFavoritesCount,
   FORM_PATHS.highlightColor,
   FORM_PATHS.maxHistoryCount,

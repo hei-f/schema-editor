@@ -10,16 +10,24 @@ import {
   HelpTooltipIcon
 } from '../styles/layout.styles'
 
+interface FeatureToggleSectionProps {
+  /** 恢复默认回调 */
+  onResetDefault?: () => void
+}
+
 /**
  * 功能开关配置区块
  * 控制编辑器工具栏按钮的显示/隐藏
  */
-export const FeatureToggleSection: React.FC = () => {
+export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props) => {
+  const { onResetDefault } = props
+
   return (
     <SectionCard
       title="功能开关"
       subtitle="控制编辑器工具栏按钮的显示"
       panelKey="feature-toggle"
+      onResetDefault={onResetDefault}
     >
       <FormRowContainer>
         <InlineFormRow>
