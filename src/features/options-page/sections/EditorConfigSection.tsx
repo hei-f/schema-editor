@@ -7,7 +7,6 @@ import { HelpIcon } from '../styles/layout.styles'
 
 /**
  * 编辑器配置区块
- * 包含抽屉宽度、字符串解析、AST类型提示等
  */
 export const EditorConfigSection: React.FC = () => {
   return (
@@ -55,4 +54,3 @@ export const EditorConfigSection: React.FC = () => {
     </SectionCard>
   )
 }
-
