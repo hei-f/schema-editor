@@ -1,5 +1,5 @@
 import { DEFAULT_VALUES, STORAGE_KEYS } from '@/shared/constants/defaults'
-import type { EditorTheme, HighlightAllConfig, PreviewConfig } from '@/shared/types'
+import type { EditorTheme, HighlightAllConfig, PreviewConfig, RecordingModeConfig } from '@/shared/types'
 
 /**
  * 存储字段配置接口
@@ -118,6 +118,25 @@ export const SIMPLE_STORAGE_FIELDS = {
       )
     }
   } as StorageFieldConfig<HighlightAllConfig>,
+
+  recordingModeConfig: {
+    key: STORAGE_KEYS.RECORDING_MODE_CONFIG,
+    defaultValue: DEFAULT_VALUES.recordingModeConfig,
+    validator: (value: any): value is RecordingModeConfig => {
+      return (
+        value &&
+        typeof value.enabled === 'boolean' &&
+        typeof value.keyBinding === 'string' &&
+        value.keyBinding.length === 1 &&
+        /^[a-zA-Z0-9]$/.test(value.keyBinding) &&
+        typeof value.highlightColor === 'string' &&
+        value.highlightColor.length > 0 &&
+        typeof value.pollingInterval === 'number' &&
+        value.pollingInterval >= 50 &&
+        value.pollingInterval <= 1000
+      )
+    }
+  } as StorageFieldConfig<RecordingModeConfig>,
 
   enableAstTypeHints: {
     key: STORAGE_KEYS.ENABLE_AST_TYPE_HINTS,

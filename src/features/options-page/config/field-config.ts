@@ -25,7 +25,7 @@ export type SectionKey = typeof SECTION_KEYS[keyof typeof SECTION_KEYS]
  */
 export const SECTION_DEFAULT_KEYS: Record<SectionKey, readonly string[]> = {
   [SECTION_KEYS.BASIC_INTEGRATION]: ['attributeName', 'getFunctionName', 'updateFunctionName', 'previewFunctionName'],
-  [SECTION_KEYS.ELEMENT_DETECTION]: ['searchConfig', 'highlightColor', 'highlightAllConfig'],
+  [SECTION_KEYS.ELEMENT_DETECTION]: ['searchConfig', 'highlightColor', 'highlightAllConfig', 'recordingModeConfig'],
   [SECTION_KEYS.EDITOR_CONFIG]: ['drawerWidth', 'enableAstTypeHints', 'editorTheme'],
   [SECTION_KEYS.FEATURE_TOGGLE]: ['toolbarButtons'],
   [SECTION_KEYS.PREVIEW_CONFIG]: ['previewConfig'],
@@ -104,6 +104,17 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
       await storage.setHighlightAllConfig(allValues.highlightAllConfig)
     }
   },
+  recordingModeConfig: {
+    fieldPaths: [
+      FORM_PATHS.recordingModeConfig.enabled,
+      FORM_PATHS.recordingModeConfig.keyBinding,
+      FORM_PATHS.recordingModeConfig.highlightColor,
+      FORM_PATHS.recordingModeConfig.pollingInterval
+    ],
+    save: async (allValues: any) => {
+      await storage.setRecordingModeConfig(allValues.recordingModeConfig)
+    }
+  },
   exportConfig: {
     fieldPaths: [
       FORM_PATHS.exportConfig.customFileName
@@ -129,7 +140,10 @@ export const DEBOUNCE_FIELD_PATHS: readonly (readonly string[])[] = [
   FORM_PATHS.highlightColor,
   FORM_PATHS.maxHistoryCount,
   FORM_PATHS.highlightAllConfig.keyBinding,
-  FORM_PATHS.highlightAllConfig.maxHighlightCount
+  FORM_PATHS.highlightAllConfig.maxHighlightCount,
+  FORM_PATHS.recordingModeConfig.keyBinding,
+  FORM_PATHS.recordingModeConfig.highlightColor,
+  FORM_PATHS.recordingModeConfig.pollingInterval
 ]
 
 /**

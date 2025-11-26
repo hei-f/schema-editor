@@ -25,6 +25,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   const [schemaData, setSchemaData] = useState<any>(null)
   const [currentAttributes, setCurrentAttributes] = useState<ElementAttributes>({ params: [] })
   const [drawerWidth, setDrawerWidth] = useState<string | number>('800px')
+  const [isRecordingMode, setIsRecordingMode] = useState(false)
   const configSyncedRef = useRef(false)
 
   /**
@@ -89,9 +90,10 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
    */
   useEffect(() => {
     const handleElementClick = (event: CustomEvent) => {
-      const { attributes } = event.detail
+      const { attributes, isRecordingMode: recordingMode } = event.detail
 
       setCurrentAttributes(attributes)
+      setIsRecordingMode(recordingMode || false)
       requestSchema(attributes)
     }
 
@@ -171,6 +173,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
    */
   const handleCloseDrawer = () => {
     setDrawerOpen(false)
+    setIsRecordingMode(false)
     
     // 抽屉关闭时，触发清除高亮的事件
     window.dispatchEvent(new CustomEvent('schema-editor:clear-highlight'))
@@ -191,6 +194,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
             onClose={handleCloseDrawer}
             onSave={handleSave}
             width={drawerWidth}
+            isRecordingMode={isRecordingMode}
           />
         </AntdApp>
       </ConfigProvider>

@@ -107,6 +107,32 @@ export interface HighlightAllConfig {
 }
 
 /**
+ * 录制模式配置接口
+ */
+export interface RecordingModeConfig {
+  /** 是否启用功能 */
+  enabled: boolean
+  /** 快捷键字符（单个小写字母，配合 Alt 使用） */
+  keyBinding: string
+  /** 录制模式下的高亮颜色 */
+  highlightColor: string
+  /** 轮询间隔（毫秒） */
+  pollingInterval: number
+}
+
+/**
+ * Schema快照接口
+ */
+export interface SchemaSnapshot {
+  /** 快照ID（递增序号） */
+  id: number
+  /** Schema内容（字符串） */
+  content: string
+  /** 相对于首次轮询的时间（毫秒） */
+  timestamp: number
+}
+
+/**
  * 导出配置接口
  */
 export interface ExportConfig {
@@ -157,6 +183,8 @@ export interface StorageData {
   maxHistoryCount: number
   /** 高亮所有元素配置 */
   highlightAllConfig: HighlightAllConfig
+  /** 录制模式配置 */
+  recordingModeConfig: RecordingModeConfig
   /** 启用 AST 类型提示 */
   enableAstTypeHints: boolean
   /** 导出配置 */

@@ -21,6 +21,8 @@ interface DrawerToolbarProps {
   canParse: boolean
   toolbarButtons: ToolbarButtonsConfig
   previewEnabled?: boolean
+  /** 是否正在录制（录制中禁用部分功能） */
+  isRecording?: boolean
   onFormat: () => void
   onSerialize: () => void
   onDeserialize: () => void
@@ -37,6 +39,7 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
   canParse,
   toolbarButtons,
   previewEnabled = false,
+  isRecording = false,
   onFormat,
   onSerialize,
   onDeserialize,
@@ -109,7 +112,13 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
         )}
         {toolbarButtons.astRawStringToggle && (
           <Tooltip 
-            title={contentType === ContentType.Other ? '当前数据类型错误' : ''}
+            title={
+              isRecording 
+                ? '录制中不可切换' 
+                : contentType === ContentType.Other 
+                  ? '当前数据类型错误' 
+                  : ''
+            }
           >
             <Segmented
               size="small"
@@ -120,36 +129,39 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
               ]}
               value={contentType === ContentType.Other ? undefined : contentType}
               onChange={onSegmentChange}
-              disabled={contentType === ContentType.Other}
+              disabled={contentType === ContentType.Other || isRecording}
             />
           </Tooltip>
         )}
         {toolbarButtons.deserialize && (
-          <Button 
-            size="small" 
-            onClick={onDeserialize}
-            disabled={!canParse}
-          >
-            反序列化
-          </Button>
+          <Tooltip title={!canParse ? '当前内容不是有效的 JSON 格式' : ''}>
+            <Button 
+              size="small" 
+              onClick={onDeserialize}
+              disabled={!canParse}
+            >
+              反序列化
+            </Button>
+          </Tooltip>
         )}
         {toolbarButtons.serialize && (
           <Button 
             size="small" 
             onClick={onSerialize}
-            disabled={!canParse}
           >
             序列化
           </Button>
         )}
         {toolbarButtons.format && (
-          <Button 
-            size="small" 
-            onClick={onFormat}
-            disabled={!canParse}
-          >
-            格式化
-          </Button>
+          <Tooltip title={!canParse ? '当前内容不是有效的 JSON 格式' : ''}>
+            <Button 
+              size="small" 
+              onClick={onFormat}
+              disabled={!canParse}
+            >
+              格式化
+            </Button>
+          </Tooltip>
         )}
       </ButtonGroup>
     </StyledEditorToolbar>

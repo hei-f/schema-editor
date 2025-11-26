@@ -98,6 +98,18 @@ export const FORM_PATHS = {
     maxHighlightCount: ['highlightAllConfig', 'maxHighlightCount']
   },
   
+  /** 录制模式配置 */
+  recordingModeConfig: {
+    /** 是否启用 */
+    enabled: ['recordingModeConfig', 'enabled'],
+    /** 快捷键 */
+    keyBinding: ['recordingModeConfig', 'keyBinding'],
+    /** 录制模式高亮颜色 */
+    highlightColor: ['recordingModeConfig', 'highlightColor'],
+    /** 轮询间隔 */
+    pollingInterval: ['recordingModeConfig', 'pollingInterval']
+  },
+  
   /** 启用 AST 类型提示 */
   enableAstTypeHints: ['enableAstTypeHints'],
   

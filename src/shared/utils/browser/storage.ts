@@ -1,7 +1,7 @@
 import { DEFAULT_VALUES, STORAGE_KEYS } from '@/shared/constants/defaults'
 import { draftManager } from '@/shared/managers/draft-manager'
 import { favoritesManager } from '@/shared/managers/favorites-manager'
-import type { Draft, EditorTheme, ExportConfig, Favorite, HighlightAllConfig, PreviewConfig, SearchConfig, StorageData, ToolbarButtonsConfig } from '@/shared/types'
+import type { Draft, EditorTheme, ExportConfig, Favorite, HighlightAllConfig, PreviewConfig, RecordingModeConfig, SearchConfig, StorageData, ToolbarButtonsConfig } from '@/shared/types'
 import { logger } from '@/shared/utils/logger'
 import { SIMPLE_STORAGE_FIELDS, type StorageFieldName } from './storage-config'
 
@@ -234,7 +234,7 @@ class StorageManager {
    * 获取所有存储数据
    */
   async getAllData(): Promise<StorageData> {
-    const [isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig, maxHistoryCount, highlightAllConfig, enableAstTypeHints, editorTheme, previewFunctionName] = await Promise.all([
+    const [isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig, maxHistoryCount, highlightAllConfig, recordingModeConfig, enableAstTypeHints, editorTheme, previewFunctionName] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
       this.getAttributeName(),
@@ -252,12 +252,13 @@ class StorageManager {
       this.getPreviewConfig(),
       this.getMaxHistoryCount(),
       this.getHighlightAllConfig(),
+      this.getRecordingModeConfig(),
       this.getEnableAstTypeHints(),
       this.getEditorTheme(),
       this.getPreviewFunctionName()
     ])
     const exportConfig = await this.getExportConfig()
-    return { isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig, maxHistoryCount, highlightAllConfig, enableAstTypeHints, exportConfig, editorTheme, previewFunctionName }
+    return { isActive, drawerWidth, attributeName, searchConfig, getFunctionName, updateFunctionName, autoParseString, enableDebugLog, toolbarButtons, highlightColor, maxFavoritesCount, draftRetentionDays, autoSaveDraft, draftAutoSaveDebounce, previewConfig, maxHistoryCount, highlightAllConfig, recordingModeConfig, enableAstTypeHints, exportConfig, editorTheme, previewFunctionName }
   }
 
   /**
@@ -528,6 +529,20 @@ class StorageManager {
    */
   async setHighlightAllConfig(config: HighlightAllConfig): Promise<void> {
     return this.setSimple('highlightAllConfig', config)
+  }
+
+  /**
+   * 获取录制模式配置
+   */
+  async getRecordingModeConfig(): Promise<RecordingModeConfig> {
+    return this.getSimple<RecordingModeConfig>('recordingModeConfig')
+  }
+
+  /**
+   * 设置录制模式配置
+   */
+  async setRecordingModeConfig(config: RecordingModeConfig): Promise<void> {
+    return this.setSimple('recordingModeConfig', config)
   }
 
   /**

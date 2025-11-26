@@ -1,4 +1,4 @@
-import type { ElementAttributes, HighlightAllConfig, SearchConfig } from '@/shared/types'
+import type { ElementAttributes, HighlightAllConfig, RecordingModeConfig, SearchConfig } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
 import {
@@ -43,6 +43,11 @@ export class ElementMonitor {
     initialRect: { left: number; top: number }
   }> = []
   
+  // 录制模式相关属性
+  private recordingModeConfig: RecordingModeConfig | null = null
+  private isRecordingMode: boolean = false
+  private onRecordingModeClickCallback: ((element: HTMLElement, attrs: ElementAttributes) => void) | null = null
+  
   // 滚动处理相关
   private scrollStopTimer: number | null = null
   private scrollUpdateRafId: number | null = null
@@ -62,6 +67,9 @@ export class ElementMonitor {
     
     // 加载高亮所有元素配置
     this.highlightAllConfig = await storage.getHighlightAllConfig()
+    
+    // 加载录制模式配置
+    this.recordingModeConfig = await storage.getRecordingModeConfig()
     
     // 添加事件监听
     document.addEventListener('mousemove', this.handleMouseMove, true)
@@ -115,6 +123,20 @@ export class ElementMonitor {
   }
 
   /**
+   * 设置录制模式点击回调
+   */
+  setOnRecordingModeClick(callback: (element: HTMLElement, attrs: ElementAttributes) => void): void {
+    this.onRecordingModeClickCallback = callback
+  }
+
+  /**
+   * 获取是否处于录制模式
+   */
+  getIsRecordingMode(): boolean {
+    return this.isRecordingMode
+  }
+
+  /**
    * 创建tooltip元素
    */
   private createTooltip(): void {
@@ -157,24 +179,36 @@ export class ElementMonitor {
     
     // 检测 Alt 键（Mac 上是 Option 键）
     if (event.altKey) {
-      // 检测高亮所有元素快捷键
       // 使用 event.code 而不是 event.key，因为 Mac 上 Alt+A 会产生特殊字符 'å'
       const keyCode = event.code.toLowerCase()
-      const keyBinding = this.highlightAllConfig?.keyBinding.toLowerCase()
       
-      // 根据输入类型构建期望的 code
-      // 字母: 'a' → 'keya'
-      // 数字: '1' → 'digit1'
-      const isDigit = /^[0-9]$/.test(keyBinding || '')
-      const expectedCode = isDigit ? `digit${keyBinding}` : `key${keyBinding}`
+      // 检测高亮所有元素快捷键
+      const highlightKeyBinding = this.highlightAllConfig?.keyBinding.toLowerCase()
+      const isHighlightDigit = /^[0-9]$/.test(highlightKeyBinding || '')
+      const expectedHighlightCode = isHighlightDigit ? `digit${highlightKeyBinding}` : `key${highlightKeyBinding}`
       
       if (
         this.highlightAllConfig?.enabled &&
-        keyCode === expectedCode &&
+        keyCode === expectedHighlightCode &&
         !this.isHighlightingAll  // 防止重复触发
       ) {
         event.preventDefault()
         this.highlightAll()
+        return
+      }
+      
+      // 检测录制模式快捷键 - 按住 Alt+R 进入录制模式
+      const recordingKeyBinding = this.recordingModeConfig?.keyBinding.toLowerCase()
+      const isRecordingDigit = /^[0-9]$/.test(recordingKeyBinding || '')
+      const expectedRecordingCode = isRecordingDigit ? `digit${recordingKeyBinding}` : `key${recordingKeyBinding}`
+      
+      if (
+        this.recordingModeConfig?.enabled &&
+        keyCode === expectedRecordingCode &&
+        !this.isRecordingMode  // 防止重复触发
+      ) {
+        event.preventDefault()
+        this.enterRecordingMode()
         return
       }
       
@@ -201,6 +235,51 @@ export class ElementMonitor {
   }
 
   /**
+   * 进入录制模式
+   */
+  private enterRecordingMode(): void {
+    if (this.isRecordingMode) return
+    
+    this.isRecordingMode = true
+    this.isControlPressed = true
+    logger.log('录制模式: 开启')
+    
+    // 清除当前高亮框，重新用录制模式颜色创建
+    this.clearHighlight()
+    
+    // 触发录制模式变化事件
+    window.dispatchEvent(new CustomEvent('schema-editor:recording-mode-change', {
+      detail: { isRecordingMode: true }
+    }))
+    
+    // 如果有有效的鼠标位置，立即触发一次检测（使用录制模式颜色）
+    if (this.lastMouseX !== 0 || this.lastMouseY !== 0) {
+      const mockMouseEvent = new MouseEvent('mousemove', {
+        clientX: this.lastMouseX,
+        clientY: this.lastMouseY,
+        bubbles: true,
+        cancelable: true
+      })
+      this.performSearch(mockMouseEvent)
+    }
+  }
+
+  /**
+   * 退出录制模式
+   */
+  private exitRecordingMode(): void {
+    if (!this.isRecordingMode) return
+    
+    this.isRecordingMode = false
+    logger.log('录制模式: 关闭')
+    
+    // 触发录制模式变化事件
+    window.dispatchEvent(new CustomEvent('schema-editor:recording-mode-change', {
+      detail: { isRecordingMode: false }
+    }))
+  }
+
+  /**
    * 处理键盘释放事件
    */
   private handleKeyUp = (event: KeyboardEvent): void => {
@@ -217,6 +296,11 @@ export class ElementMonitor {
       // 清除高亮所有元素
       if (this.isHighlightingAll) {
         this.clearAllHighlights()
+      }
+      
+      // 退出录制模式（松开 Alt 键时退出）
+      if (this.isRecordingMode) {
+        this.exitRecordingMode()
       }
     }
   }
@@ -342,8 +426,10 @@ export class ElementMonitor {
     // 设置当前元素
     this.currentElement = target
     
-    // 创建高亮框
-    const color = await storage.getHighlightColor()
+    // 创建高亮框 - 录制模式下使用不同颜色
+    const color = this.isRecordingMode && this.recordingModeConfig?.highlightColor
+      ? this.recordingModeConfig.highlightColor
+      : await storage.getHighlightColor()
     this.createHighlightBox(target, color)
     this.showTooltip(attrs, isValid, event)
   }
@@ -370,10 +456,21 @@ export class ElementMonitor {
     const attrs = await getElementAttributes(this.currentElement)
     
     // 只有有效的元素才触发回调
-    if (hasValidAttributes(attrs) && this.onElementClickCallback) {
+    if (hasValidAttributes(attrs)) {
       event.preventDefault()
       event.stopPropagation()
-      this.onElementClickCallback(this.currentElement, attrs)
+      
+      // 根据是否处于录制模式调用不同的回调
+      if (this.isRecordingMode && this.onRecordingModeClickCallback) {
+        this.onRecordingModeClickCallback(this.currentElement, attrs)
+        // 点击后退出录制模式
+        this.isRecordingMode = false
+        window.dispatchEvent(new CustomEvent('schema-editor:recording-mode-change', {
+          detail: { isRecordingMode: false }
+        }))
+      } else if (this.onElementClickCallback) {
+        this.onElementClickCallback(this.currentElement, attrs)
+      }
     }
   }
 
@@ -388,11 +485,17 @@ export class ElementMonitor {
     if (isValid) {
       // 显示参数列表
       const lines: string[] = []
+      
+      // 录制模式下添加醒目提示
+      if (this.isRecordingMode) {
+        lines.push('<div style="background: #ff4d4f; color: white; padding: 4px 8px; margin: -8px -12px 8px -12px; border-radius: 6px 6px 0 0; font-weight: 600; font-size: 13px; text-align: center;">🔴 录制模式</div>')
+      }
+      
       attrs.params.forEach((param, index) => {
         lines.push(`params${index + 1}: ${param}`)
       })
       this.tooltipElement.innerHTML = lines.join('<br>')
-      this.tooltipElement.style.background = 'rgba(0, 0, 0, 0.85)'
+      this.tooltipElement.style.background = 'rgba(0, 0, 0, 0.9)'
       this.tooltipElement.style.color = 'white'
     } else {
       // 显示"非法目标"

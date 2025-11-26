@@ -42,6 +42,12 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     keyBinding: 'a',
     maxHighlightCount: 500
   },
+  recordingModeConfig: {
+    enabled: true,
+    keyBinding: 'r',
+    highlightColor: '#FF4D4F',
+    pollingInterval: 100
+  },
   enableAstTypeHints: true,
   exportConfig: {
     customFileName: false
@@ -72,6 +78,7 @@ export const STORAGE_KEYS = {
   FAVORITES: 'favorites',
   MAX_HISTORY_COUNT: 'maxHistoryCount',
   HIGHLIGHT_ALL_CONFIG: 'highlightAllConfig',
+  RECORDING_MODE_CONFIG: 'recordingModeConfig',
   ENABLE_AST_TYPE_HINTS: 'enableAstTypeHints',
   EXPORT_CONFIG: 'exportConfig',
   EDITOR_THEME: 'editorTheme',

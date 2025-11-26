@@ -66,6 +66,7 @@ export const OptionsApp: React.FC = () => {
       const previewConfig = await storage.getPreviewConfig()
       const maxHistoryCount = await storage.getMaxHistoryCount()
       const highlightAllConfig = await storage.getHighlightAllConfig()
+      const recordingModeConfig = await storage.getRecordingModeConfig()
       const enableAstTypeHints = await storage.getEnableAstTypeHints()
       const exportConfig = await storage.getExportConfig()
       const editorTheme = await storage.getEditorTheme()
@@ -91,6 +92,7 @@ export const OptionsApp: React.FC = () => {
         previewConfig,
         maxHistoryCount,
         highlightAllConfig,
+        recordingModeConfig,
         enableAstTypeHints,
         exportConfig,
         editorTheme,
@@ -169,7 +171,8 @@ export const OptionsApp: React.FC = () => {
     ]
     return debounceFields.includes(fieldPath[0]) || 
            (fieldPath[0] === 'searchConfig' && ['searchDepthUp', 'throttleInterval'].includes(fieldPath[1])) ||
-           (fieldPath[0] === 'highlightAllConfig' && ['keyBinding', 'maxHighlightCount'].includes(fieldPath[1]))
+           (fieldPath[0] === 'highlightAllConfig' && ['keyBinding', 'maxHighlightCount'].includes(fieldPath[1])) ||
+           (fieldPath[0] === 'recordingModeConfig' && ['keyBinding', 'pollingInterval', 'highlightColor'].includes(fieldPath[1]))
   }, [])
 
   const handleValuesChange = (changedValues: any, allValues: any) => {
@@ -235,6 +238,7 @@ export const OptionsApp: React.FC = () => {
     await storage.setPreviewConfig(DEFAULT_VALUES.previewConfig)
     await storage.setMaxHistoryCount(DEFAULT_VALUES.maxHistoryCount)
     await storage.setHighlightAllConfig(DEFAULT_VALUES.highlightAllConfig)
+    await storage.setRecordingModeConfig(DEFAULT_VALUES.recordingModeConfig)
     await storage.setEnableAstTypeHints(DEFAULT_VALUES.enableAstTypeHints)
     await storage.setExportConfig(DEFAULT_VALUES.exportConfig)
     await storage.setEditorTheme(DEFAULT_VALUES.editorTheme)

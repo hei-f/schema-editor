@@ -1,12 +1,15 @@
 import { FavoritesManager } from '@/features/favorites/components/FavoritesManager'
 import { EDITOR_THEME_OPTIONS } from '@/shared/constants/editor-themes'
-import type { EditorTheme, ElementAttributes, HistoryEntry, PreviewFunctionResultPayload } from '@/shared/types'
+import type { EditorTheme, ElementAttributes, HistoryEntry, PreviewFunctionResultPayload, RecordingModeConfig } from '@/shared/types'
 import { ContentType, HistoryEntryType, MessageType } from '@/shared/types'
 import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
 import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { parseMarkdownString } from '@/shared/utils/schema/transformers'
+import { useSchemaRecording } from '../hooks/useSchemaRecording'
+import { RecordingPanel } from './RecordingPanel'
+import { SchemaDiffView } from './SchemaDiffView'
 import {
   BgColorsOutlined,
   DeleteOutlined,
@@ -56,6 +59,8 @@ interface SchemaDrawerProps {
   onClose: () => void
   onSave: (data: any) => Promise<void>
   width: number | string
+  /** 是否以录制模式打开 */
+  isRecordingMode?: boolean
 }
 
 /**
@@ -67,7 +72,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   attributes, 
   onClose, 
   onSave, 
-  width
+  width,
+  isRecordingMode: initialRecordingMode = false
 }) => {
   const [editorValue, setEditorValue] = useState<string>('')
   const [isModified, setIsModified] = useState(false)
@@ -107,6 +113,12 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   // 编辑器主题
   const [editorTheme, setEditorTheme] = useState<EditorTheme>('light')
   
+  // 录制模式相关状态
+  const [isInRecordingMode, setIsInRecordingMode] = useState(false)
+  const [isDiffMode, setIsDiffMode] = useState(false)
+  const [recordingConfig, setRecordingConfig] = useState<RecordingModeConfig | null>(null)
+  const [hasStartedRecording, setHasStartedRecording] = useState(false) // 是否已开始过录制（用于防止停止后重新开始）
+  
   const paramsKey = attributes.params.join(',')
   const isFirstLoadRef = useRef(true)
   const editorRef = useRef<CodeMirrorEditorHandle>(null) // 编辑器命令式 API
@@ -121,6 +133,31 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     debouncedDetectContent,
     updateContentType
   } = useContentDetection()
+
+  /**
+   * 处理schema变化（录制模式下更新编辑器）
+   */
+  const handleSchemaChangeForRecording = useCallback((content: string) => {
+    editorRef.current?.setValue(content)
+    setEditorValue(content)
+    const result = detectContentType(content)
+    updateContentType(result)
+  }, [detectContentType, updateContentType])
+
+  /** Schema录制Hook */
+  const {
+    isRecording,
+    snapshots,
+    selectedSnapshotId,
+    startRecording,
+    stopRecording,
+    selectSnapshot,
+    clearSnapshots
+  } = useSchemaRecording({
+    attributes,
+    pollingInterval: recordingConfig?.pollingInterval || 100,
+    onSchemaChange: handleSchemaChangeForRecording
+  })
 
   /** 轻量提示 */
   const { lightNotifications, showLightNotification } = useLightNotifications()
@@ -287,14 +324,15 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   useEffect(() => {
     const loadConfigs = async () => {
       try {
-        const [toolbarConfig, autoSave, preview, historyCount, astHints, expConfig, theme] = await Promise.all([
+        const [toolbarConfig, autoSave, preview, historyCount, astHints, expConfig, theme, recConfig] = await Promise.all([
           storage.getToolbarButtons(),
           storage.getAutoSaveDraft(),
           storage.getPreviewConfig(),
           storage.getMaxHistoryCount(),
           storage.getEnableAstTypeHints(),
           storage.getExportConfig(),
-          storage.getEditorTheme()
+          storage.getEditorTheme(),
+          storage.getRecordingModeConfig()
         ])
         setToolbarButtons(toolbarConfig)
         setAutoSaveDraft(autoSave)
@@ -303,6 +341,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         setEnableAstTypeHints(astHints)
         setExportConfig(expConfig)
         setEditorTheme(theme)
+        setRecordingConfig(recConfig)
       } catch (error) {
         logger.error('加载配置失败:', error)
       }
@@ -317,8 +356,43 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     if (open) {
       isFirstLoadRef.current = true
       checkDraft()
+      
+      // 禁止背景页面滚动
+      document.body.style.overflow = 'hidden'
+      
+      // 如果是录制模式打开，设置录制状态
+      if (initialRecordingMode) {
+        setIsInRecordingMode(true)
+        setIsDiffMode(false)
+        setHasStartedRecording(false) // 重置录制开始标记
+      }
+    } else {
+      // 恢复背景页面滚动
+      document.body.style.overflow = ''
+      
+      // 抽屉关闭时重置录制状态
+      setIsInRecordingMode(false)
+      setIsDiffMode(false)
+      setHasStartedRecording(false)
+      stopRecording()
+      clearSnapshots()
     }
-  }, [open, checkDraft])
+  }, [open, checkDraft, initialRecordingMode, stopRecording, clearSnapshots])
+
+  /**
+   * 录制模式下自动开始录制（只在首次进入时触发）
+   */
+  useEffect(() => {
+    // 只有在录制模式下、还没开始过录制、且数据已准备好时才自动开始
+    if (isInRecordingMode && open && recordingConfig && !hasStartedRecording && schemaData !== null) {
+      // 延迟一点开始录制，确保编辑器已准备好
+      const timer = setTimeout(() => {
+        startRecording()
+        setHasStartedRecording(true)
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [isInRecordingMode, open, recordingConfig, hasStartedRecording, startRecording, schemaData])
 
   /**
    * 当schemaData变化时，更新编辑器内容
@@ -327,7 +401,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     const processSchemaData = async () => {
       if (schemaData !== null && schemaData !== undefined && open) {
         try {
-          const autoParseEnabled = await storage.getAutoParseString()
+          // 录制模式下禁用自动解析，直接显示原始数据
+          const autoParseEnabled = isInRecordingMode ? false : await storage.getAutoParseString()
           
           if (autoParseEnabled && schemaTransformer.isStringData(schemaData)) {
             setWasStringData(true)
@@ -352,6 +427,15 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               const result = detectContentType(formatted)
               updateContentType(result)
             }
+          } else if (isInRecordingMode && typeof schemaData === 'string') {
+            // 录制模式下，字符串直接显示，不经过 JSON.stringify
+            // 这样换行符 \n 会正确显示为换行，与录制过程中的数据格式一致
+            setWasStringData(true)
+            editorRef.current?.setValue(schemaData)
+            setEditorValue(schemaData)
+            setIsModified(false)
+            const result = detectContentType(schemaData)
+            updateContentType(result)
           } else {
             setWasStringData(false)
             const formatted = JSON.stringify(schemaData, null, 2)
@@ -359,9 +443,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             editorRef.current?.setValue(formatted)
             setEditorValue(formatted)
             setIsModified(false)
-          const result = detectContentType(formatted)
-          updateContentType(result)
-        }
+            const result = detectContentType(formatted)
+            updateContentType(result)
+          }
         
         setTimeout(() => {
           isFirstLoadRef.current = false
@@ -740,7 +824,35 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   /**
    * 计算抽屉宽度
    */
-  const drawerWidth = previewEnabled ? '100vw' : width
+  const drawerWidth = previewEnabled ? '100vw' : (isInRecordingMode ? '1000px' : width)
+
+  /**
+   * 处理停止录制
+   */
+  const handleStopRecording = useCallback(() => {
+    stopRecording()
+  }, [stopRecording])
+
+  /**
+   * 处理进入Diff模式
+   */
+  const handleEnterDiffMode = useCallback(() => {
+    setIsDiffMode(true)
+  }, [])
+
+  /**
+   * 处理返回编辑模式（从Diff模式）
+   */
+  const handleBackToEditor = useCallback(() => {
+    setIsDiffMode(false)
+  }, [])
+
+  /**
+   * 处理选择快照
+   */
+  const handleSelectSnapshot = useCallback((id: number) => {
+    selectSnapshot(id)
+  }, [selectSnapshot])
 
   /**
    * 处理编辑器挂载
@@ -901,7 +1013,57 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         }
       >
         <DrawerContentContainer>
-          {previewEnabled ? (
+          {/* Diff模式 */}
+          {isInRecordingMode && isDiffMode ? (
+            <SchemaDiffView
+              snapshots={snapshots}
+              onBackToEditor={handleBackToEditor}
+            />
+          ) : isInRecordingMode ? (
+            // 录制模式：左侧面板 + 右侧编辑器
+            <RecordingPanel
+              isRecording={isRecording}
+              snapshots={snapshots}
+              selectedSnapshotId={selectedSnapshotId}
+              onStopRecording={handleStopRecording}
+              onSelectSnapshot={handleSelectSnapshot}
+              onEnterDiffMode={handleEnterDiffMode}
+            >
+              <DrawerToolbar
+                attributes={attributes}
+                contentType={contentType}
+                canParse={canParse}
+                toolbarButtons={toolbarButtons}
+                previewEnabled={previewEnabled}
+                isRecording={isRecording}
+                onFormat={handleFormat}
+                onSerialize={handleSerialize}
+                onDeserialize={handleDeserialize}
+                onSegmentChange={handleSegmentChange}
+                onRenderPreview={handleRenderPreview}
+              />
+              <EditorContainer>
+                {lightNotifications.map((notification, index) => (
+                  <LightSuccessNotification 
+                    key={notification.id} 
+                    style={{ top: `${16 + index * 48}px` }}
+                  >
+                    ✓ {notification.text}
+                  </LightSuccessNotification>
+                ))}
+                <CodeMirrorEditor
+                  ref={editorRef}
+                  height="100%"
+                  defaultValue={editorValue}
+                  onChange={handleEditorChange}
+                  theme={editorTheme}
+                  placeholder="在此输入 JSON Schema..."
+                  enableAstHints={enableAstTypeHints}
+                  isAstContent={() => contentType === ContentType.Ast}
+                />
+              </EditorContainer>
+            </RecordingPanel>
+          ) : previewEnabled ? (
             // 预览模式：工具栏在顶部，预览和编辑器并排
             <PreviewModeContainer>
               {/* 工具栏横跨整个宽度 */}

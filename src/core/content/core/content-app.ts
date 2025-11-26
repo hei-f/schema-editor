@@ -45,6 +45,11 @@ export class SchemaEditorContent {
       this.handleElementClick(element, attrs)
     })
 
+    // 设置录制模式点击回调
+    this.monitor.setOnRecordingModeClick((element: HTMLElement, attrs: ElementAttributes) => {
+      this.handleRecordingModeClick(element, attrs)
+    })
+
     logger.log('Schema Editor Content初始化完成, 激活状态:', this.isActive)
   }
 
@@ -135,7 +140,18 @@ export class SchemaEditorContent {
   private handleElementClick(element: HTMLElement, attrs: ElementAttributes): void {
     // 触发自定义事件，通知React应用
     const event = new CustomEvent('schema-editor:element-click', {
-      detail: { element, attributes: attrs }
+      detail: { element, attributes: attrs, isRecordingMode: false }
+    })
+    window.dispatchEvent(event)
+  }
+
+  /**
+   * 处理录制模式下的元素点击
+   */
+  private handleRecordingModeClick(element: HTMLElement, attrs: ElementAttributes): void {
+    // 触发自定义事件，通知React应用以录制模式打开
+    const event = new CustomEvent('schema-editor:element-click', {
+      detail: { element, attributes: attrs, isRecordingMode: true }
     })
     window.dispatchEvent(event)
   }
