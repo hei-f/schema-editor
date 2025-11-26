@@ -32,17 +32,17 @@ export class SchemaTransformer {
   }
 
   /**
-   * 序列化JSON数据
+   * 序列化数据
+   * 将编辑器内容转换为 JSON 字符串格式
    */
   serializeJson(value: string): TransformResult {
     try {
+      // 尝试先解析，如果是有效 JSON 则序列化解析后的值
       const parsed = JSON.parse(value)
       return serializeJson(parsed)
-    } catch (error: any) {
-      return {
-        success: false,
-        error: `序列化失败: ${error.message}`
-      }
+    } catch {
+      // 如果不是有效 JSON（如普通多行文本），直接序列化原始字符串
+      return serializeJson(value)
     }
   }
 

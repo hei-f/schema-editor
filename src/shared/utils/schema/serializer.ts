@@ -10,16 +10,18 @@ export interface JsonProcessResult {
 
 /**
  * 序列化JSON
- * @description 将JSON对象转换为序列化的字符串
- * @param data JSON对象
- * @returns 序列化后的字符串
+ * @description 将内容序列化为 JSON 字符串格式
+ * @param data 要序列化的内容（可以是字符串、对象、数组等）
+ * @returns 序列化后的 JSON 字符串
  */
 export const serializeJson = (data: any): JsonProcessResult => {
   try {
-    const jsonString = JSON.stringify(data)
+    // 只需要一次 JSON.stringify 即可将内容转为 JSON 格式
+    // 例如：多行字符串 "行1\n行2" → JSON字符串 "\"行1\\n行2\""
+    const jsonString = JSON.stringify(data, null, 2)
     return {
       success: true,
-      data: JSON.stringify(jsonString, null, 2)
+      data: jsonString
     }
   } catch (error) {
     return {
@@ -85,17 +87,18 @@ export const deserializeJson = (input: string): JsonProcessResult => {
       }
     }
 
-    // 如果最终结果仍是字符串，说明无法进一步解析
-    if (typeof parsed === 'string') {
+    // 如果没有进行任何解析且仍是字符串，说明输入不是有效的 JSON 格式
+    if (parseCount === 0 && typeof parsed === 'string') {
       return {
         success: false,
         error: '无法解析为有效的JSON格式，请检查输入内容'
       }
     }
 
+    // 解析成功（包括解析后是字符串、对象、数组等任何类型）
     return {
       success: true,
-      data: JSON.stringify(parsed, null, 2),
+      data: typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2),
       parseCount: parseCount > 0 ? parseCount : undefined
     }
   } catch (error) {
