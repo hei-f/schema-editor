@@ -2,7 +2,7 @@
 
 Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 
-![Version](https://img.shields.io/badge/version-1.7.0-blue)
+![Version](https://img.shields.io/badge/version-1.8.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ## 功能
@@ -83,6 +83,11 @@ npm run test:page
 ### 全局方法
 
 ```typescript
+// 类型定义
+type GetFunc<T> = (params: string) => NonNullable<T>
+type UpdateFunc<T> = (schema: NonNullable<T>, params: string) => any
+type PreviewFunc<T> = (schema: NonNullable<T>, container: HTMLElement) => (() => void) | null
+
 // 获取Schema
 window.__getContentById = (params: string) => {
   // params: 'param1' 或 'param1,param2'
@@ -90,7 +95,7 @@ window.__getContentById = (params: string) => {
 }
 
 // 更新Schema
-window.__updateContentById = (schema: any, params: string) => {
+window.__updateContentById = (schema: NonNullable<T>, params: string) => {
   // 更新逻辑
   return true
 }
@@ -105,12 +110,22 @@ window.__updateContentById = (schema: any, params: string) => {
 ```typescript
 /**
  * 预览函数（可选）
- * 用于自定义预览渲染，返回 React 组件
+ * @param schema - 当前编辑的数据（与 __updateContentById 的 schema 类型一致）
+ * @param container - 预览容器 DOM 元素
+ * @returns 清理函数 | null
  */
-window.__getContentPreview = (data: any) => {
-  return React.createElement('div', { 
-    style: { padding: '20px' } 
-  }, JSON.stringify(data, null, 2))
+let previewRoot = null
+window.__getContentPreview = (schema: NonNullable<T>, container: HTMLElement) => {
+  // 自己判断：root 不存在就创建，存在就复用（利用 React diff 机制）
+  if (!previewRoot) {
+    previewRoot = ReactDOM.createRoot(container)
+  }
+  previewRoot.render(<YourPreviewComponent schema={schema} />)
+  // 返回清理函数，插件关闭预览时会自动调用
+  return () => {
+    previewRoot?.unmount()
+    previewRoot = null
+  }
 }
 ```
 
