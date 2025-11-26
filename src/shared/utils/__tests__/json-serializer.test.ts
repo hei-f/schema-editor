@@ -7,7 +7,8 @@ describe('JSON序列化工具测试', () => {
       const result = serializeJson(input)
       
       expect(result.success).toBe(true)
-      expect(result.data).toBe('"{\\\"key\\\":\\\"value\\\"}"')
+      // 现在序列化输出格式化的JSON字符串
+      expect(JSON.parse(result.data!)).toEqual({ key: 'value' })
     })
 
     it('应该正确序列化数组', () => {
@@ -15,7 +16,8 @@ describe('JSON序列化工具测试', () => {
       const result = serializeJson(input)
       
       expect(result.success).toBe(true)
-      expect(JSON.parse(result.data!)).toBe('[1,2,3]')
+      // 现在序列化输出格式化的JSON字符串
+      expect(JSON.parse(result.data!)).toEqual([1, 2, 3])
     })
 
     it('应该处理null值', () => {

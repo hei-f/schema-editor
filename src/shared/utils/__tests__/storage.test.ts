@@ -138,6 +138,12 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
+        },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview'
       })
@@ -201,6 +207,12 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
+        },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview'
       })
@@ -253,6 +265,12 @@ describe('Storage工具测试', () => {
           enabled: true,
           keyBinding: 'a',
           maxHighlightCount: 500
+        },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
         },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview'
@@ -486,6 +504,12 @@ describe('Storage工具测试', () => {
           enabled: true,
           keyBinding: 'a',
           maxHighlightCount: 500
+        },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
         },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview'
