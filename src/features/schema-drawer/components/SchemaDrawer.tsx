@@ -591,6 +591,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
 
   /**
    * 手动渲染预览
+   * 预览数据与保存数据使用相同的转换逻辑，确保类型一致
    */
   const handleRenderPreview = (isAutoUpdate = false) => {
     if (!previewEnabled || !hasPreviewFunction) {
@@ -598,8 +599,13 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     }
     
     try {
-      // 解析编辑器内容
-      const parsedData = JSON.parse(editorValue)
+      // 使用与保存相同的转换逻辑，确保预览数据和保存数据类型一致
+      const result = schemaTransformer.prepareSaveData(editorValue, wasStringData)
+      
+      if (!result.success) {
+        message.error('数据转换失败：' + result.error)
+        return
+      }
       
       // 计算预览区域位置
       const rect = previewPlaceholderRef.current?.getBoundingClientRect()
@@ -612,7 +618,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       postMessageToPage({
         type: MessageType.RENDER_PREVIEW,
         payload: {
-          data: parsedData,
+          data: result.data,
           position: {
             left: rect.left,
             top: rect.top,
