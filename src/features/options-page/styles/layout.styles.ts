@@ -118,6 +118,57 @@ export const PanelTitle = styled(Typography.Text)`
   font-size: 14px;
 `
 
+/** SectionCard 操作按钮组 */
+export const PanelActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+/** SectionCard 操作按钮 */
+export const PanelActionButton = styled.button<{ $variant?: 'default' | 'primary' }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  ${props => props.$variant === 'primary' ? `
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    
+    &:hover {
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    }
+  ` : `
+    background: #fff;
+    color: #666;
+    border: 1px solid #d9d9d9;
+    
+    &:hover {
+      color: #1890ff;
+      border-color: #1890ff;
+    }
+    
+    &:active {
+      color: #096dd9;
+      border-color: #096dd9;
+    }
+  `}
+`
+
 export const AutoSaveHint = styled.div`
   display: flex;
   align-items: center;

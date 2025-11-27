@@ -1,6 +1,6 @@
-import { Button, Collapse } from 'antd'
+import { Collapse } from 'antd'
 import React from 'react'
-import { CardSubtitle, PanelHeader, PanelTitle, StyledCollapse } from '../styles/layout.styles'
+import { CardSubtitle, PanelActionButton, PanelActions, PanelHeader, PanelTitle, StyledCollapse } from '../styles/layout.styles'
 
 const { Panel } = Collapse
 
@@ -17,6 +17,12 @@ interface SectionCardProps {
   defaultActive?: boolean
   /** 恢复默认回调 */
   onResetDefault?: () => void
+  /** 额外的操作按钮配置 */
+  extraActions?: Array<{
+    label: string
+    onClick: () => void
+    variant?: 'default' | 'primary'
+  }>
 }
 
 /**
@@ -24,24 +30,40 @@ interface SectionCardProps {
  * 可折叠的配置区块，带标题和副标题
  */
 export const SectionCard: React.FC<SectionCardProps> = (props) => {
-  const { title, subtitle, children, panelKey, defaultActive = true, onResetDefault } = props
+  const { title, subtitle, children, panelKey, defaultActive = true, onResetDefault, extraActions } = props
 
   const handleResetClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onResetDefault?.()
   }
 
+  const handleActionClick = (e: React.MouseEvent, onClick: () => void) => {
+    e.stopPropagation()
+    onClick()
+  }
+
+  const hasActions = extraActions?.length || onResetDefault
+
   const headerContent = (
     <PanelHeader>
       <PanelTitle>{title}</PanelTitle>
-      {onResetDefault && (
-        <Button 
-          type="link" 
-          size="small" 
-          onClick={handleResetClick}
-        >
-          恢复默认
-        </Button>
+      {hasActions && (
+        <PanelActions>
+          {extraActions?.map((action, index) => (
+            <PanelActionButton
+              key={index}
+              $variant={action.variant}
+              onClick={(e) => handleActionClick(e, action.onClick)}
+            >
+              {action.label}
+            </PanelActionButton>
+          ))}
+          {onResetDefault && (
+            <PanelActionButton onClick={handleResetClick}>
+              恢复默认
+            </PanelActionButton>
+          )}
+        </PanelActions>
       )}
     </PanelHeader>
   )
