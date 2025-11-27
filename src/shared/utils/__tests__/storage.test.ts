@@ -117,7 +117,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -186,7 +189,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -245,7 +251,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -484,7 +493,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -557,7 +569,10 @@ describe('Storage工具测试', () => {
         serialize: false,
         format: true,
         preview: true,
-        importExport: true
+        importExport: true,
+        draft: true,
+        favorites: true,
+        history: true
       })
     })
 
@@ -816,7 +831,10 @@ describe('Storage工具测试', () => {
         serialize: false,
         format: true,
         preview: true,
-        importExport: true
+        importExport: true,
+        draft: true,
+        favorites: true,
+        history: true
       })
     })
 
