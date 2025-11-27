@@ -1,0 +1,484 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { Card, Button, Space, Tag, Typography, Badge, Collapse, Row, Col, message, Tooltip } from 'antd'
+import { 
+  PlayCircleOutlined, 
+  PauseCircleOutlined, 
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  SafetyCertificateOutlined
+} from '@ant-design/icons'
+import styled from 'styled-components'
+
+const { Title, Text, Paragraph } = Typography
+
+const PageContainer = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+`
+
+const HeaderCard = styled(Card)`
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  border: 1px solid #91caff;
+`
+
+const TestCard = styled(Card)<{ $isValid?: boolean }>`
+  cursor: pointer;
+  transition: all 0.3s;
+  border-left: 4px solid ${props => props.$isValid ? '#52c41a' : '#ff4d4f'};
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+`
+
+const ConsolePanel = styled(Card)`
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 500px;
+  max-height: 300px;
+  margin: 0;
+  border-radius: 8px 0 0 0;
+  z-index: 1000;
+  box-shadow: -2px -2px 8px rgba(0, 0, 0, 0.1);
+  
+  .ant-card-body {
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 12px;
+  }
+`
+
+const LogItem = styled.div<{ $type: string }>`
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 4px;
+  background: ${props => {
+    switch (props.$type) {
+      case 'success': return '#f6ffed';
+      case 'error': return '#fff2f0';
+      case 'warn': return '#fffbe6';
+      default: return '#e6f4ff';
+    }
+  }};
+  color: ${props => {
+    switch (props.$type) {
+      case 'success': return '#389e0d';
+      case 'error': return '#cf1322';
+      case 'warn': return '#d48806';
+      default: return '#0958d9';
+    }
+  }};
+`
+
+const SchemaDisplay = styled.pre`
+  background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 8px 0 0 0;
+  max-height: 150px;
+  overflow: auto;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #333;
+`
+
+const AttrInfo = styled.div`
+  font-family: 'Consolas', 'Monaco', monospace;
+  background: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #595959;
+`
+
+interface LogEntry {
+  type: 'info' | 'success' | 'warn' | 'error'
+  message: string
+  data?: any
+  time: string
+}
+
+interface TestElement {
+  id: string
+  title: string
+  description: string
+  attrs: Record<string, string>
+  schemaKey: string | null
+  badge: 'success' | 'error'
+  badgeText: string
+  typeTag: string | null
+}
+
+/** Schema 数据存储 */
+const initialSchemaStore: Record<string, any> = {
+  'string-simple': 'Hello World',
+  'string-complex': 'This is a complex string with special chars: !@#$%^&*()',
+  'number-int': 42,
+  'number-float': 3.14159,
+  'number-negative': -100,
+  'object-simple': { name: 'Test Object', value: 123 },
+  'object-nested': {
+    user: { id: 1, name: 'Alice', profile: { age: 25, city: 'Beijing' } },
+    settings: { theme: 'dark', notifications: true }
+  },
+  'array-numbers': [1, 2, 3, 4, 5],
+  'array-strings': ['apple', 'banana', 'cherry'],
+  'array-objects': [{ id: 1, name: 'Item 1' }, { id: 2, name: 'Item 2' }],
+  'user-001,profile-001': {
+    userId: 'user-001',
+    profileId: 'profile-001',
+    data: { username: 'alice', email: 'alice@example.com', age: 28 }
+  },
+  'boolean-true': true,
+  'boolean-false': false,
+  'recording-test': '"初始内容"'
+}
+
+const testElements: TestElement[] = [
+  { id: 'string-simple', title: 'String - 简单字符串', description: '单参数测试，schema为简单字符串', attrs: { 'data-id': 'string-simple' }, schemaKey: 'string-simple', badge: 'success', badgeText: '有效', typeTag: 'String' },
+  { id: 'string-complex', title: 'String - 复杂字符串', description: '包含特殊字符的字符串', attrs: { 'data-id': 'string-complex' }, schemaKey: 'string-complex', badge: 'success', badgeText: '有效', typeTag: 'String' },
+  { id: 'number-int', title: 'Number - 整数', description: '单参数测试，schema为整数', attrs: { 'data-id': 'number-int' }, schemaKey: 'number-int', badge: 'success', badgeText: '有效', typeTag: 'Number' },
+  { id: 'number-float', title: 'Number - 浮点数', description: '单参数测试，schema为浮点数', attrs: { 'data-id': 'number-float' }, schemaKey: 'number-float', badge: 'success', badgeText: '有效', typeTag: 'Number' },
+  { id: 'object-simple', title: 'Object - 简单对象', description: '单参数测试，schema为简单对象', attrs: { 'data-id': 'object-simple' }, schemaKey: 'object-simple', badge: 'success', badgeText: '有效', typeTag: 'Object' },
+  { id: 'object-nested', title: 'Object - 嵌套对象', description: '单参数测试，schema为复杂嵌套对象', attrs: { 'data-id': 'object-nested' }, schemaKey: 'object-nested', badge: 'success', badgeText: '有效', typeTag: 'Object' },
+  { id: 'array-numbers', title: 'Array - 数字数组', description: '单参数测试，schema为数字数组', attrs: { 'data-id': 'array-numbers' }, schemaKey: 'array-numbers', badge: 'success', badgeText: '有效', typeTag: 'Array' },
+  { id: 'array-strings', title: 'Array - 字符串数组', description: '单参数测试，schema为字符串数组', attrs: { 'data-id': 'array-strings' }, schemaKey: 'array-strings', badge: 'success', badgeText: '有效', typeTag: 'Array' },
+  { id: 'array-objects', title: 'Array - 对象数组', description: '单参数测试，schema为对象数组', attrs: { 'data-id': 'array-objects' }, schemaKey: 'array-objects', badge: 'success', badgeText: '有效', typeTag: 'Array' },
+  { id: 'multi-params', title: '多参数测试', description: '包含user-001和profile-001两个参数', attrs: { 'data-id': 'user-001,profile-001' }, schemaKey: 'user-001,profile-001', badge: 'success', badgeText: '有效', typeTag: 'Object' },
+  { id: 'boolean-true', title: 'Boolean - true', description: '单参数测试，schema为true', attrs: { 'data-id': 'boolean-true' }, schemaKey: 'boolean-true', badge: 'success', badgeText: '有效', typeTag: 'Boolean' },
+  { id: 'boolean-false', title: 'Boolean - false', description: '单参数测试，schema为false', attrs: { 'data-id': 'boolean-false' }, schemaKey: 'boolean-false', badge: 'success', badgeText: '有效', typeTag: 'Boolean' },
+  { id: 'recording-test', title: '🎬 录制模式测试', description: '点击开始后schema会持续变化，用于测试录制功能', attrs: { 'data-id': 'recording-test' }, schemaKey: 'recording-test', badge: 'success', badgeText: '有效', typeTag: 'Recording' },
+  { id: 'invalid-null', title: '无效元素测试', description: '不包含任何data-id属性，应显示"非法目标"', attrs: {}, schemaKey: null, badge: 'error', badgeText: '非法', typeTag: null },
+]
+
+export const SchemaTestPage: React.FC = () => {
+  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [schemaData, setSchemaData] = useState<Record<string, any>>({})
+  const [isRecording, setIsRecording] = useState(false)
+  const schemaStoreRef = useRef({ ...initialSchemaStore })
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const recordingCountRef = useRef(0)
+  const previewRootRef = useRef<any>(null)
+
+  const addLog = useCallback((type: LogEntry['type'], logMessage: string, data?: any) => {
+    const log: LogEntry = {
+      type,
+      message: logMessage,
+      data,
+      time: new Date().toLocaleTimeString()
+    }
+    setLogs(prev => [...prev.slice(-30), log])
+  }, [])
+
+  useEffect(() => {
+    setSchemaData({ ...schemaStoreRef.current })
+
+    const sendResponse = (requestId: string, result: any) => {
+      window.dispatchEvent(new CustomEvent('schema-editor:response', {
+        detail: { requestId, ...result }
+      }))
+    }
+
+    const handleSchemaEditorRequest = (event: CustomEvent) => {
+      const { type, payload, requestId } = event.detail
+      let result: any
+
+      switch (type) {
+        case 'GET_SCHEMA': {
+          const params = payload.params
+          addLog('info', '🔍 收到 GET_SCHEMA 请求', { params })
+          
+          const schema = schemaStoreRef.current[params]
+          
+          if (schema !== undefined) {
+            addLog('success', '✅ 返回 Schema 数据', schema)
+            result = { success: true, data: schema }
+          } else {
+            const defaultSchema = {
+              error: 'Schema not found',
+              params: params,
+              message: '未找到对应的Schema数据'
+            }
+            addLog('warn', '⚠️ 未找到Schema，返回默认值', defaultSchema)
+            result = { success: true, data: defaultSchema }
+          }
+          break
+        }
+
+        case 'UPDATE_SCHEMA': {
+          const { schema, params } = payload
+          addLog('info', '💾 收到 UPDATE_SCHEMA 请求', { schema, params })
+
+          try {
+            if (schema === null || schema === undefined) {
+              throw new Error('Schema 数据不能为空')
+            }
+
+            schemaStoreRef.current[params] = schema
+            setSchemaData({ ...schemaStoreRef.current })
+
+            addLog('success', '✅ Schema 更新成功', { params, newValue: schema })
+            result = { success: true }
+          } catch (error: any) {
+            addLog('error', '❌ Schema 更新失败', { error: error.message })
+            result = { success: false, error: error.message }
+          }
+          break
+        }
+
+        case 'CHECK_PREVIEW': {
+          addLog('info', '🔍 收到 CHECK_PREVIEW 请求')
+          result = { exists: true }
+          addLog('success', '✅ 预览功能可用')
+          break
+        }
+
+        case 'RENDER_PREVIEW': {
+          addLog('info', '🎨 收到 RENDER_PREVIEW 请求', payload)
+          result = { success: true, hasCleanup: true }
+          addLog('success', '✅ 预览渲染完成')
+          break
+        }
+
+        case 'CLEANUP_PREVIEW': {
+          addLog('info', '🧹 收到 CLEANUP_PREVIEW 请求')
+          result = { success: true }
+          break
+        }
+
+        default:
+          addLog('warn', '⚠️ 未知的请求类型', { type })
+          result = { success: false, error: `未知的请求类型: ${type}` }
+      }
+
+      sendResponse(requestId, result)
+    }
+
+    window.addEventListener('schema-editor:request', handleSchemaEditorRequest as EventListener)
+    addLog('info', '🚀 测试页面已加载', { message: 'CustomEvent 事件监听器已注册' })
+
+    return () => {
+      window.removeEventListener('schema-editor:request', handleSchemaEditorRequest as EventListener)
+    }
+  }, [addLog])
+
+  const startRecordingTest = () => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current)
+    }
+    
+    recordingCountRef.current = 0
+    const startTime = Date.now()
+    
+    schemaStoreRef.current['recording-test'] = JSON.stringify('开始录制测试 - 时间: 0ms')
+    setSchemaData({ ...schemaStoreRef.current })
+    setIsRecording(true)
+    
+    addLog('info', '🎬 开始录制模式测试', { duration: '10秒', interval: '100ms' })
+    
+    recordingTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      recordingCountRef.current++
+      
+      const lines = [
+        `录制模式测试 - 已运行 ${elapsed}ms`,
+        `更新次数: ${recordingCountRef.current}`,
+        '---'
+      ]
+      
+      for (let i = 1; i <= Math.min(recordingCountRef.current, 10); i++) {
+        lines.push(`数据行 ${i}: 内容_${i * 100}ms`)
+      }
+      
+      const newContent = lines.join('\n')
+      schemaStoreRef.current['recording-test'] = JSON.stringify(newContent)
+      setSchemaData({ ...schemaStoreRef.current })
+      
+      if (elapsed >= 10000) {
+        clearInterval(recordingTimerRef.current!)
+        recordingTimerRef.current = null
+        setIsRecording(false)
+        
+        const finalLines = [...lines, '---', '✅ 录制测试完成！']
+        schemaStoreRef.current['recording-test'] = JSON.stringify(finalLines.join('\n'))
+        setSchemaData({ ...schemaStoreRef.current })
+        
+        addLog('success', '✅ 录制模式测试完成', { 
+          totalUpdates: recordingCountRef.current,
+          duration: `${elapsed}ms`
+        })
+      }
+    }, 100)
+  }
+
+  const stopRecordingTest = () => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current)
+      recordingTimerRef.current = null
+      setIsRecording(false)
+      addLog('info', '⏹️ 录制模式测试已手动停止')
+    }
+  }
+
+  const verifyAttributes = () => {
+    let successCount = 0
+    let failCount = 0
+
+    testElements.forEach(elem => {
+      const domElem = document.getElementById(elem.id)
+      if (domElem) {
+        const hasExpectedAttrs = Object.keys(elem.attrs).length > 0
+        const actualValue = domElem.getAttribute('data-id')
+        
+        const isCorrect = (
+          (!elem.attrs['data-id'] && !actualValue) ||
+          (actualValue === elem.attrs['data-id'])
+        )
+        
+        if (hasExpectedAttrs && isCorrect) {
+          successCount++
+        } else if (hasExpectedAttrs && !isCorrect) {
+          failCount++
+        }
+      }
+    })
+
+    if (failCount > 0) {
+      message.warning(`发现 ${failCount} 个元素属性不正确`)
+    } else {
+      message.success(`所有 ${successCount} 个元素属性验证通过！`)
+    }
+  }
+
+  const getTypeColor = (typeTag: string | null) => {
+    switch (typeTag) {
+      case 'String': return 'orange'
+      case 'Number': return 'blue'
+      case 'Object': return 'green'
+      case 'Array': return 'purple'
+      case 'Boolean': return 'cyan'
+      case 'Recording': return 'red'
+      default: return 'default'
+    }
+  }
+
+  const groupedElements = {
+    'String / Number': testElements.filter(e => ['String', 'Number'].includes(e.typeTag || '')),
+    'Object / Array': testElements.filter(e => ['Object', 'Array'].includes(e.typeTag || '')),
+    'Boolean': testElements.filter(e => e.typeTag === 'Boolean'),
+    'Recording': testElements.filter(e => e.typeTag === 'Recording'),
+    '无效元素': testElements.filter(e => !e.typeTag),
+  }
+
+  return (
+    <PageContainer>
+      <HeaderCard>
+        <Title level={3} style={{ color: '#0958d9', margin: 0 }}>
+          🔧 Schema Editor 功能测试
+        </Title>
+        <Paragraph style={{ color: '#1677ff', margin: '8px 0 16px 0' }}>
+          📡 通信模式：CustomEvent 事件通信 | 监听 schema-editor:request / 响应 schema-editor:response
+        </Paragraph>
+        <Space>
+          <Button icon={<SafetyCertificateOutlined />} onClick={verifyAttributes}>
+            验证元素属性
+          </Button>
+        </Space>
+        <Paragraph style={{ color: '#595959', margin: '16px 0 0 0', fontSize: 13 }}>
+          💡 使用说明：按住 <Text keyboard>Alt/Option</Text> 并将鼠标悬停在测试元素上，观察高亮效果；按住 <Text keyboard>Alt/Option</Text> 并点击有效元素打开抽屉
+        </Paragraph>
+      </HeaderCard>
+
+      <Collapse
+        defaultActiveKey={['String / Number', 'Object / Array', 'Recording']}
+        items={Object.entries(groupedElements).map(([group, elements]) => ({
+          key: group,
+          label: <Text strong>{group} 类型测试</Text>,
+          children: (
+            <Row gutter={[16, 16]}>
+              {elements.map(elem => (
+                <Col span={elem.typeTag === 'Recording' ? 24 : 12} key={elem.id}>
+                  <TestCard
+                    id={elem.id}
+                    $isValid={elem.badge === 'success'}
+                    size="small"
+                    {...(elem.attrs['data-id'] ? { 'data-id': elem.attrs['data-id'] } : {})}
+                  >
+                    <Space style={{ marginBottom: 8 }}>
+                      <Badge status={elem.badge === 'success' ? 'success' : 'error'} text={elem.badgeText} />
+                      <Text strong>{elem.title}</Text>
+                      {elem.typeTag && <Tag color={getTypeColor(elem.typeTag)}>{elem.typeTag}</Tag>}
+                    </Space>
+                    <Paragraph type="secondary" style={{ margin: '4px 0 0 0', fontSize: 13 }}>
+                      {elem.description}
+                    </Paragraph>
+                    
+                    {elem.typeTag === 'Recording' && (
+                      <Space style={{ marginTop: 12 }}>
+                        <Button 
+                          type="primary" 
+                          danger
+                          icon={<PlayCircleOutlined />}
+                          onClick={startRecordingTest}
+                          disabled={isRecording}
+                        >
+                          开始测试
+                        </Button>
+                        <Button 
+                          icon={<PauseCircleOutlined />}
+                          onClick={stopRecordingTest}
+                          disabled={!isRecording}
+                        >
+                          停止测试
+                        </Button>
+                        {isRecording && <Tag color="processing">录制中...</Tag>}
+                      </Space>
+                    )}
+                    
+                    {Object.keys(elem.attrs).length > 0 && (
+                      <AttrInfo>data-id: "{elem.attrs['data-id']}"</AttrInfo>
+                    )}
+                    
+                    {elem.schemaKey && schemaData[elem.schemaKey] !== undefined && (
+                      <SchemaDisplay>
+                        {typeof schemaData[elem.schemaKey] === 'string' 
+                          ? schemaData[elem.schemaKey] 
+                          : JSON.stringify(schemaData[elem.schemaKey], null, 2)}
+                      </SchemaDisplay>
+                    )}
+                  </TestCard>
+                </Col>
+              ))}
+            </Row>
+          )
+        }))}
+      />
+
+      <ConsolePanel title="📋 控制台输出" size="small" extra={<Tag>{logs.length} 条日志</Tag>}>
+        {logs.length === 0 ? (
+          <Text type="secondary">等待插件操作...</Text>
+        ) : (
+          logs.map((log, index) => (
+            <LogItem key={index} $type={log.type}>
+              [{log.time}] {log.message}
+              {log.data && (
+                <pre style={{ margin: '4px 0 0 12px', fontSize: 11, opacity: 0.8 }}>
+                  {JSON.stringify(log.data, null, 2)}
+                </pre>
+              )}
+            </LogItem>
+          ))
+        )}
+      </ConsolePanel>
+    </PageContainer>
+  )
+}
+
