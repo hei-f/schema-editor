@@ -108,17 +108,17 @@ type UpdateSchemaFunc<T> = (schema: NonNullable<T>, params: string) => boolean
 
 ```typescript
 /** 预览函数（CustomEvent 模式） */
-type PreviewFunc<T> = (data: NonNullable<T>, containerId: string) => void
+type RenderPreviewFunc<T> = (schema: NonNullable<T>, containerId: string) => void
 ```
 
 **Window 函数模式（已废弃）**：直接传入容器 DOM 元素
 
 ```typescript
 /** @deprecated 预览函数（Window 函数模式） */
-type PreviewFunc<T> = (data: NonNullable<T>, container: HTMLElement) => (() => void) | null
+type PreviewFunc<T> = (schema: NonNullable<T>, container: HTMLElement) => (() => void) | null
 ```
 
-- `data`: 预览数据，与 Schema 数据一致
+- `schema`: 当前编辑的 Schema 数据
 - `containerId`: 预览容器的 DOM ID，通过 `document.getElementById()` 获取
 - `container`: 预览容器 DOM 元素（已废弃模式）
 - 返回清理函数：插件关闭预览时会自动调用（仅 Window 函数模式需要返回）
@@ -145,9 +145,10 @@ window.addEventListener('schema-editor:request', (event: CustomEvent) => {
       result = { exists: true }  // 是否支持预览
       break
     case 'RENDER_PREVIEW':
+      // payload.schema: 当前编辑的 Schema 数据
       // payload.containerId: 预览容器 ID
       const container = document.getElementById(payload.containerId)
-      renderPreview(payload.data, container)
+      renderPreview(payload.schema, container)
       result = { success: true, hasCleanup: true }
       break
     case 'CLEANUP_PREVIEW':

@@ -707,7 +707,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       postMessageToPage({
         type: MessageType.RENDER_PREVIEW,
         payload: {
-          data: result.data,
+          schema: result.data,
           position: {
             left: rect.left,
             top: rect.top,
@@ -792,7 +792,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             postMessageToPage({
               type: MessageType.RENDER_PREVIEW,
               payload: {
-                data: result.data,
+                schema: result.data,
                 position: {
                   left: rect.left,
                   top: rect.top,

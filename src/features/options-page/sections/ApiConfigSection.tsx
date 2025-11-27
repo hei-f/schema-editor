@@ -162,7 +162,7 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = (props) => {
               {'      '}<span className="keyword">break</span>;{'\n'}
               {'    '}<span className="keyword">case</span> <span className="string">'RENDER_PREVIEW'</span>:{'\n'}
               {'      '}<span className="keyword">const</span> container = <span className="keyword">document</span>.<span className="function">getElementById</span>(payload.containerId);{'\n'}
-              {'      '}renderPreview(payload.data, container);{'\n'}
+              {'      '}renderPreview(payload.schema, container);{'\n'}
               {'      '}result = {'{ success: true, hasCleanup: true }'};{'\n'}
               {'      '}<span className="keyword">break</span>;{'\n'}
               {'  }'}{'\n\n'}

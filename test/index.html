@@ -465,8 +465,8 @@
             }
 
             case 'RENDER_PREVIEW': {
-              const { data, containerId } = payload;
-              addLog('info', '🎨 收到 RENDER_PREVIEW 请求', { data, containerId });
+              const { schema, containerId } = payload;
+              addLog('info', '🎨 收到 RENDER_PREVIEW 请求', { schema, containerId });
 
               try {
                 const container = document.getElementById(containerId);
@@ -485,7 +485,7 @@
                 }
 
                 // 渲染预览组件
-                previewRootRef.current.render(createPreviewCard(data));
+                previewRootRef.current.render(createPreviewCard(schema));
                 
                 result = { success: true, hasCleanup: true };
                 addLog('success', '✅ 预览渲染完成');

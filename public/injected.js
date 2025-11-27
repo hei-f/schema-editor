@@ -318,7 +318,7 @@
    * 渲染预览内容（支持双模式）
    */
   async function handleRenderPreview(payload) {
-    const { data, position } = payload || {}
+    const { schema, position } = payload || {}
 
     // 创建或更新预览容器
     if (!previewContainer) {
@@ -331,7 +331,7 @@
       // CustomEvent 模式：通知宿主渲染预览
       try {
         const response = await sendCustomEventRequest('RENDER_PREVIEW', { 
-          data, 
+          schema, 
           containerId: PREVIEW_CONTAINER_ID 
         })
         
@@ -363,7 +363,7 @@
         if (typeof previewFn !== 'function') {
           return
         }
-        renderPreviewContent(data, previewFn)
+        renderPreviewContent(schema, previewFn)
       } catch (error) {
         console.error('渲染预览失败:', error)
       }
@@ -409,7 +409,7 @@
    * 渲染预览内容
    * @deprecated 仅 windowFunction 模式使用
    */
-  function renderPreviewContent(data, previewFn) {
+  function renderPreviewContent(schema, previewFn) {
     if (!previewContainer) return
     
     try {
@@ -419,7 +419,7 @@
         return
       }
       
-      const result = fn(data, previewContainer)
+      const result = fn(schema, previewContainer)
       
       if (typeof result === 'function') {
         userCleanupFn = result
