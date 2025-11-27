@@ -45,10 +45,10 @@ export const SectionCard: React.FC<SectionCardProps> = (props) => {
   const hasActions = extraActions?.length || onResetDefault
 
   const headerContent = (
-    <PanelHeader>
+    <PanelHeader align="center" justify="space-between">
       <PanelTitle>{title}</PanelTitle>
       {hasActions && (
-        <PanelActions>
+        <PanelActions align="center" gap={8}>
           {extraActions?.map((action, index) => (
             <PanelActionButton
               key={index}

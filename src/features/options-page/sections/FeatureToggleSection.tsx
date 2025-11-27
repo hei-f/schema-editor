@@ -63,7 +63,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
     >
       <FormSectionLabel $noMarginTop>功能模块</FormSectionLabel>
       <FormRowContainer>
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>草稿功能:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.draft}
@@ -76,7 +76,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
           </Tooltip>
         </InlineFormRow>
 
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>收藏功能:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.favorites}
@@ -89,7 +89,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
           </Tooltip>
         </InlineFormRow>
 
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>历史记录:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.history}
@@ -105,7 +105,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
 
       <FormSectionLabel>工具栏按钮</FormSectionLabel>
       <FormRowContainer>
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>AST/RawString切换:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.astRawStringToggle}
@@ -115,7 +115,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
           </ZeroMarginFormItem>
         </InlineFormRow>
 
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>反序列化:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.deserialize}
@@ -125,7 +125,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
           </ZeroMarginFormItem>
         </InlineFormRow>
 
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>序列化:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.serialize}
@@ -135,7 +135,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
           </ZeroMarginFormItem>
         </InlineFormRow>
 
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>格式化:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.format}
@@ -145,7 +145,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
           </ZeroMarginFormItem>
         </InlineFormRow>
 
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>预览:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.preview}
@@ -155,7 +155,7 @@ export const FeatureToggleSection: React.FC<FeatureToggleSectionProps> = (props)
           </ZeroMarginFormItem>
         </InlineFormRow>
 
-        <InlineFormRow>
+        <InlineFormRow align="center" gap={8}>
           <FormLabel>导入导出:</FormLabel>
           <ZeroMarginFormItem
             name={FORM_PATHS.toolbarButtons.importExport}
