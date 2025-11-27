@@ -169,6 +169,58 @@ export const PreviewPlaceholder = styled.div<{ $width: number }>`
 `
 
 /**
+ * 拖拽时的蒙层样式 - 静止条纹效果
+ */
+export const DragOverlay = styled.div<{ $width: number }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: ${props => props.$width}%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none;
+  box-sizing: border-box;
+  
+  /* 虚线边框 */
+  border: 2px dashed rgba(24, 144, 255, 0.6);
+  
+  /* 静止条纹效果 */
+  background-image: linear-gradient(
+    45deg,
+    rgba(24, 144, 255, 0.12) 25%,
+    rgba(24, 144, 255, 0.04) 25%,
+    rgba(24, 144, 255, 0.04) 50%,
+    rgba(24, 144, 255, 0.12) 50%,
+    rgba(24, 144, 255, 0.12) 75%,
+    rgba(24, 144, 255, 0.04) 75%
+  );
+  background-size: 40px 40px;
+`
+
+/**
+ * 拖拽时显示的宽度百分比文字
+ */
+export const DragWidthIndicator = styled.div`
+  font-size: 32px;
+  font-weight: 600;
+  color: #1890ff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 8px;
+`
+
+/**
+ * 拖拽提示文字
+ */
+export const DragHintText = styled.div`
+  font-size: 14px;
+  color: #666;
+`
+
+/**
  * 预览模式下的编辑器容器
  */
 export const PreviewEditorContainer = styled.div`

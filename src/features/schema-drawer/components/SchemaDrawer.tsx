@@ -35,6 +35,9 @@ import { schemaTransformer } from '../services/schema-transformer'
 import {
   DraftAutoSaveSuccess,
   DraftNotification,
+  DragHintText,
+  DragOverlay,
+  DragWidthIndicator,
   DrawerContentContainer,
   DrawerFooter,
   DrawerTitleActions,
@@ -1096,9 +1099,15 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               {/* 预览区域和编辑器并排 */}
               <PreviewEditorRow ref={previewContainerRef}>
                 {/* 左侧预览占位区域 */}
-                <PreviewPlaceholder ref={previewPlaceholderRef} $width={previewWidth}>
-                  预览区域（在主页面渲染）
-                </PreviewPlaceholder>
+                <PreviewPlaceholder ref={previewPlaceholderRef} $width={previewWidth} />
+                
+                {/* 拖拽时的蒙层提示 */}
+                {isDragging && (
+                  <DragOverlay $width={previewWidth}>
+                    <DragWidthIndicator>{Math.round(previewWidth)}%</DragWidthIndicator>
+                    <DragHintText>松开鼠标完成调整</DragHintText>
+                  </DragOverlay>
+                )}
                 
                 {/* 可拖拽的分隔条 */}
                 <PreviewResizer $isDragging={isDragging} onMouseDown={handleResizeStart} />
