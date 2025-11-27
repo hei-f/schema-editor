@@ -12,13 +12,31 @@
     FROM_INJECTED: 'schema-editor-injected'
   }
 
-  /** 函数名配置 */
+  /** API 配置 */
+  let apiConfig = {
+    /** 通信模式: 'customEvent' | 'windowFunction' */
+    communicationMode: 'customEvent',
+    /** 请求超时时间（秒） */
+    requestTimeout: 5,
+    /** 请求事件名 */
+    requestEventName: 'schema-editor:request',
+    /** 响应事件名 */
+    responseEventName: 'schema-editor:response'
+  }
+
+  /**
+   * 函数名配置
+   * @deprecated 仅 windowFunction 模式使用，该模式已废弃
+   */
   let functionNames = {
     get: '__getContentById',
     update: '__updateContentById'
   }
 
-  /** 预览函数名 */
+  /**
+   * 预览函数名
+   * @deprecated 仅 windowFunction 模式使用，该模式已废弃
+   */
   let previewFunctionName = '__getContentPreview'
 
   /** 预览容器和 React root */
@@ -26,6 +44,45 @@
   let previewRoot = null
   /** 用户返回的清理函数 */
   let userCleanupFn = null
+
+  /** 预览容器 ID */
+  const PREVIEW_CONTAINER_ID = 'schema-editor-preview-container'
+
+  /** CustomEvent 请求管理（性能优化：单一持久监听器 + Map） */
+  let requestCounter = 0
+  const pendingRequests = new Map()
+  let currentResponseEventName = null
+
+  /**
+   * 初始化或更新响应事件监听器
+   * 使用单一持久监听器替代每次请求的 add/remove，提升性能
+   */
+  function ensureResponseListener() {
+    const eventName = apiConfig.responseEventName
+    if (currentResponseEventName === eventName) return
+    
+    // 移除旧的监听器
+    if (currentResponseEventName) {
+      window.removeEventListener(currentResponseEventName, handleGlobalResponse)
+    }
+    
+    // 注册新的监听器
+    window.addEventListener(eventName, handleGlobalResponse)
+    currentResponseEventName = eventName
+  }
+
+  /**
+   * 全局响应处理器
+   */
+  function handleGlobalResponse(event) {
+    const { requestId } = event.detail || {}
+    const pending = pendingRequests.get(requestId)
+    if (pending) {
+      clearTimeout(pending.timeoutId)
+      pendingRequests.delete(requestId)
+      pending.resolve(event.detail)
+    }
+  }
 
   window.addEventListener('message', (event) => {
     if (event.source !== window) return
@@ -64,8 +121,17 @@
   })
 
   function handleConfigSync(payload) {
-    const { getFunctionName, updateFunctionName, previewFunctionName: previewFnName } = payload || {}
+    const { 
+      getFunctionName, 
+      updateFunctionName, 
+      previewFunctionName: previewFnName,
+      communicationMode,
+      requestTimeout,
+      requestEventName,
+      responseEventName
+    } = payload || {}
     
+    // @deprecated windowFunction 模式配置
     if (getFunctionName) {
       functionNames.get = getFunctionName
     }
@@ -75,97 +141,232 @@
     if (previewFnName) {
       previewFunctionName = previewFnName
     }
-  }
-
-  function handleGetSchema(payload) {
-    const { params } = payload || {}
-
-    try {
-      const getFn = window[functionNames.get]
-      if (typeof getFn !== 'function') {
-        sendResponse('SCHEMA_RESPONSE', {
-          success: false,
-          error: `页面未提供${functionNames.get}方法`
-        })
-        return
-      }
-
-      const schema = getFn(params)
-      sendResponse('SCHEMA_RESPONSE', {
-        success: true,
-        data: schema
-      })
-    } catch (error) {
-      console.error('获取Schema失败:', error)
-      sendResponse('SCHEMA_RESPONSE', {
-        success: false,
-        error: error.message || '获取Schema时发生错误'
-      })
+    
+    // API 配置
+    if (communicationMode) {
+      apiConfig.communicationMode = communicationMode
     }
-  }
-
-  function handleUpdateSchema(payload) {
-    const { schema, params } = payload || {}
-
-    try {
-      const updateFn = window[functionNames.update]
-      if (typeof updateFn !== 'function') {
-        sendResponse('UPDATE_RESULT', {
-          success: false,
-          error: `页面未提供${functionNames.update}方法`
-        })
-        return
-      }
-
-      const result = updateFn(schema, params)
-      // 只要没抛异常就认为成功（除非明确返回 false）
-      const success = result !== false
-      sendResponse('UPDATE_RESULT', {
-        success,
-        message: success ? '更新成功' : '更新失败'
-      })
-    } catch (error) {
-      console.error('更新Schema失败:', error)
-      sendResponse('UPDATE_RESULT', {
-        success: false,
-        error: error.message || '更新Schema时发生错误'
-      })
+    if (requestTimeout) {
+      apiConfig.requestTimeout = requestTimeout
+    }
+    if (requestEventName) {
+      apiConfig.requestEventName = requestEventName
+    }
+    if (responseEventName) {
+      apiConfig.responseEventName = responseEventName
     }
   }
 
   /**
-   * 检查预览函数是否存在
+   * 通过 CustomEvent 发送请求并等待响应
+   * 性能优化：使用递增计数器生成 requestId，单一持久监听器管理响应
    */
-  function handleCheckPreviewFunction() {
-    const previewFn = window[previewFunctionName]
-    sendResponse('PREVIEW_FUNCTION_RESULT', {
-      exists: typeof previewFn === 'function'
+  function sendCustomEventRequest(type, payload) {
+    // 确保响应监听器已注册
+    ensureResponseListener()
+    
+    return new Promise((resolve, reject) => {
+      // 优化：使用递增计数器替代 Date.now() + Math.random()
+      const requestId = `req-${++requestCounter}`
+      const timeoutMs = apiConfig.requestTimeout * 1000
+      
+      const timeoutId = setTimeout(() => {
+        pendingRequests.delete(requestId)
+        reject(new Error(`请求超时，请检查页面是否正确监听了 ${apiConfig.requestEventName} 事件`))
+      }, timeoutMs)
+      
+      // 存储到 Map，由全局监听器处理响应
+      pendingRequests.set(requestId, { resolve, reject, timeoutId })
+      
+      window.dispatchEvent(new CustomEvent(apiConfig.requestEventName, {
+        detail: {
+          type,
+          payload,
+          requestId
+        }
+      }))
     })
   }
 
   /**
-   * 渲染预览内容
+   * 获取 Schema（支持双模式）
    */
-  function handleRenderPreview(payload) {
+  async function handleGetSchema(payload) {
+    const { params } = payload || {}
+
+    if (apiConfig.communicationMode === 'customEvent') {
+      // CustomEvent 模式
+      try {
+        const response = await sendCustomEventRequest('GET_SCHEMA', { params })
+        sendResponse('SCHEMA_RESPONSE', {
+          success: response.success !== false,
+          data: response.data,
+          error: response.error
+        })
+      } catch (error) {
+        console.error('获取Schema失败:', error)
+        sendResponse('SCHEMA_RESPONSE', {
+          success: false,
+          error: error.message || '获取Schema时发生错误'
+        })
+      }
+    } else {
+      // @deprecated windowFunction 模式
+      try {
+        const getFn = window[functionNames.get]
+        if (typeof getFn !== 'function') {
+          sendResponse('SCHEMA_RESPONSE', {
+            success: false,
+            error: `页面未提供 ${functionNames.get} 方法`
+          })
+          return
+        }
+
+        const schema = getFn(params)
+        sendResponse('SCHEMA_RESPONSE', {
+          success: true,
+          data: schema
+        })
+      } catch (error) {
+        console.error('获取Schema失败:', error)
+        sendResponse('SCHEMA_RESPONSE', {
+          success: false,
+          error: error.message || '获取Schema时发生错误'
+        })
+      }
+    }
+  }
+
+  /**
+   * 更新 Schema（支持双模式）
+   */
+  async function handleUpdateSchema(payload) {
+    const { schema, params } = payload || {}
+
+    if (apiConfig.communicationMode === 'customEvent') {
+      // CustomEvent 模式
+      try {
+        const response = await sendCustomEventRequest('UPDATE_SCHEMA', { schema, params })
+        const success = response.success !== false
+        sendResponse('UPDATE_RESULT', {
+          success,
+          message: success ? '更新成功' : '更新失败',
+          error: response.error
+        })
+      } catch (error) {
+        console.error('更新Schema失败:', error)
+        sendResponse('UPDATE_RESULT', {
+          success: false,
+          error: error.message || '更新Schema时发生错误'
+        })
+      }
+    } else {
+      // @deprecated windowFunction 模式
+      try {
+        const updateFn = window[functionNames.update]
+        if (typeof updateFn !== 'function') {
+          sendResponse('UPDATE_RESULT', {
+            success: false,
+            error: `页面未提供 ${functionNames.update} 方法`
+          })
+          return
+        }
+
+        const result = updateFn(schema, params)
+        const success = result !== false
+        sendResponse('UPDATE_RESULT', {
+          success,
+          message: success ? '更新成功' : '更新失败'
+        })
+      } catch (error) {
+        console.error('更新Schema失败:', error)
+        sendResponse('UPDATE_RESULT', {
+          success: false,
+          error: error.message || '更新Schema时发生错误'
+        })
+      }
+    }
+  }
+
+  /**
+   * 检查预览函数是否存在（支持双模式）
+   */
+  async function handleCheckPreviewFunction() {
+    if (apiConfig.communicationMode === 'customEvent') {
+      // CustomEvent 模式：发送检查请求
+      try {
+        const response = await sendCustomEventRequest('CHECK_PREVIEW', {})
+        sendResponse('PREVIEW_FUNCTION_RESULT', {
+          exists: response.exists === true
+        })
+      } catch (error) {
+        // 超时或错误时认为不存在
+        sendResponse('PREVIEW_FUNCTION_RESULT', {
+          exists: false
+        })
+      }
+    } else {
+      // @deprecated windowFunction 模式
+      const previewFn = window[previewFunctionName]
+      sendResponse('PREVIEW_FUNCTION_RESULT', {
+        exists: typeof previewFn === 'function'
+      })
+    }
+  }
+
+  /**
+   * 渲染预览内容（支持双模式）
+   */
+  async function handleRenderPreview(payload) {
     const { data, position } = payload || {}
 
-    try {
-      const previewFn = window[previewFunctionName]
-      if (typeof previewFn !== 'function') {
-        return
-      }
+    // 创建或更新预览容器
+    if (!previewContainer) {
+      createPreviewContainer(position)
+    } else {
+      updatePreviewPosition(position)
+    }
 
-      // 创建或更新预览容器
-      if (!previewContainer) {
-        createPreviewContainer(position)
-      } else {
-        updatePreviewPosition(position)
+    if (apiConfig.communicationMode === 'customEvent') {
+      // CustomEvent 模式：通知宿主渲染预览
+      try {
+        const response = await sendCustomEventRequest('RENDER_PREVIEW', { 
+          data, 
+          containerId: PREVIEW_CONTAINER_ID 
+        })
+        
+        // 如果宿主返回了清理函数标记，记录下来
+        if (response.hasCleanup) {
+          userCleanupFn = async () => {
+            try {
+              await sendCustomEventRequest('CLEANUP_PREVIEW', { containerId: PREVIEW_CONTAINER_ID })
+            } catch (e) {
+              console.warn('清理预览失败:', e)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('渲染预览失败:', error)
+        if (previewContainer) {
+          previewContainer.innerHTML = `
+            <div style="color: red; padding: 20px;">
+              <div style="font-weight: bold; margin-bottom: 8px;">预览渲染错误</div>
+              <div style="font-size: 12px;">${error.message || '未知错误'}</div>
+            </div>
+          `
+        }
       }
-
-      // 渲染预览内容
-      renderPreviewContent(data, previewFn)
-    } catch (error) {
-      console.error('渲染预览失败:', error)
+    } else {
+      // @deprecated windowFunction 模式
+      try {
+        const previewFn = window[previewFunctionName]
+        if (typeof previewFn !== 'function') {
+          return
+        }
+        renderPreviewContent(data, previewFn)
+      } catch (error) {
+        console.error('渲染预览失败:', error)
+      }
     }
   }
 
@@ -173,9 +374,8 @@
    * 创建预览容器
    */
   function createPreviewContainer(position) {
-    // 创建容器元素
     previewContainer = document.createElement('div')
-    previewContainer.id = 'schema-editor-preview-container'
+    previewContainer.id = PREVIEW_CONTAINER_ID
     previewContainer.style.cssText = `
       position: fixed;
       left: ${position.left}px;
@@ -207,8 +407,7 @@
 
   /**
    * 渲染预览内容
-   * @param {any} data - 预览数据
-   * @param {Function} [previewFn] - 预览函数（可选，默认使用配置的函数）
+   * @deprecated 仅 windowFunction 模式使用
    */
   function renderPreviewContent(data, previewFn) {
     if (!previewContainer) return
@@ -220,38 +419,30 @@
         return
       }
       
-      // 调用预览函数，传入 container 让用户可以自己管理渲染
       const result = fn(data, previewContainer)
       
-      // 如果返回函数，说明用户自己处理了渲染，保存清理函数（仅首次保存或更新）
       if (typeof result === 'function') {
         userCleanupFn = result
         return
       }
       
-      // 如果返回 null/undefined，说明用户自己处理了渲染但没有清理函数
       if (result === null || result === undefined) {
         return
       }
       
-      // 向后兼容：如果返回的是 ReactNode，使用 ReactDOM 渲染
       const reactNode = result
       
-      // 检查是否有 ReactDOM
       if (window.ReactDOM) {
-        // React 18+ API：复用 root，只在首次创建
         if (window.ReactDOM.createRoot) {
           if (!previewRoot) {
             previewRoot = window.ReactDOM.createRoot(previewContainer)
           }
           previewRoot.render(reactNode)
         } 
-        // React 17- API
         else if (window.ReactDOM.render) {
           window.ReactDOM.render(reactNode, previewContainer)
         }
       } else {
-        // 如果没有 ReactDOM，直接设置 innerHTML（不推荐，但作为后备方案）
         console.warn('ReactDOM 不可用，尝试直接设置 HTML')
         if (typeof reactNode === 'string') {
           previewContainer.innerHTML = reactNode
@@ -291,24 +482,25 @@
   /**
    * 清除预览
    */
-  function handleClearPreview() {
+  async function handleClearPreview() {
     try {
       // 调用用户返回的清理函数
-      if (userCleanupFn && typeof userCleanupFn === 'function') {
+      if (userCleanupFn) {
         try {
-          userCleanupFn()
+          if (typeof userCleanupFn === 'function') {
+            await userCleanupFn()
+          }
         } catch (e) {
           console.warn('执行用户清理函数失败:', e)
         }
         userCleanupFn = null
       }
       
-      // 清理 React root
+      // 清理 React root（windowFunction 模式）
       if (previewRoot) {
         if (previewRoot.unmount) {
           previewRoot.unmount()
         } else if (previewRoot._internalRoot) {
-          // React 17- 的清理方式
           window.ReactDOM.unmountComponentAtNode(previewContainer)
         }
         previewRoot = null
@@ -337,4 +529,3 @@
 
   sendResponse('INJECTED_READY', { ready: true })
 })()
-

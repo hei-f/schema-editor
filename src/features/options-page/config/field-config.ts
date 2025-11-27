@@ -7,6 +7,7 @@ import { pathEqual } from '@/shared/utils/form-path'
  * 用于标识各个配置卡片及其对应的默认值键
  */
 export const SECTION_KEYS = {
+  API_CONFIG: 'apiConfig',
   BASIC_INTEGRATION: 'basicIntegration',
   ELEMENT_DETECTION: 'elementDetection',
   EDITOR_CONFIG: 'editorConfig',
@@ -24,6 +25,7 @@ export type SectionKey = typeof SECTION_KEYS[keyof typeof SECTION_KEYS]
  * value: 该区块包含的配置字段名数组
  */
 export const SECTION_DEFAULT_KEYS: Record<SectionKey, readonly string[]> = {
+  [SECTION_KEYS.API_CONFIG]: ['apiConfig'],
   [SECTION_KEYS.BASIC_INTEGRATION]: ['attributeName', 'getFunctionName', 'updateFunctionName', 'previewFunctionName'],
   [SECTION_KEYS.ELEMENT_DETECTION]: ['searchConfig', 'highlightColor', 'highlightAllConfig', 'recordingModeConfig'],
   [SECTION_KEYS.EDITOR_CONFIG]: ['drawerWidth', 'enableAstTypeHints', 'editorTheme'],
@@ -47,6 +49,17 @@ interface FieldGroup {
  * 字段分组配置 - 需要组合保存的字段
  */
 export const FIELD_GROUPS: Record<string, FieldGroup> = {
+  apiConfig: {
+    fieldPaths: [
+      FORM_PATHS.apiConfig.communicationMode,
+      FORM_PATHS.apiConfig.requestTimeout,
+      FORM_PATHS.apiConfig.requestEventName,
+      FORM_PATHS.apiConfig.responseEventName
+    ],
+    save: async (allValues: any) => {
+      await storage.setApiConfig(allValues.apiConfig)
+    }
+  },
   searchConfig: {
     fieldPaths: [
       FORM_PATHS.searchConfig.limitUpwardSearch,
@@ -143,7 +156,10 @@ export const DEBOUNCE_FIELD_PATHS: readonly (readonly string[])[] = [
   FORM_PATHS.highlightAllConfig.maxHighlightCount,
   FORM_PATHS.recordingModeConfig.keyBinding,
   FORM_PATHS.recordingModeConfig.highlightColor,
-  FORM_PATHS.recordingModeConfig.pollingInterval
+  FORM_PATHS.recordingModeConfig.pollingInterval,
+  FORM_PATHS.apiConfig.requestTimeout,
+  FORM_PATHS.apiConfig.requestEventName,
+  FORM_PATHS.apiConfig.responseEventName
 ]
 
 /**

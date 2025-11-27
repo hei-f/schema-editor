@@ -92,7 +92,7 @@ export interface ToolbarButtonsConfig {
  * 预览配置接口
  */
 export interface PreviewConfig {
-  /** 预览区域宽度（百分比，10-60） */
+  /** 预览区域宽度（百分比，20-80） */
   previewWidth: number
   /** 更新延迟（毫秒，100-2000） */
   updateDelay: number
@@ -124,6 +124,27 @@ export interface RecordingModeConfig {
   highlightColor: string
   /** 轮询间隔（毫秒） */
   pollingInterval: number
+}
+
+/**
+ * 通信模式类型
+ * - customEvent: 使用 CustomEvent 事件通信（推荐）
+ * - windowFunction: 使用 window 函数调用（已废弃）
+ */
+export type CommunicationMode = 'customEvent' | 'windowFunction'
+
+/**
+ * API 配置接口
+ */
+export interface ApiConfig {
+  /** 通信模式 */
+  communicationMode: CommunicationMode
+  /** 请求超时时间（秒，1-30，仅 customEvent 模式生效） */
+  requestTimeout: number
+  /** 请求事件名（仅 customEvent 模式生效） */
+  requestEventName: string
+  /** 响应事件名（仅 customEvent 模式生效） */
+  responseEventName: string
 }
 
 /**
@@ -163,9 +184,15 @@ export interface StorageData {
   attributeName: string
   /** 搜索配置 */
   searchConfig: SearchConfig
-  /** 获取Schema的函数名 */
+  /**
+   * 获取Schema的函数名
+   * @deprecated 请使用 apiConfig.communicationMode = 'customEvent' 模式
+   */
   getFunctionName: string
-  /** 更新Schema的函数名 */
+  /**
+   * 更新Schema的函数名
+   * @deprecated 请使用 apiConfig.communicationMode = 'customEvent' 模式
+   */
   updateFunctionName: string
   /** 字符串自动解析为 Markdown Elements */
   autoParseString: boolean
@@ -197,8 +224,13 @@ export interface StorageData {
   exportConfig: ExportConfig
   /** 编辑器主题 */
   editorTheme: EditorTheme
-  /** 预览函数名 */
+  /**
+   * 预览函数名
+   * @deprecated 请使用 apiConfig.communicationMode = 'customEvent' 模式
+   */
   previewFunctionName: string
+  /** API 配置 */
+  apiConfig: ApiConfig
 }
 
 /**
@@ -318,12 +350,29 @@ export interface UpdateResultPayload {
  * 配置同步载荷
  */
 export interface ConfigSyncPayload {
-  /** 获取Schema的函数名 */
+  /**
+   * 获取Schema的函数名
+   * @deprecated 仅 windowFunction 模式使用
+   */
   getFunctionName: string
-  /** 更新Schema的函数名 */
+  /**
+   * 更新Schema的函数名
+   * @deprecated 仅 windowFunction 模式使用
+   */
   updateFunctionName: string
-  /** 预览函数名 */
+  /**
+   * 预览函数名
+   * @deprecated 仅 windowFunction 模式使用
+   */
   previewFunctionName: string
+  /** 通信模式 */
+  communicationMode: CommunicationMode
+  /** 请求超时时间（秒，customEvent 模式） */
+  requestTimeout: number
+  /** 请求事件名（customEvent 模式） */
+  requestEventName: string
+  /** 响应事件名（customEvent 模式） */
+  responseEventName: string
 }
 
 /**

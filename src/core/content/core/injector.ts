@@ -31,16 +31,27 @@ export const injectPageScript = (): void => {
  */
 export const syncConfigToInjectedScript = async (): Promise<void> => {
   try {
-    const getFunctionName = await storage.getGetFunctionName()
-    const updateFunctionName = await storage.getUpdateFunctionName()
+    const [getFunctionName, updateFunctionName, previewFunctionName, apiConfig] = await Promise.all([
+      storage.getGetFunctionName(),
+      storage.getUpdateFunctionName(),
+      storage.getPreviewFunctionName(),
+      storage.getApiConfig()
+    ])
     
     window.postMessage(
       {
         source: 'schema-editor-content',
         type: 'CONFIG_SYNC',
         payload: {
+          // @deprecated windowFunction 模式配置
           getFunctionName,
-          updateFunctionName
+          updateFunctionName,
+          previewFunctionName,
+          // API 配置
+          communicationMode: apiConfig.communicationMode,
+          requestTimeout: apiConfig.requestTimeout,
+          requestEventName: apiConfig.requestEventName,
+          responseEventName: apiConfig.responseEventName
         }
       },
       '*'

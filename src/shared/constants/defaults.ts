@@ -56,6 +56,12 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     customFileName: false
   },
   editorTheme: 'schemaEditorDark',
+  apiConfig: {
+    communicationMode: 'customEvent',
+    requestTimeout: 5,
+    requestEventName: 'schema-editor:request',
+    responseEventName: 'schema-editor:response'
+  }
 } as const
 
 /**
@@ -85,7 +91,8 @@ export const STORAGE_KEYS = {
   ENABLE_AST_TYPE_HINTS: 'enableAstTypeHints',
   EXPORT_CONFIG: 'exportConfig',
   EDITOR_THEME: 'editorTheme',
-  PREVIEW_FUNCTION_NAME: 'previewFunctionName'
+  PREVIEW_FUNCTION_NAME: 'previewFunctionName',
+  API_CONFIG: 'apiConfig'
 } as const
 
 

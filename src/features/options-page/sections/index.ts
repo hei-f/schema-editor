@@ -1,6 +1,7 @@
 /**
  * 配置区块组件导出
  */
+export { ApiConfigSection } from './ApiConfigSection'
 export { BasicIntegrationSection } from './BasicIntegrationSection'
 export { DataManagementSection } from './DataManagementSection'
 export { DebugSection } from './DebugSection'

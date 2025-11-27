@@ -1,10 +1,12 @@
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
+import type { CommunicationMode } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
 import { getChangedFieldPath, getValueByPath, pathToString } from '@/shared/utils/form-path'
 import { CheckCircleOutlined, UndoOutlined } from '@ant-design/icons'
 import { Button, Form, message, Popconfirm } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { FIELD_PATH_STORAGE_MAP, findFieldGroup, SECTION_DEFAULT_KEYS, SECTION_KEYS, type SectionKey } from './config/field-config'
+import { ApiConfigSection } from './sections/ApiConfigSection'
 import { BasicIntegrationSection } from './sections/BasicIntegrationSection'
 import { DataManagementSection } from './sections/DataManagementSection'
 import { DebugSection } from './sections/DebugSection'
@@ -43,6 +45,9 @@ export const OptionsApp: React.FC = () => {
   const [getFunctionName, setGetFunctionName] = useState(DEFAULT_VALUES.getFunctionName)
   const [updateFunctionName, setUpdateFunctionName] = useState(DEFAULT_VALUES.updateFunctionName)
   const [previewFunctionName, setPreviewFunctionName] = useState(DEFAULT_VALUES.previewFunctionName)
+  const [communicationMode, setCommunicationMode] = useState<CommunicationMode>(DEFAULT_VALUES.apiConfig.communicationMode)
+  const [requestEventName, setRequestEventName] = useState(DEFAULT_VALUES.apiConfig.requestEventName)
+  const [responseEventName, setResponseEventName] = useState(DEFAULT_VALUES.apiConfig.responseEventName)
   
   const timeoutMapRef = React.useRef<Map<string, NodeJS.Timeout>>(new Map())
 
@@ -71,11 +76,15 @@ export const OptionsApp: React.FC = () => {
       const exportConfig = await storage.getExportConfig()
       const editorTheme = await storage.getEditorTheme()
       const previewFunctionName = await storage.getPreviewFunctionName()
+      const apiConfig = await storage.getApiConfig()
       
       setAttributeName(attributeName)
       setGetFunctionName(getFunctionName)
       setUpdateFunctionName(updateFunctionName)
       setPreviewFunctionName(previewFunctionName)
+      setCommunicationMode(apiConfig.communicationMode)
+      setRequestEventName(apiConfig.requestEventName)
+      setResponseEventName(apiConfig.responseEventName)
       
       form.setFieldsValue({
         attributeName,
@@ -96,7 +105,8 @@ export const OptionsApp: React.FC = () => {
         enableAstTypeHints,
         exportConfig,
         editorTheme,
-        previewFunctionName
+        previewFunctionName,
+        apiConfig
       })
     } catch (error) {
       message.error('加载配置失败')
@@ -117,6 +127,12 @@ export const OptionsApp: React.FC = () => {
         
         if (fieldPath[0] === 'previewFunctionName') {
           setPreviewFunctionName(allValues.previewFunctionName)
+        }
+        
+        if (fieldPath[0] === 'apiConfig') {
+          setCommunicationMode(allValues.apiConfig.communicationMode)
+          setRequestEventName(allValues.apiConfig.requestEventName)
+          setResponseEventName(allValues.apiConfig.responseEventName)
         }
         
         message.success('已保存', 1.5)
@@ -172,7 +188,8 @@ export const OptionsApp: React.FC = () => {
     return debounceFields.includes(fieldPath[0]) || 
            (fieldPath[0] === 'searchConfig' && ['searchDepthUp', 'throttleInterval'].includes(fieldPath[1])) ||
            (fieldPath[0] === 'highlightAllConfig' && ['keyBinding', 'maxHighlightCount'].includes(fieldPath[1])) ||
-           (fieldPath[0] === 'recordingModeConfig' && ['keyBinding', 'pollingInterval', 'highlightColor'].includes(fieldPath[1]))
+           (fieldPath[0] === 'recordingModeConfig' && ['keyBinding', 'pollingInterval', 'highlightColor'].includes(fieldPath[1])) ||
+           (fieldPath[0] === 'apiConfig' && ['requestTimeout', 'requestEventName', 'responseEventName'].includes(fieldPath[1]))
   }, [])
 
   const handleValuesChange = (changedValues: any, allValues: any) => {
@@ -215,6 +232,12 @@ export const OptionsApp: React.FC = () => {
       setPreviewFunctionName(DEFAULT_VALUES.previewFunctionName)
     }
     
+    if (sectionKey === SECTION_KEYS.API_CONFIG) {
+      setCommunicationMode(DEFAULT_VALUES.apiConfig.communicationMode)
+      setRequestEventName(DEFAULT_VALUES.apiConfig.requestEventName)
+      setResponseEventName(DEFAULT_VALUES.apiConfig.responseEventName)
+    }
+    
     message.success('已恢复默认配置')
   }, [form])
 
@@ -242,26 +265,30 @@ export const OptionsApp: React.FC = () => {
     await storage.setEnableAstTypeHints(DEFAULT_VALUES.enableAstTypeHints)
     await storage.setExportConfig(DEFAULT_VALUES.exportConfig)
     await storage.setEditorTheme(DEFAULT_VALUES.editorTheme)
+    await storage.setApiConfig(DEFAULT_VALUES.apiConfig)
     
     // 更新 state
     setAttributeName(DEFAULT_VALUES.attributeName)
     setGetFunctionName(DEFAULT_VALUES.getFunctionName)
     setUpdateFunctionName(DEFAULT_VALUES.updateFunctionName)
     setPreviewFunctionName(DEFAULT_VALUES.previewFunctionName)
+    setCommunicationMode(DEFAULT_VALUES.apiConfig.communicationMode)
+    setRequestEventName(DEFAULT_VALUES.apiConfig.requestEventName)
+    setResponseEventName(DEFAULT_VALUES.apiConfig.responseEventName)
     
     message.success('已恢复全部默认配置')
   }, [form])
 
   return (
     <Container>
-      <HeaderSection>
+      <HeaderSection justify="space-between" align="center" gap={16}>
         <HeaderContent>
           <PageTitle level={2}>⚙️ Schema Editor 设置</PageTitle>
           <PageDescription type="secondary">
             配置插件的行为参数
           </PageDescription>
         </HeaderContent>
-        <HeaderActions>
+        <HeaderActions align="center" gap={12}>
           <VersionTag>v1.9.1</VersionTag>
           <Button onClick={openReleasePage}>
             检查更新
@@ -269,7 +296,7 @@ export const OptionsApp: React.FC = () => {
         </HeaderActions>
       </HeaderSection>
 
-      <AutoSaveHint>
+      <AutoSaveHint align="center" gap={8}>
         <CheckCircleOutlined />
         <span>所有配置项通过验证后将自动保存</span>
         <Popconfirm
@@ -291,7 +318,18 @@ export const OptionsApp: React.FC = () => {
         onValuesChange={handleValuesChange}
         initialValues={DEFAULT_VALUES}
       >
-        {/* 卡片1: 基础集成配置 - 属性名、核心API函数名、扩展API函数名 */}
+        {/* 卡片1: API 配置 - 通信模式、事件名 */}
+        <ApiConfigSection
+          communicationMode={communicationMode}
+          requestEventName={requestEventName}
+          responseEventName={responseEventName}
+          getFunctionName={getFunctionName}
+          updateFunctionName={updateFunctionName}
+          previewFunctionName={previewFunctionName}
+          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.API_CONFIG)}
+        />
+
+        {/* 卡片2: 基础集成配置 - 属性名、核心API函数名、扩展API函数名（windowFunction 模式） */}
         <BasicIntegrationSection 
           attributeName={attributeName}
           getFunctionName={getFunctionName}

@@ -1,5 +1,5 @@
 import { DEFAULT_VALUES, STORAGE_KEYS } from '@/shared/constants/defaults'
-import type { EditorTheme, HighlightAllConfig, PreviewConfig, RecordingModeConfig } from '@/shared/types'
+import type { ApiConfig, EditorTheme, HighlightAllConfig, PreviewConfig, RecordingModeConfig } from '@/shared/types'
 
 /**
  * 存储字段配置接口
@@ -154,7 +154,25 @@ export const SIMPLE_STORAGE_FIELDS = {
   previewFunctionName: {
     key: STORAGE_KEYS.PREVIEW_FUNCTION_NAME,
     defaultValue: DEFAULT_VALUES.previewFunctionName
-  } as StorageFieldConfig<string>
+  } as StorageFieldConfig<string>,
+
+  apiConfig: {
+    key: STORAGE_KEYS.API_CONFIG,
+    defaultValue: DEFAULT_VALUES.apiConfig,
+    validator: (value: any): value is ApiConfig => {
+      return (
+        value &&
+        ['customEvent', 'windowFunction'].includes(value.communicationMode) &&
+        typeof value.requestTimeout === 'number' &&
+        value.requestTimeout >= 1 &&
+        value.requestTimeout <= 30 &&
+        typeof value.requestEventName === 'string' &&
+        value.requestEventName.length > 0 &&
+        typeof value.responseEventName === 'string' &&
+        value.responseEventName.length > 0
+      )
+    }
+  } as StorageFieldConfig<ApiConfig>
 }
 
 /**
