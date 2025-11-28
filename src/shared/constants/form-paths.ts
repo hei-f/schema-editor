@@ -130,7 +130,27 @@ export const FORM_PATHS = {
     /** 通信模式 */
     communicationMode: ['apiConfig', 'communicationMode'],
     /** 请求超时时间 */
-    requestTimeout: ['apiConfig', 'requestTimeout']
+    requestTimeout: ['apiConfig', 'requestTimeout'],
+    /** 消息标识配置 */
+    sourceConfig: {
+      /** 插件端 source */
+      contentSource: ['apiConfig', 'sourceConfig', 'contentSource'],
+      /** 宿主端 source */
+      hostSource: ['apiConfig', 'sourceConfig', 'hostSource']
+    },
+    /** 消息类型名称配置 */
+    messageTypes: {
+      /** 获取 Schema */
+      getSchema: ['apiConfig', 'messageTypes', 'getSchema'],
+      /** 更新 Schema */
+      updateSchema: ['apiConfig', 'messageTypes', 'updateSchema'],
+      /** 检查预览 */
+      checkPreview: ['apiConfig', 'messageTypes', 'checkPreview'],
+      /** 渲染预览 */
+      renderPreview: ['apiConfig', 'messageTypes', 'renderPreview'],
+      /** 清理预览 */
+      cleanupPreview: ['apiConfig', 'messageTypes', 'cleanupPreview']
+    }
   }
 }
 

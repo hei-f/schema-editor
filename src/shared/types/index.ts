@@ -136,6 +136,32 @@ export interface RecordingModeConfig {
 export type CommunicationMode = 'postMessage' | 'windowFunction'
 
 /**
+ * postMessage 模式的消息标识配置
+ */
+export interface PostMessageSourceConfig {
+  /** 插件端发送消息的 source 标识 */
+  contentSource: string
+  /** 宿主端响应消息的 source 标识 */
+  hostSource: string
+}
+
+/**
+ * postMessage 模式的消息类型名称配置
+ */
+export interface PostMessageTypeConfig {
+  /** 获取 Schema 的消息类型 */
+  getSchema: string
+  /** 更新 Schema 的消息类型 */
+  updateSchema: string
+  /** 检查预览函数是否存在的消息类型 */
+  checkPreview: string
+  /** 渲染预览的消息类型 */
+  renderPreview: string
+  /** 清理预览的消息类型 */
+  cleanupPreview: string
+}
+
+/**
  * API 配置接口
  */
 export interface ApiConfig {
@@ -143,6 +169,10 @@ export interface ApiConfig {
   communicationMode: CommunicationMode
   /** 请求超时时间（秒，1-30） */
   requestTimeout: number
+  /** postMessage 模式的消息标识配置 */
+  sourceConfig: PostMessageSourceConfig
+  /** postMessage 模式的消息类型名称配置 */
+  messageTypes: PostMessageTypeConfig
 }
 
 /**
@@ -169,6 +199,35 @@ export interface ExportConfig {
  * 编辑器主题类型
  */
 export type EditorTheme = 'light' | 'dark' | 'schemaEditorDark'
+
+/**
+ * SchemaDrawer 组件配置
+ * 所有配置统一放在此对象中，由父组件加载后传入
+ */
+export interface SchemaDrawerConfig {
+  /** 抽屉宽度 */
+  width: string | number
+  /** API 配置 */
+  apiConfig: ApiConfig
+  /** 工具栏按钮配置 */
+  toolbarButtons: ToolbarButtonsConfig
+  /** 自动保存草稿开关 */
+  autoSaveDraft: boolean
+  /** 预览配置 */
+  previewConfig: PreviewConfig
+  /** 历史记录上限 */
+  maxHistoryCount: number
+  /** AST 类型提示开关 */
+  enableAstTypeHints: boolean
+  /** 导出配置 */
+  exportConfig: ExportConfig
+  /** 编辑器主题 */
+  editorTheme: EditorTheme
+  /** 录制模式配置 */
+  recordingModeConfig: RecordingModeConfig
+  /** 自动解析字符串开关 */
+  autoParseString: boolean
+}
 
 /**
  * 存储数据接口

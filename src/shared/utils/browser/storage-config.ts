@@ -167,6 +167,24 @@ export const SIMPLE_STORAGE_FIELDS = {
         value.requestTimeout >= 1 &&
         value.requestTimeout <= 30
       )
+    },
+    transformer: (value: any): ApiConfig => {
+      // 兼容旧版数据，补充新增字段的默认值
+      return {
+        communicationMode: value.communicationMode ?? DEFAULT_VALUES.apiConfig.communicationMode,
+        requestTimeout: value.requestTimeout ?? DEFAULT_VALUES.apiConfig.requestTimeout,
+        sourceConfig: {
+          contentSource: value.sourceConfig?.contentSource ?? DEFAULT_VALUES.apiConfig.sourceConfig.contentSource,
+          hostSource: value.sourceConfig?.hostSource ?? DEFAULT_VALUES.apiConfig.sourceConfig.hostSource
+        },
+        messageTypes: {
+          getSchema: value.messageTypes?.getSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.getSchema,
+          updateSchema: value.messageTypes?.updateSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.updateSchema,
+          checkPreview: value.messageTypes?.checkPreview ?? DEFAULT_VALUES.apiConfig.messageTypes.checkPreview,
+          renderPreview: value.messageTypes?.renderPreview ?? DEFAULT_VALUES.apiConfig.messageTypes.renderPreview,
+          cleanupPreview: value.messageTypes?.cleanupPreview ?? DEFAULT_VALUES.apiConfig.messageTypes.cleanupPreview
+        }
+      }
     }
   } as StorageFieldConfig<ApiConfig>
 }

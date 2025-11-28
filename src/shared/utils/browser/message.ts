@@ -1,13 +1,13 @@
-import type { Message } from '@/shared/types'
+import type { Message, PostMessageSourceConfig } from '@/shared/types'
 import { logger } from '@/shared/utils/logger'
 
-/** 消息来源标识 */
+/** 默认消息来源标识（用于 windowFunction 模式的 injected script 通信） */
 export const MESSAGE_SOURCE = {
-  /** Content Script 发送的消息 */
+  /** Content Script 发送的消息（默认值，postMessage 模式可配置） */
   FROM_CONTENT: 'schema-editor-content',
-  /** 宿主应用响应的消息（postMessage 模式） */
+  /** 宿主应用响应的消息（默认值，postMessage 模式可配置） */
   FROM_HOST: 'schema-editor-host',
-  /** Injected Script 响应的消息（windowFunction 模式） */
+  /** Injected Script 响应的消息（windowFunction 模式专用，不可配置） */
   FROM_INJECTED: 'schema-editor-injected'
 } as const
 
@@ -121,16 +121,19 @@ export function listenPageMessages(
  * @param type 消息类型
  * @param payload 消息载荷
  * @param timeoutSeconds 超时时间（秒）
+ * @param sourceConfig 可选的 source 配置，不传则使用默认值
  * @returns Promise，resolve 时返回宿主响应
  */
 export function sendRequestToHost<T = any>(
   type: string,
   payload: any,
-  timeoutSeconds: number = 5
+  timeoutSeconds: number = 5,
+  sourceConfig?: PostMessageSourceConfig
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const requestId = `req-${++requestCounter}-${Date.now()}`
     const timeoutMs = timeoutSeconds * 1000
+    const contentSource = sourceConfig?.contentSource ?? MESSAGE_SOURCE.FROM_CONTENT
     
     const timeoutId = setTimeout(() => {
       pendingRequests.delete(requestId)
@@ -142,7 +145,7 @@ export function sendRequestToHost<T = any>(
     
     // 发送请求到宿主
     window.postMessage({
-      source: MESSAGE_SOURCE.FROM_CONTENT,
+      source: contentSource,
       type,
       payload,
       requestId
@@ -153,14 +156,17 @@ export function sendRequestToHost<T = any>(
 /**
  * 初始化宿主消息监听器（postMessage 直连模式）
  * 需要在 Content Script 启动时调用一次
+ * @param sourceConfig 可选的 source 配置，不传则使用默认值
  */
-export function initHostMessageListener(): () => void {
+export function initHostMessageListener(sourceConfig?: PostMessageSourceConfig): () => void {
+  const hostSource = sourceConfig?.hostSource ?? MESSAGE_SOURCE.FROM_HOST
+  
   const listener = (event: MessageEvent) => {
     // 只处理来自当前窗口的消息
     if (event.source !== window) return
     
     // 只处理来自宿主的响应
-    if (!event.data || event.data.source !== MESSAGE_SOURCE.FROM_HOST) return
+    if (!event.data || event.data.source !== hostSource) return
     
     const { requestId } = event.data
     const pending = pendingRequests.get(requestId)
