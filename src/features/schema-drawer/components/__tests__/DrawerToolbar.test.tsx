@@ -91,9 +91,9 @@ describe('DrawerToolbar组件测试', () => {
         />
       )
 
-      expect(screen.getByText('解析')).toBeInTheDocument()
-      expect(screen.queryByText('压缩')).not.toBeInTheDocument()
-      expect(screen.getByText('格式化')).toBeInTheDocument()
+      expect(screen.getByText(/解\s*析/)).toBeInTheDocument()
+      expect(screen.queryByText(/压\s*缩/)).not.toBeInTheDocument()
+      expect(screen.getByText(/格式化/)).toBeInTheDocument()
       expect(screen.queryByText('更新预览')).not.toBeInTheDocument()
     })
   })
@@ -181,7 +181,7 @@ describe('DrawerToolbar组件测试', () => {
         />
       )
 
-      await user.click(screen.getByText('压缩'))
+      await user.click(screen.getByText(/压\s*缩/))
 
       expect(mockHandlers.onCompact).toHaveBeenCalledTimes(1)
     })
@@ -199,7 +199,7 @@ describe('DrawerToolbar组件测试', () => {
         />
       )
 
-      await user.click(screen.getByText('解析'))
+      await user.click(screen.getByText(/解\s*析/))
 
       expect(mockHandlers.onParse).toHaveBeenCalledTimes(1)
     })
@@ -216,9 +216,9 @@ describe('DrawerToolbar组件测试', () => {
       )
 
       // 对于Ant Design Button，需要查找父级button元素
-      const formatButton = screen.getByText('格式化').closest('button')
-      const compactButton = screen.getByText('压缩').closest('button')
-      const parseButton = screen.getByText('解析').closest('button')
+      const formatButton = screen.getByText(/格式化/).closest('button')
+      const compactButton = screen.getByText(/压\s*缩/).closest('button')
+      const parseButton = screen.getByText(/解\s*析/).closest('button')
 
       // 格式化和解析需要有效JSON，所以被禁用
       expect(formatButton).toBeDisabled()
@@ -371,9 +371,9 @@ describe('DrawerToolbar组件测试', () => {
         />
       )
 
-      expect(screen.queryByText('格式化')).not.toBeInTheDocument()
-      expect(screen.queryByText('压缩')).not.toBeInTheDocument()
-      expect(screen.queryByText('解析')).not.toBeInTheDocument()
+      expect(screen.queryByText(/格式化/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/压\s*缩/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/解\s*析/)).not.toBeInTheDocument()
       expect(screen.queryByText('AST')).not.toBeInTheDocument()
     })
 

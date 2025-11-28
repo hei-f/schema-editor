@@ -113,6 +113,7 @@ describe('Storage工具测试', () => {
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
+          escape: true,
           deserialize: false,
           serialize: false,
           format: true,
@@ -200,6 +201,7 @@ describe('Storage工具测试', () => {
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
+          escape: true,
           deserialize: false,
           serialize: false,
           format: true,
@@ -277,6 +279,7 @@ describe('Storage工具测试', () => {
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
+          escape: true,
           deserialize: false,
           serialize: false,
           format: true,
@@ -534,6 +537,7 @@ describe('Storage工具测试', () => {
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
+          escape: true,
           deserialize: false,
           serialize: false,
           format: true,
@@ -625,6 +629,7 @@ describe('Storage工具测试', () => {
 
       expect(result).toEqual({
         astRawStringToggle: true,
+        escape: true,
         deserialize: false,
         serialize: false,
         format: true,
@@ -655,9 +660,15 @@ describe('Storage工具测试', () => {
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         toolbarButtons: {
           astRawStringToggle: true,
+          escape: true,
           deserialize: true,
           serialize: true,
           format: true,
+          preview: true,
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true,
         },
       })
 
@@ -668,9 +679,15 @@ describe('Storage工具测试', () => {
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
         toolbarButtons: {
           astRawStringToggle: false,
+          escape: true,
           deserialize: true,
           serialize: true,
           format: true,
+          preview: true,
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true,
         },
       })
     })
@@ -887,6 +904,7 @@ describe('Storage工具测试', () => {
       const result = await storage.getToolbarButtons()
       expect(result).toEqual({
         astRawStringToggle: true,
+        escape: true,
         deserialize: false,
         serialize: false,
         format: true,
