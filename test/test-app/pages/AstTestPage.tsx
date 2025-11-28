@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Card, Button, Input, Space, Tag, Typography, Alert, Row, Col } from 'antd'
 import { PlayCircleOutlined, ClearOutlined, ReloadOutlined } from '@ant-design/icons'
-import { parseMarkdownString, parserSchemaNodeToMarkdown } from '@/shared/utils/schema/transformers'
+import { parserMarkdownToSlateNode, parserSlateNodeToMarkdown } from '@ant-design/agentic-ui'
 import styled from 'styled-components'
 
 const { TextArea } = Input
@@ -88,25 +88,25 @@ export const AstTestPage: React.FC = () => {
     })
 
     try {
-      const ast1 = parseMarkdownString(input)
+      const ast1 = parserMarkdownToSlateNode(input)?.schema || []
       newResults.push({
         step: 2,
-        title: 'parseMarkdownString → AST',
+        title: 'parserMarkdownToSlateNode → AST',
         data: ast1,
         nodeCount: ast1.length
       })
 
-      const markdown2 = parserSchemaNodeToMarkdown(ast1)
+      const markdown2 = parserSlateNodeToMarkdown(ast1)
       newResults.push({
         step: 3,
-        title: 'parserSchemaNodeToMarkdown → 字符串',
+        title: 'parserSlateNodeToMarkdown → 字符串',
         data: markdown2
       })
 
-      const ast2 = parseMarkdownString(markdown2)
+      const ast2 = parserMarkdownToSlateNode(markdown2)?.schema || []
       newResults.push({
         step: 4,
-        title: 'parseMarkdownString → AST（第二次）',
+        title: 'parserMarkdownToSlateNode → AST（第二次）',
         data: ast2,
         nodeCount: ast2.length
       })
@@ -144,7 +144,7 @@ export const AstTestPage: React.FC = () => {
     <PageContainer>
       <Title level={3}>🔬 AST 转换测试</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
-        直接测试 <code>parseMarkdownString</code> 和 <code>parserSchemaNodeToMarkdown</code> 函数的往返一致性
+        直接测试 <code>parserMarkdownToSlateNode</code> 和 <code>parserSlateNodeToMarkdown</code> 函数的往返一致性
       </Text>
 
       <Card title="输入 Markdown 字符串" style={{ marginBottom: 24 }}>
@@ -228,8 +228,7 @@ export const AstTestPage: React.FC = () => {
         message="测试说明"
         description={
           <ul style={{ margin: '8px 0 0 0', paddingLeft: 20 }}>
-            <li>此工具直接调用项目中的 <code>parseMarkdownString</code> 和 <code>parserSchemaNodeToMarkdown</code> 函数</li>
-            <li>这两个函数内部调用 <code>@ant-design/agentic-ui</code> 库的对应方法</li>
+            <li>此工具直接调用 <code>@ant-design/agentic-ui</code> 库的 <code>parserMarkdownToSlateNode</code> 和 <code>parserSlateNodeToMarkdown</code> 方法</li>
             <li>点击"运行测试"可以看到完整的转换流程和结果对比</li>
             <li>如果节点数发生变化，说明存在往返转换不一致的问题</li>
           </ul>

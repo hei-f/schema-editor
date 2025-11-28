@@ -238,9 +238,18 @@ export const SchemaTestPage: React.FC = () => {
       }
 
       case 'RENDER_PREVIEW': {
-        addLog('info', '🎨 收到 RENDER_PREVIEW 请求', payload)
-        result = { success: true }
-        addLog('success', '✅ 预览渲染完成')
+        const { schema, containerId } = payload
+        addLog('info', '🎨 收到 RENDER_PREVIEW 请求', { schema, containerId })
+        
+        const container = document.getElementById(containerId)
+        if (container) {
+          container.innerHTML = `<pre style="padding: 16px; margin: 0; font-size: 12px; background: #f5f5f5; border-radius: 4px; overflow: auto; height: 100%;">${JSON.stringify(schema, null, 2)}</pre>`
+          addLog('success', '✅ 预览渲染完成')
+          result = { success: true }
+        } else {
+          addLog('error', '❌ 预览容器不存在', { containerId })
+          result = { success: false, error: '预览容器不存在' }
+        }
         break
       }
 
