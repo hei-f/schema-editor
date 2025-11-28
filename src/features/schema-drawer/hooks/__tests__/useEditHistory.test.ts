@@ -40,7 +40,7 @@ describe('useEditHistory Hook 测试', () => {
       expect(result.current.hasHistory).toBe(false)
     })
 
-    it('应该从 sessionStorage 加载历史', () => {
+    it('应该从 sessionStorage 加载历史', async () => {
       const mockHistory = {
         entries: [
           {
@@ -58,7 +58,10 @@ describe('useEditHistory Hook 测试', () => {
 
       const { result } = renderHook(() => useEditHistory(defaultProps))
 
-      expect(result.current.history).toHaveLength(1)
+      // useDeferredEffect 延迟加载，需要等待
+      await waitFor(() => {
+        expect(result.current.history).toHaveLength(1)
+      })
       expect(result.current.hasHistory).toBe(true)
     })
   })
@@ -368,7 +371,7 @@ describe('useEditHistory Hook 测试', () => {
       expect(data.specialEntries[0].content).toBe('content')
     })
 
-    it('应该从 sessionStorage 恢复历史', () => {
+    it('应该从 sessionStorage 恢复历史', async () => {
       const mockData = {
         entries: [],
         specialEntries: [
@@ -386,7 +389,10 @@ describe('useEditHistory Hook 测试', () => {
 
       const { result } = renderHook(() => useEditHistory(defaultProps))
 
-      expect(result.current.history).toHaveLength(1)
+      // useDeferredEffect 延迟加载，需要等待
+      await waitFor(() => {
+        expect(result.current.history).toHaveLength(1)
+      })
       expect(result.current.history[0].content).toBe('restored content')
     })
   })
