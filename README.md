@@ -2,7 +2,7 @@
 
 Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 
-![Version](https://img.shields.io/badge/version-1.12.0-blue)
+![Version](https://img.shields.io/badge/version-1.12.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ## 功能
@@ -104,21 +104,35 @@ type PreviewFunc<T> = (
 ) => (() => void) | void
 ```
 
-### postMessage 直连模式（推荐）
+### 通信模式对比
 
-使用 postMessage 实现双向通信，无需注入脚本，无需污染 window 对象：
+插件支持两种通信模式，各有优劣：
+
+| 特性 | postMessage 模式 | Window 函数模式 |
+|------|------------------|-----------------|
+| **接入复杂度** | 需要实现消息监听和响应 | 简单，只需暴露全局函数 |
+| **命名空间** | 不污染 window，方法不会暴露 | 需要在 window 上挂载函数 |
+| **安全性** | 更高，减少全局暴露 | 全局函数可被外部访问 |
+| **可定制性** | 支持自定义消息标识和类型 | 支持自定义函数名 |
+| **健壮性** | 内置超时机制和错误处理 | 依赖页面实现 |
+| **可调试性** | requestId 便于追踪 | 无内置追踪机制 |
+
+### postMessage 模式
+
+使用 postMessage 实现双向通信，不污染 window 对象，方法不会暴露给外部：
 
 ```typescript
 // 监听扩展请求
 window.addEventListener('message', (event) => {
   // 只处理来自当前窗口的消息
   if (event.source !== window) return
-  // 只处理来自插件的消息
+  // 只处理来自插件的消息（source 可在配置页面自定义）
   if (event.data?.source !== 'schema-editor-content') return
 
   const { type, payload, requestId } = event.data
   let result
 
+  // 消息类型可在配置页面自定义
   switch (type) {
     case 'GET_SCHEMA':
       // payload.params: 'param1' 或 'param1,param2'
@@ -143,7 +157,7 @@ window.addEventListener('message', (event) => {
       break
   }
 
-  // 发送响应（必须携带 requestId）
+  // 发送响应（必须携带 requestId，source 可在配置页面自定义）
   window.postMessage({
     source: 'schema-editor-host',
     requestId,
@@ -152,34 +166,28 @@ window.addEventListener('message', (event) => {
 })
 ```
 
-### 通信模式对比
+**可配置项**（在配置页面的【集成配置】中设置）：
+- 插件端 source 标识（默认：`schema-editor-content`）
+- 宿主端 source 标识（默认：`schema-editor-host`）
+- 消息类型名称（默认：`GET_SCHEMA`、`UPDATE_SCHEMA`、`CHECK_PREVIEW`、`RENDER_PREVIEW`、`CLEANUP_PREVIEW`）
+- 请求超时时间（默认：5秒）
 
-| 特性 | postMessage 模式 | Window 函数模式 |
-|------|------------------|-----------------|
-| **架构** | 无需注入脚本，Content Script 直连 | 需要注入页面脚本 |
-| **命名空间** | postMessage 隔离，不污染 window | 需要在 window 上挂载函数 |
-| **健壮性** | 内置超时机制和错误处理 | 依赖页面实现 |
-| **可调试性** | requestId 便于追踪 | 无内置追踪机制 |
-| **安全性** | 减少全局暴露 | 全局函数可被外部访问 |
+### Window 函数模式
 
-> **架构说明**：postMessage 模式无需注入脚本到页面上下文，Content Script 直接通过 postMessage 与宿主应用通信，架构更简洁，安全性更高。
-
-### Window 函数模式（已废弃）
-
-> ⚠️ **此模式已废弃，将在未来版本中移除，建议迁移到 postMessage 模式。**
+接入简单，宿主应用只需在 window 上暴露方法即可：
 
 ```typescript
-// @deprecated 获取Schema
+// 获取Schema（必需）
 window.__getContentById = (params: string) => {
   return { /* Schema对象 */ }
 }
 
-// @deprecated 更新Schema
+// 更新Schema（必需）
 window.__updateContentById = (schema, params: string) => {
   return true
 }
 
-// @deprecated 预览函数（可选）
+// 预览函数（可选）
 window.__getContentPreview = (data, containerId: string) => {
   const container = document.getElementById(containerId)
   const root = ReactDOM.createRoot(container)
@@ -189,6 +197,8 @@ window.__getContentPreview = (data, containerId: string) => {
 ```
 
 函数名可在配置页面自定义。
+
+> ⚠️ **注意**：Window 函数模式会将方法暴露在全局 window 对象上，可能被页面其他脚本访问。如果对安全性有要求，建议使用 postMessage 模式。
 
 ### 预览功能 (v1.2.0+)
 
