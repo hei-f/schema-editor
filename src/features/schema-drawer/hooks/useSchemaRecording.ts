@@ -1,6 +1,6 @@
-import type { ElementAttributes, SchemaSnapshot } from '@/shared/types'
+import type { ApiConfig, CommunicationMode, ElementAttributes, SchemaSnapshot } from '@/shared/types'
 import { MessageType } from '@/shared/types'
-import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
+import { listenPageMessages, postMessageToPage, sendRequestToHost } from '@/shared/utils/browser/message'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface UseSchemaRecordingOptions {
@@ -10,6 +10,8 @@ interface UseSchemaRecordingOptions {
   pollingInterval: number
   /** 当获取到新schema时的回调 */
   onSchemaChange?: (content: string) => void
+  /** API 配置 */
+  apiConfig?: ApiConfig | null
 }
 
 interface UseSchemaRecordingReturn {
@@ -34,7 +36,7 @@ interface UseSchemaRecordingReturn {
  * 用于轮询获取schema并记录变更
  */
 export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaRecordingReturn {
-  const { attributes, pollingInterval, onSchemaChange } = props
+  const { attributes, pollingInterval, onSchemaChange, apiConfig } = props
   
   const [isRecording, setIsRecording] = useState(false)
   const [snapshots, setSnapshots] = useState<SchemaSnapshot[]>([])
@@ -52,6 +54,13 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
   const messageCleanupRef = useRef<(() => void) | null>(null)
   /** 录制状态ref（避免闭包问题） */
   const isRecordingRef = useRef(false)
+
+  /**
+   * 获取通信模式
+   */
+  const getCommunicationMode = useCallback((): CommunicationMode => {
+    return apiConfig?.communicationMode ?? 'postMessage'
+  }, [apiConfig])
 
   /**
    * 处理schema响应
@@ -107,9 +116,30 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
   }, [onSchemaChange])
 
   /**
-   * 发送获取schema请求
+   * 发送获取schema请求（postMessage 直连模式）
    */
-  const requestSchema = useCallback(() => {
+  const requestSchemaPostMessage = useCallback(async () => {
+    const params = attributes.params.join(',')
+    try {
+      const response = await sendRequestToHost<{ success: boolean; data?: any; error?: string }>(
+        'GET_SCHEMA',
+        { params },
+        apiConfig?.requestTimeout ?? 5
+      )
+      handleSchemaResponse({
+        success: response.success !== false,
+        data: response.data,
+        error: response.error
+      })
+    } catch {
+      // 忽略单次请求失败
+    }
+  }, [attributes.params, apiConfig, handleSchemaResponse])
+
+  /**
+   * 发送获取schema请求（windowFunction 模式）
+   */
+  const requestSchemaWindowFunction = useCallback(() => {
     const params = attributes.params.join(',')
     postMessageToPage({
       type: MessageType.GET_SCHEMA,
@@ -131,24 +161,33 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
     snapshotIdRef.current = 0
     recordingStartTimeRef.current = Date.now()
     
-    // 设置消息监听
-    messageCleanupRef.current = listenPageMessages((msg) => {
-      if (msg.type === MessageType.SCHEMA_RESPONSE) {
-        handleSchemaResponse(msg.payload)
-      }
-    })
+    const mode = getCommunicationMode()
     
-    // 立即请求一次
-    requestSchema()
-    
-    // 启动轮询
-    pollingTimerRef.current = window.setInterval(() => {
-      requestSchema()
-    }, pollingInterval)
+    if (mode === 'postMessage') {
+      // postMessage 直连模式：直接轮询
+      requestSchemaPostMessage()
+      
+      pollingTimerRef.current = window.setInterval(() => {
+        requestSchemaPostMessage()
+      }, pollingInterval)
+    } else {
+      // windowFunction 模式：通过 injected.js
+      messageCleanupRef.current = listenPageMessages((msg) => {
+        if (msg.type === MessageType.SCHEMA_RESPONSE) {
+          handleSchemaResponse(msg.payload)
+        }
+      })
+      
+      requestSchemaWindowFunction()
+      
+      pollingTimerRef.current = window.setInterval(() => {
+        requestSchemaWindowFunction()
+      }, pollingInterval)
+    }
     
     isRecordingRef.current = true
     setIsRecording(true)
-  }, [pollingInterval, requestSchema, handleSchemaResponse])
+  }, [pollingInterval, getCommunicationMode, requestSchemaPostMessage, requestSchemaWindowFunction, handleSchemaResponse])
 
   /**
    * 停止录制

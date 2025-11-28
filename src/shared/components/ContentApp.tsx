@@ -1,8 +1,8 @@
 import { SchemaDrawer } from '@/features/schema-drawer'
 import { shadowDomTheme } from '@/shared/constants/theme'
-import type { ElementAttributes, Message, SchemaResponsePayload, UpdateResultPayload } from '@/shared/types'
+import type { ApiConfig, CommunicationMode, ElementAttributes, Message, SchemaResponsePayload, UpdateResultPayload } from '@/shared/types'
 import { MessageType } from '@/shared/types'
-import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
+import { initHostMessageListener, listenPageMessages, postMessageToPage, sendRequestToHost } from '@/shared/utils/browser/message'
 import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { App as AntdApp, ConfigProvider, message as antdMessage } from 'antd'
@@ -26,13 +26,24 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   const [currentAttributes, setCurrentAttributes] = useState<ElementAttributes>({ params: [] })
   const [drawerWidth, setDrawerWidth] = useState<string | number>('800px')
   const [isRecordingMode, setIsRecordingMode] = useState(false)
+  
+  /** API 配置 */
+  const [apiConfig, setApiConfig] = useState<ApiConfig | null>(null)
   const configSyncedRef = useRef(false)
 
   /**
-   * 同步配置到注入脚本
+   * 获取当前通信模式
+   */
+  const getCommunicationMode = useCallback((): CommunicationMode => {
+    return apiConfig?.communicationMode ?? 'postMessage'
+  }, [apiConfig])
+
+  /**
+   * 同步配置到注入脚本（仅 windowFunction 模式需要）
    */
   const syncConfigToInjected = useCallback(async () => {
     if (configSyncedRef.current) return
+    if (getCommunicationMode() !== 'windowFunction') return
     
     const [getFunctionName, updateFunctionName, previewFunctionName] = await Promise.all([
       storage.getGetFunctionName(),
@@ -50,23 +61,52 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     })
     
     configSyncedRef.current = true
+  }, [getCommunicationMode])
+
+  /**
+   * 初始化：加载配置
+   */
+  useEffect(() => {
+    const loadConfig = async () => {
+      const [width, config] = await Promise.all([
+        storage.getDrawerWidth(),
+        storage.getApiConfig()
+      ])
+      setDrawerWidth(width)
+      setApiConfig(config)
+    }
+    loadConfig()
+    storage.cleanExpiredDrafts()
   }, [])
 
   /**
-   * 初始化：加载抽屉宽度配置并清理过期草稿
+   * API 配置加载后，初始化通信
    */
   useEffect(() => {
-    storage.getDrawerWidth().then((width) => {
-      setDrawerWidth(width)
-    })
-    storage.cleanExpiredDrafts()
-    syncConfigToInjected()
-  }, [syncConfigToInjected])
+    if (!apiConfig) return
+    
+    // windowFunction 模式：同步配置到 injected.js
+    if (apiConfig.communicationMode === 'windowFunction') {
+      syncConfigToInjected()
+    }
+  }, [apiConfig, syncConfigToInjected])
 
   /**
-   * 监听来自injected script的消息
+   * 初始化宿主消息监听器（postMessage 模式）
    */
   useEffect(() => {
+    if (!apiConfig || apiConfig.communicationMode !== 'postMessage') return
+    
+    const cleanup = initHostMessageListener()
+    return cleanup
+  }, [apiConfig])
+
+  /**
+   * 监听来自 injected script 的消息（windowFunction 模式）
+   */
+  useEffect(() => {
+    if (!apiConfig || apiConfig.communicationMode !== 'windowFunction') return
+
     const cleanup = listenPageMessages((msg: Message) => {
       switch (msg.type) {
         case MessageType.SCHEMA_RESPONSE:
@@ -83,42 +123,61 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     })
 
     return cleanup
-  }, [])
+  }, [apiConfig])
 
   /**
-   * 监听来自monitor的元素点击事件
+   * 请求获取 Schema
+   */
+  const requestSchema = useCallback(async (attributes: ElementAttributes) => {
+    const params = attributes.params.join(',')
+    
+    if (getCommunicationMode() === 'postMessage') {
+      // postMessage 直连模式
+      try {
+        const response = await sendRequestToHost<SchemaResponsePayload>(
+          'GET_SCHEMA',
+          { params },
+          apiConfig?.requestTimeout ?? 5
+        )
+        handleSchemaResponse({
+          success: response.success !== false,
+          data: response.data,
+          error: response.error
+        })
+      } catch (error: any) {
+        antdMessage.error(error.message || '获取Schema失败')
+      }
+    } else {
+      // windowFunction 模式：通过 injected.js
+      postMessageToPage({
+        type: MessageType.GET_SCHEMA,
+        payload: { params }
+      })
+    }
+  }, [apiConfig, getCommunicationMode])
+
+  /**
+   * 监听来自 monitor 的元素点击事件
    */
   useEffect(() => {
-    const handleElementClick = (event: CustomEvent) => {
-      const { attributes, isRecordingMode: recordingMode } = event.detail
+    const handleElementClick = (event: Event) => {
+      const customEvent = event as CustomEvent
+      const { attributes, isRecordingMode: recordingMode } = customEvent.detail
 
       setCurrentAttributes(attributes)
       setIsRecordingMode(recordingMode || false)
       requestSchema(attributes)
     }
 
-    window.addEventListener('schema-editor:element-click', handleElementClick as EventListener)
+    window.addEventListener('schema-editor:element-click', handleElementClick)
 
     return () => {
-      window.removeEventListener('schema-editor:element-click', handleElementClick as EventListener)
+      window.removeEventListener('schema-editor:element-click', handleElementClick)
     }
-  }, [])
+  }, [requestSchema])
 
   /**
-   * 请求获取Schema
-   */
-  const requestSchema = (attributes: ElementAttributes) => {
-    const params = attributes.params.join(',')
-    const payload = { params }
-    
-    postMessageToPage({
-      type: MessageType.GET_SCHEMA,
-      payload: payload
-    })
-  }
-
-  /**
-   * 处理Schema响应
+   * 处理 Schema 响应
    */
   const handleSchemaResponse = (payload: SchemaResponsePayload) => {
     if (payload.success && payload.data !== undefined) {
@@ -132,37 +191,52 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   /**
    * 处理保存操作
    */
-  const handleSave = async (data: any) => {
-    return new Promise<void>((resolve, reject) => {
-      // 发送更新请求
-      postMessageToPage({
-        type: MessageType.UPDATE_SCHEMA,
-        payload: {
-          schema: data,
-          params: currentAttributes.params.join(',')
-        }
-      })
+  const handleSave = useCallback(async (data: any) => {
+    const params = currentAttributes.params.join(',')
+    
+    if (getCommunicationMode() === 'postMessage') {
+      // postMessage 直连模式
+      const response = await sendRequestToHost<UpdateResultPayload>(
+        'UPDATE_SCHEMA',
+        { schema: data, params },
+        apiConfig?.requestTimeout ?? 5
+      )
+      
+      if (response.success === false) {
+        throw new Error(response.error || '更新失败')
+      }
+    } else {
+      // windowFunction 模式：通过 injected.js
+      return new Promise<void>((resolve, reject) => {
+        postMessageToPage({
+          type: MessageType.UPDATE_SCHEMA,
+          payload: { schema: data, params }
+        })
 
-      // 等待更新结果（通过临时监听器）
-      const timeout = setTimeout(() => {
-        reject(new Error('更新超时'))
-      }, 10000)
+        const timeout = setTimeout(() => {
+          reject(new Error('更新超时'))
+        }, 10000)
 
-      const cleanup = listenPageMessages((msg: Message) => {
-        if (msg.type === MessageType.UPDATE_RESULT) {
-          clearTimeout(timeout)
-          cleanup()
-          resolve()
-        }
+        const cleanup = listenPageMessages((msg: Message) => {
+          if (msg.type === MessageType.UPDATE_RESULT) {
+            clearTimeout(timeout)
+            cleanup()
+            const result = msg.payload as UpdateResultPayload
+            if (result.success === false) {
+              reject(new Error(result.error || '更新失败'))
+            } else {
+              resolve()
+            }
+          }
+        })
       })
-    })
-  }
+    }
+  }, [currentAttributes, apiConfig, getCommunicationMode])
 
   /**
-   * 处理更新结果
+   * 处理更新结果（windowFunction 模式）
    */
   const handleUpdateResult = (payload: UpdateResultPayload) => {
-    // 只处理失败情况，成功提示由 SchemaDrawer 显示
     if (!payload.success) {
       antdMessage.error(payload.error || '更新失败')
     }
@@ -195,6 +269,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
             onSave={handleSave}
             width={drawerWidth}
             isRecordingMode={isRecordingMode}
+            apiConfig={apiConfig}
           />
         </AntdApp>
       </ConfigProvider>

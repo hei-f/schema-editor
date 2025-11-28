@@ -1,8 +1,9 @@
+import { previewContainerManager } from '@/core/content/core/preview-container'
 import { FavoritesManager } from '@/features/favorites/components/FavoritesManager'
 import { EDITOR_THEME_OPTIONS } from '@/shared/constants/editor-themes'
-import type { EditorTheme, ElementAttributes, HistoryEntry, PreviewFunctionResultPayload, RecordingModeConfig } from '@/shared/types'
+import type { ApiConfig, EditorTheme, ElementAttributes, HistoryEntry, PreviewFunctionResultPayload, RecordingModeConfig } from '@/shared/types'
 import { ContentType, HistoryEntryType, MessageType } from '@/shared/types'
-import { listenPageMessages, postMessageToPage } from '@/shared/utils/browser/message'
+import { listenPageMessages, postMessageToPage, sendRequestToHost } from '@/shared/utils/browser/message'
 import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
@@ -64,6 +65,8 @@ interface SchemaDrawerProps {
   width: number | string
   /** 是否以录制模式打开 */
   isRecordingMode?: boolean
+  /** API 配置 */
+  apiConfig: ApiConfig | null
 }
 
 /**
@@ -76,9 +79,11 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   onClose, 
   onSave, 
   width,
-  isRecordingMode: initialRecordingMode = false
+  isRecordingMode: initialRecordingMode = false,
+  apiConfig
 }) => {
   const [editorValue, setEditorValue] = useState<string>('')
+  const [originalValue, setOriginalValue] = useState<string>('')  // 原始值，用于 diff 对比
   const [isModified, setIsModified] = useState(false)
   const [wasStringData, setWasStringData] = useState(false)
   const [toolbarButtons, setToolbarButtons] = useState({
@@ -162,7 +167,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   } = useSchemaRecording({
     attributes,
     pollingInterval: recordingConfig?.pollingInterval || 100,
-    onSchemaChange: handleSchemaChangeForRecording
+    onSchemaChange: handleSchemaChangeForRecording,
+    apiConfig
   })
 
   /** 轻量提示 */
@@ -421,6 +427,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               // 使用命令式 API 更新编辑器
               editorRef.current?.setValue(formatted)
               setEditorValue(formatted)
+              setOriginalValue(formatted)  // 保存原始值用于 diff
               setIsModified(false)
               const result = detectContentType(formatted)
               updateContentType(result)
@@ -431,6 +438,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               // 使用命令式 API 更新编辑器
               editorRef.current?.setValue(formatted)
               setEditorValue(formatted)
+              setOriginalValue(formatted)  // 保存原始值用于 diff
               setIsModified(false)
               const result = detectContentType(formatted)
               updateContentType(result)
@@ -441,6 +449,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             setWasStringData(true)
             editorRef.current?.setValue(schemaData)
             setEditorValue(schemaData)
+            setOriginalValue(schemaData)  // 保存原始值用于 diff
             setIsModified(false)
             const result = detectContentType(schemaData)
             updateContentType(result)
@@ -450,6 +459,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             // 使用命令式 API 更新编辑器
             editorRef.current?.setValue(formatted)
             setEditorValue(formatted)
+            setOriginalValue(formatted)  // 保存原始值用于 diff
             setIsModified(false)
             const result = detectContentType(formatted)
             updateContentType(result)
@@ -465,6 +475,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           // 使用命令式 API 更新编辑器
           editorRef.current?.setValue(formatted)
           setEditorValue(formatted)
+          setOriginalValue(formatted)  // 保存原始值用于 diff
           setIsModified(false)
           const result = detectContentType(formatted)
           updateContentType(result)
@@ -604,11 +615,36 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   }
 
   /**
+   * 获取当前通信模式
+   */
+  const getCommunicationMode = useCallback(() => {
+    return apiConfig?.communicationMode ?? 'postMessage'
+  }, [apiConfig])
+
+  /**
    * 检查预览函数是否存在
    */
   useEffect(() => {
-    if (!open) return
+    if (!open || !apiConfig) return
     
+    const checkPreviewFunction = async () => {
+      if (getCommunicationMode() === 'postMessage') {
+        // postMessage 直连模式
+        try {
+          const response = await sendRequestToHost<{ exists: boolean }>(
+            'CHECK_PREVIEW',
+            {},
+            apiConfig.requestTimeout
+          )
+          setHasPreviewFunction(response.exists === true)
+          logger.log('预览函数检测结果:', response.exists)
+        } catch {
+          // 超时或错误时认为不存在
+          setHasPreviewFunction(false)
+          logger.log('预览函数检测超时，认为不存在')
+        }
+      } else {
+        // windowFunction 模式：通过 injected.js
     const cleanup = listenPageMessages((msg) => {
       if (msg.type === MessageType.PREVIEW_FUNCTION_RESULT) {
         const payload = msg.payload as PreviewFunctionResultPayload
@@ -617,13 +653,16 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       }
     })
     
-    // 发送检测消息
     postMessageToPage({
       type: MessageType.CHECK_PREVIEW_FUNCTION
     })
     
     return cleanup
-  }, [open])
+      }
+    }
+    
+    checkPreviewFunction()
+  }, [open, apiConfig, getCommunicationMode])
 
   /**
    * 抽屉关闭时清除预览
@@ -685,7 +724,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
    * 手动渲染预览
    * 预览数据与保存数据使用相同的转换逻辑，确保类型一致
    */
-  const handleRenderPreview = (isAutoUpdate = false) => {
+  const handleRenderPreview = async (isAutoUpdate = false) => {
     if (!previewEnabled || !hasPreviewFunction) {
       return
     }
@@ -706,26 +745,56 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         return
       }
       
-      // 发送渲染消息
-      postMessageToPage({
-        type: MessageType.RENDER_PREVIEW,
-        payload: {
-          schema: result.data,
-          position: {
+      const position = {
             left: rect.left,
             top: rect.top,
             width: rect.width,
             height: rect.height
           }
+      
+      // 由 Content Script 创建预览容器
+      const containerId = previewContainerManager.createContainer(position)
+      
+      if (getCommunicationMode() === 'postMessage') {
+        // postMessage 直连模式：发送 schema 和 containerId 给宿主
+        try {
+          await sendRequestToHost(
+            'RENDER_PREVIEW',
+            { schema: result.data, containerId },
+            apiConfig?.requestTimeout ?? 5
+          )
+          logger.log('预览渲染请求已发送（postMessage 模式）')
+        } catch (error: any) {
+          message.error('预览渲染失败：' + error.message)
+          // 显示错误信息到容器
+          const container = document.getElementById(containerId)
+          if (container) {
+            container.innerHTML = `
+              <div style="color: red; padding: 20px;">
+                <div style="font-weight: bold; margin-bottom: 8px;">预览渲染错误</div>
+                <div style="font-size: 12px;">${error.message || '未知错误'}</div>
+              </div>
+            `
+          }
+          return
         }
-      })
+      } else {
+        // windowFunction 模式：通过 injected.js
+        postMessageToPage({
+          type: MessageType.RENDER_PREVIEW,
+          payload: {
+            schema: result.data,
+            containerId,
+            position
+          }
+        })
+        logger.log('预览渲染请求已发送（windowFunction 模式）')
+      }
       
       // 如果是自动更新，显示轻量提示
       if (isAutoUpdate) {
         showLightNotification('预览已更新')
       }
-      
-      logger.log('预览渲染请求已发送')
     } catch (error: any) {
       message.error('JSON 格式错误：' + error.message)
     }
@@ -734,10 +803,26 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   /**
    * 清除预览
    */
-  const handleClearPreview = () => {
+  const handleClearPreview = async () => {
+    // 通知宿主清理（如果有清理回调）
+    if (getCommunicationMode() === 'postMessage') {
+      try {
+        await sendRequestToHost(
+          'CLEANUP_PREVIEW',
+          { containerId: previewContainerManager.getContainerId() },
+          2 // 较短超时
+        )
+      } catch {
+        // 忽略清理超时
+      }
+    } else {
     postMessageToPage({
       type: MessageType.CLEAR_PREVIEW
     })
+    }
+    
+    // Content Script 清理容器
+    previewContainerManager.clear()
     setPreviewEnabled(false)
     logger.log('预览已清除')
   }
@@ -749,7 +834,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     e.preventDefault()
     setIsDragging(true)
     // 拖拽开始时隐藏预览容器，避免遮挡
-    postMessageToPage({ type: MessageType.HIDE_PREVIEW })
+    previewContainerManager.hide()
   }
 
   /**
@@ -775,7 +860,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       setPreviewWidth(newWidth)
     }
 
-    const handleMouseUp = () => {
+    const handleMouseUp = async () => {
       setIsDragging(false)
       
       // 保存用户自定义的宽度到配置
@@ -786,27 +871,48 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       
       // 拖拽结束后更新预览位置并显示
       // 使用 setTimeout 等待 React 完成渲染后再获取最终位置
-      setTimeout(() => {
+      setTimeout(async () => {
         if (previewPlaceholderRef.current) {
           const rect = previewPlaceholderRef.current.getBoundingClientRect()
+          const position = {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height
+          }
+          
+          // 更新容器位置
+          previewContainerManager.updatePosition(position)
+          
+          // 重新渲染预览内容
           const result = schemaTransformer.prepareSaveData(editorValue || '{}', wasStringData)
           if (result.success) {
-            // 先更新位置
+            const containerId = previewContainerManager.getContainerId()
+            
+            if (getCommunicationMode() === 'postMessage') {
+              try {
+                await sendRequestToHost(
+                  'RENDER_PREVIEW',
+                  { schema: result.data, containerId },
+                  apiConfig?.requestTimeout ?? 5
+                )
+              } catch {
+                // 忽略错误
+              }
+            } else {
             postMessageToPage({
               type: MessageType.RENDER_PREVIEW,
               payload: {
                 schema: result.data,
-                position: {
-                  left: rect.left,
-                  top: rect.top,
-                  width: rect.width,
-                  height: rect.height
-                }
+                  containerId,
+                  position
               }
             })
-            // 然后显示预览容器
-            postMessageToPage({ type: MessageType.SHOW_PREVIEW })
+            }
           }
+          
+          // 显示预览容器
+          previewContainerManager.show()
         }
       }, 50)
     }
@@ -818,7 +924,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, previewWidth, editorValue, previewConfig, wasStringData])
+  }, [isDragging, previewWidth, editorValue, previewConfig, wasStringData, apiConfig, getCommunicationMode])
 
   /**
    * 加载用户保存的预览宽度
@@ -832,7 +938,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   /**
    * 计算抽屉宽度
    */
-  const drawerWidth = previewEnabled ? '100vw' : (isInRecordingMode ? '1000px' : width)
+  const drawerWidth = previewEnabled || isDiffMode ? '100vw' : (isInRecordingMode ? '1000px' : width)
 
   /**
    * 处理停止录制
@@ -1029,10 +1135,13 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         }
       >
         <DrawerContentContainer>
-          {/* Diff模式 */}
-          {isInRecordingMode && isDiffMode ? (
+          {/* Diff模式（独立于录制模式） */}
+          {isDiffMode ? (
             <SchemaDiffView
-              snapshots={snapshots}
+              snapshots={isInRecordingMode ? snapshots : [
+                { id: 1, content: originalValue, timestamp: 0 },
+                { id: 2, content: editorRef.current?.getValue() || editorValue, timestamp: 1 }
+              ]}
               onBackToEditor={handleBackToEditor}
             />
           ) : isInRecordingMode ? (
@@ -1089,11 +1198,13 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                 canParse={canParse}
                 toolbarButtons={toolbarButtons}
                 previewEnabled={previewEnabled}
+                showDiffButton={true}
                 onFormat={handleFormat}
                 onSerialize={handleSerialize}
                 onDeserialize={handleDeserialize}
                 onSegmentChange={handleSegmentChange}
                 onRenderPreview={handleRenderPreview}
+                onEnterDiffMode={handleEnterDiffMode}
               />
               
               {/* 预览区域和编辑器并排 */}
@@ -1144,11 +1255,13 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                 canParse={canParse}
                 toolbarButtons={toolbarButtons}
                 previewEnabled={previewEnabled}
+                showDiffButton={true}
                 onFormat={handleFormat}
                 onSerialize={handleSerialize}
                 onDeserialize={handleDeserialize}
                 onSegmentChange={handleSegmentChange}
                 onRenderPreview={handleRenderPreview}
+                onEnterDiffMode={handleEnterDiffMode}
           />
 
           <EditorContainer>
