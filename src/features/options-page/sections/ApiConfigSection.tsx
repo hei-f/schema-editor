@@ -1,7 +1,6 @@
-import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import { FORM_PATHS } from '@/shared/constants/form-paths'
 import type { CommunicationMode } from '@/shared/types'
-import { Alert, Form, Input, InputNumber, Radio, Space, Typography } from 'antd'
+import { Alert, Form, InputNumber, Radio, Space, Typography } from 'antd'
 import React from 'react'
 import { SectionCard } from '../components/SectionCard'
 import { CodeBlock, ExampleLabel, ExampleSection } from '../styles/layout.styles'
@@ -11,10 +10,6 @@ const { Text } = Typography
 interface ApiConfigSectionProps {
   /** 当前通信模式 */
   communicationMode: CommunicationMode
-  /** 当前请求事件名 */
-  requestEventName: string
-  /** 当前响应事件名 */
-  responseEventName: string
   /** 当前获取函数名（windowFunction 模式） */
   getFunctionName: string
   /** 当前更新函数名（windowFunction 模式） */
@@ -32,8 +27,6 @@ interface ApiConfigSectionProps {
 export const ApiConfigSection: React.FC<ApiConfigSectionProps> = (props) => {
   const { 
     communicationMode, 
-    requestEventName, 
-    responseEventName, 
     getFunctionName,
     updateFunctionName,
     previewFunctionName,
@@ -54,8 +47,8 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = (props) => {
       >
         <Radio.Group>
           <Space direction="vertical">
-            <Radio value="customEvent">
-              <Text strong>CustomEvent 事件通信</Text>
+            <Radio value="postMessage">
+              <Text strong>postMessage 直连通信</Text>
               <Text type="secondary" style={{ marginLeft: 8 }}>（推荐）</Text>
             </Radio>
             <Radio value="windowFunction">
@@ -70,7 +63,7 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = (props) => {
         <>
           <Alert
             message="Window 函数模式已废弃"
-            description="此模式将在未来版本中移除，建议迁移到 CustomEvent 事件通信模式。"
+            description="此模式将在未来版本中移除，建议迁移到 postMessage 直连通信模式。"
             type="warning"
             showIcon
             style={{ marginBottom: 16 }}
@@ -105,7 +98,7 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = (props) => {
         </>
       )}
 
-      {communicationMode === 'customEvent' && (
+      {communicationMode === 'postMessage' && (
         <>
           <Form.Item
             label="请求超时时间（秒）"
@@ -119,36 +112,14 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = (props) => {
             <InputNumber min={1} max={30} style={{ width: 120 }} addonAfter="秒" />
           </Form.Item>
 
-          <Form.Item
-            label="请求事件名"
-            name={FORM_PATHS.apiConfig.requestEventName}
-            rules={[
-              { required: true, message: '请输入请求事件名' },
-              { pattern: /^[a-zA-Z][a-zA-Z0-9_:-]*$/, message: '事件名格式不正确' }
-            ]}
-            extra="扩展向页面发送请求时使用的事件名"
-          >
-            <Input placeholder={DEFAULT_VALUES.apiConfig.requestEventName} />
-          </Form.Item>
-
-          <Form.Item
-            label="响应事件名"
-            name={FORM_PATHS.apiConfig.responseEventName}
-            rules={[
-              { required: true, message: '请输入响应事件名' },
-              { pattern: /^[a-zA-Z][a-zA-Z0-9_:-]*$/, message: '事件名格式不正确' }
-            ]}
-            extra="页面向扩展返回响应时使用的事件名"
-          >
-            <Input placeholder={DEFAULT_VALUES.apiConfig.responseEventName} />
-          </Form.Item>
-
           <ExampleSection>
-            <ExampleLabel strong>CustomEvent 模式 - 宿主页面示例：</ExampleLabel>
+            <ExampleLabel strong>postMessage 模式 - 宿主页面示例：</ExampleLabel>
             <CodeBlock>
               <span className="comment">// 监听扩展请求</span>{'\n'}
-              <span className="keyword">window</span>.<span className="function">addEventListener</span>(<span className="string">{`'${requestEventName || DEFAULT_VALUES.apiConfig.requestEventName}'`}</span>, (event) =&gt; {'{'}{'\n'}
-              {'  '}<span className="keyword">const</span> {'{ type, payload, requestId }'} = event.detail;{'\n'}
+              <span className="keyword">window</span>.<span className="function">addEventListener</span>(<span className="string">'message'</span>, (event) =&gt; {'{'}{'\n'}
+              {'  '}<span className="keyword">if</span> (event.source !== <span className="keyword">window</span>) <span className="keyword">return</span>;{'\n'}
+              {'  '}<span className="keyword">if</span> (event.data?.source !== <span className="string">'schema-editor-content'</span>) <span className="keyword">return</span>;{'\n\n'}
+              {'  '}<span className="keyword">const</span> {'{ type, payload, requestId }'} = event.data;{'\n'}
               {'  '}<span className="keyword">let</span> result;{'\n\n'}
               {'  '}<span className="keyword">switch</span> (type) {'{'}{'\n'}
               {'    '}<span className="keyword">case</span> <span className="string">'GET_SCHEMA'</span>:{'\n'}
@@ -163,13 +134,19 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = (props) => {
               {'    '}<span className="keyword">case</span> <span className="string">'RENDER_PREVIEW'</span>:{'\n'}
               {'      '}<span className="keyword">const</span> container = <span className="keyword">document</span>.<span className="function">getElementById</span>(payload.containerId);{'\n'}
               {'      '}renderPreview(payload.schema, container);{'\n'}
-              {'      '}result = {'{ success: true, hasCleanup: true }'};{'\n'}
+              {'      '}result = {'{ success: true }'};{'\n'}
+              {'      '}<span className="keyword">break</span>;{'\n'}
+              {'    '}<span className="keyword">case</span> <span className="string">'CLEANUP_PREVIEW'</span>:{'\n'}
+              {'      '}cleanupPreview();{'\n'}
+              {'      '}result = {'{ success: true }'};{'\n'}
               {'      '}<span className="keyword">break</span>;{'\n'}
               {'  }'}{'\n\n'}
-              {'  '}<span className="comment">// 发送响应</span>{'\n'}
-              {'  '}<span className="keyword">window</span>.<span className="function">dispatchEvent</span>(<span className="keyword">new</span> <span className="function">CustomEvent</span>(<span className="string">{`'${responseEventName || DEFAULT_VALUES.apiConfig.responseEventName}'`}</span>, {'{'}{'\n'}
-              {'    '}detail: {'{ requestId, ...result }'}{'\n'}
-              {'  }'}{'));'}{'\n'}
+              {'  '}<span className="comment">// 发送响应（必须携带 requestId）</span>{'\n'}
+              {'  '}<span className="keyword">window</span>.<span className="function">postMessage</span>({'{'}{'\n'}
+              {'    '}source: <span className="string">'schema-editor-host'</span>,{'\n'}
+              {'    '}requestId,{'\n'}
+              {'    '}...result{'\n'}
+              {'  }'},<span className="string"> '*'</span>);{'\n'}
               {'}'});
             </CodeBlock>
           </ExampleSection>

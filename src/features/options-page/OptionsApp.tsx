@@ -46,8 +46,6 @@ export const OptionsApp: React.FC = () => {
   const [updateFunctionName, setUpdateFunctionName] = useState(DEFAULT_VALUES.updateFunctionName)
   const [previewFunctionName, setPreviewFunctionName] = useState(DEFAULT_VALUES.previewFunctionName)
   const [communicationMode, setCommunicationMode] = useState<CommunicationMode>(DEFAULT_VALUES.apiConfig.communicationMode)
-  const [requestEventName, setRequestEventName] = useState(DEFAULT_VALUES.apiConfig.requestEventName)
-  const [responseEventName, setResponseEventName] = useState(DEFAULT_VALUES.apiConfig.responseEventName)
   
   const timeoutMapRef = React.useRef<Map<string, NodeJS.Timeout>>(new Map())
 
@@ -83,8 +81,6 @@ export const OptionsApp: React.FC = () => {
       setUpdateFunctionName(updateFunctionName)
       setPreviewFunctionName(previewFunctionName)
       setCommunicationMode(apiConfig.communicationMode)
-      setRequestEventName(apiConfig.requestEventName)
-      setResponseEventName(apiConfig.responseEventName)
       
       form.setFieldsValue({
         attributeName,
@@ -131,8 +127,6 @@ export const OptionsApp: React.FC = () => {
         
         if (fieldPath[0] === 'apiConfig') {
           setCommunicationMode(allValues.apiConfig.communicationMode)
-          setRequestEventName(allValues.apiConfig.requestEventName)
-          setResponseEventName(allValues.apiConfig.responseEventName)
         }
         
         message.success('已保存', 1.5)
@@ -189,7 +183,7 @@ export const OptionsApp: React.FC = () => {
            (fieldPath[0] === 'searchConfig' && ['searchDepthUp', 'throttleInterval'].includes(fieldPath[1])) ||
            (fieldPath[0] === 'highlightAllConfig' && ['keyBinding', 'maxHighlightCount'].includes(fieldPath[1])) ||
            (fieldPath[0] === 'recordingModeConfig' && ['keyBinding', 'pollingInterval', 'highlightColor'].includes(fieldPath[1])) ||
-           (fieldPath[0] === 'apiConfig' && ['requestTimeout', 'requestEventName', 'responseEventName'].includes(fieldPath[1]))
+           (fieldPath[0] === 'apiConfig' && fieldPath[1] === 'requestTimeout')
   }, [])
 
   const handleValuesChange = (changedValues: any, allValues: any) => {
@@ -234,8 +228,6 @@ export const OptionsApp: React.FC = () => {
     
     if (sectionKey === SECTION_KEYS.API_CONFIG) {
       setCommunicationMode(DEFAULT_VALUES.apiConfig.communicationMode)
-      setRequestEventName(DEFAULT_VALUES.apiConfig.requestEventName)
-      setResponseEventName(DEFAULT_VALUES.apiConfig.responseEventName)
     }
     
     message.success('已恢复默认配置')
@@ -273,8 +265,6 @@ export const OptionsApp: React.FC = () => {
     setUpdateFunctionName(DEFAULT_VALUES.updateFunctionName)
     setPreviewFunctionName(DEFAULT_VALUES.previewFunctionName)
     setCommunicationMode(DEFAULT_VALUES.apiConfig.communicationMode)
-    setRequestEventName(DEFAULT_VALUES.apiConfig.requestEventName)
-    setResponseEventName(DEFAULT_VALUES.apiConfig.responseEventName)
     
     message.success('已恢复全部默认配置')
   }, [form])
@@ -318,11 +308,9 @@ export const OptionsApp: React.FC = () => {
         onValuesChange={handleValuesChange}
         initialValues={DEFAULT_VALUES}
       >
-        {/* 卡片1: API 配置 - 通信模式、事件名 */}
+        {/* 卡片1: API 配置 - 通信模式 */}
         <ApiConfigSection
           communicationMode={communicationMode}
-          requestEventName={requestEventName}
-          responseEventName={responseEventName}
           getFunctionName={getFunctionName}
           updateFunctionName={updateFunctionName}
           previewFunctionName={previewFunctionName}
