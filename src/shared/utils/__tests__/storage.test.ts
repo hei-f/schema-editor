@@ -117,7 +117,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -138,8 +141,29 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
+        },
         editorTheme: 'schemaEditorDark',
-        previewFunctionName: '__getContentPreview'
+        previewFunctionName: '__getContentPreview',
+        apiConfig: {
+          communicationMode: 'postMessage',
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
+        }
       })
     })
 
@@ -180,7 +204,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -201,8 +228,29 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
+        },
         editorTheme: 'schemaEditorDark',
-        previewFunctionName: '__getContentPreview'
+        previewFunctionName: '__getContentPreview',
+        apiConfig: {
+          communicationMode: 'postMessage',
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
+        }
       })
     })
 
@@ -233,7 +281,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -254,8 +305,29 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
+        },
         editorTheme: 'schemaEditorDark',
-        previewFunctionName: '__getContentPreview'
+        previewFunctionName: '__getContentPreview',
+        apiConfig: {
+          communicationMode: 'postMessage',
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
+        }
       })
     })
   })
@@ -466,7 +538,10 @@ describe('Storage工具测试', () => {
           serialize: false,
           format: true,
           preview: true,
-          importExport: true
+          importExport: true,
+          draft: true,
+          favorites: true,
+          history: true
         },
         exportConfig: {
           customFileName: false
@@ -487,8 +562,29 @@ describe('Storage工具测试', () => {
           keyBinding: 'a',
           maxHighlightCount: 500
         },
+        recordingModeConfig: {
+          enabled: true,
+          keyBinding: 'r',
+          highlightColor: '#FF4D4F',
+          pollingInterval: 100
+        },
         editorTheme: 'schemaEditorDark',
-        previewFunctionName: '__getContentPreview'
+        previewFunctionName: '__getContentPreview',
+        apiConfig: {
+          communicationMode: 'postMessage',
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
+        }
       })
     })
   })
@@ -533,7 +629,10 @@ describe('Storage工具测试', () => {
         serialize: false,
         format: true,
         preview: true,
-        importExport: true
+        importExport: true,
+        draft: true,
+        favorites: true,
+        history: true
       })
     })
 
@@ -792,7 +891,10 @@ describe('Storage工具测试', () => {
         serialize: false,
         format: true,
         preview: true,
-        importExport: true
+        importExport: true,
+        draft: true,
+        favorites: true,
+        history: true
       })
     })
 
@@ -1240,6 +1342,216 @@ describe('Storage工具测试', () => {
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
         'highlightAllConfig': config
       })
+    })
+  })
+
+  describe('API 配置', () => {
+    it('getApiConfig应该返回默认配置', async () => {
+      const result = await storage.getApiConfig()
+      
+      expect(result).toEqual({
+        communicationMode: 'postMessage',
+        requestTimeout: 5,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
+      })
+    })
+
+    it('getApiConfig应该返回存储的配置', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'apiConfig': {
+          communicationMode: 'windowFunction',
+          requestTimeout: 10
+        }
+      })
+
+      const result = await storage.getApiConfig()
+      expect(result).toEqual({
+        communicationMode: 'windowFunction',
+        requestTimeout: 10,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
+      })
+    })
+
+    it('getApiConfig应该验证communicationMode有效值', async () => {
+      // 返回无效的 communicationMode
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'apiConfig': {
+          communicationMode: 'invalidMode',
+          requestTimeout: 5
+        }
+      })
+
+      const result = await storage.getApiConfig()
+      // 应该返回默认值
+      expect(result).toEqual({
+        communicationMode: 'postMessage',
+        requestTimeout: 5,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
+      })
+    })
+
+    it('getApiConfig应该验证requestTimeout范围（小于1）', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'apiConfig': {
+          communicationMode: 'postMessage',
+          requestTimeout: 0 // 无效：小于1
+        }
+      })
+
+      const result = await storage.getApiConfig()
+      // 应该返回默认值
+      expect(result.requestTimeout).toBe(5)
+    })
+
+    it('getApiConfig应该验证requestTimeout范围（大于30）', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'apiConfig': {
+          communicationMode: 'postMessage',
+          requestTimeout: 60 // 无效：大于30
+        }
+      })
+
+      const result = await storage.getApiConfig()
+      // 应该返回默认值
+      expect(result.requestTimeout).toBe(5)
+    })
+
+    it('getApiConfig应该接受有效的边界值', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'apiConfig': {
+          communicationMode: 'postMessage',
+          requestTimeout: 1 // 最小值
+        }
+      })
+
+      const result = await storage.getApiConfig()
+      expect(result).toEqual({
+        communicationMode: 'postMessage',
+        requestTimeout: 1,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
+      })
+    })
+
+    it('getApiConfig应该接受最大超时值', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'apiConfig': {
+          communicationMode: 'postMessage',
+          requestTimeout: 30 // 最大值
+        }
+      })
+
+      const result = await storage.getApiConfig()
+      expect(result.requestTimeout).toBe(30)
+    })
+
+    it('getApiConfig应该接受windowFunction模式', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        'apiConfig': {
+          communicationMode: 'windowFunction',
+          requestTimeout: 5
+        }
+      })
+
+      const result = await storage.getApiConfig()
+      expect(result.communicationMode).toBe('windowFunction')
+    })
+
+    it('setApiConfig应该设置配置', async () => {
+      const config = {
+        communicationMode: 'windowFunction' as const,
+        requestTimeout: 10
+      }
+      
+      await storage.setApiConfig(config)
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        'apiConfig': config
+      })
+    })
+
+    it('setApiConfig应该保存postMessage模式配置', async () => {
+      const config = {
+        communicationMode: 'postMessage' as const,
+        requestTimeout: 15
+      }
+      
+      await storage.setApiConfig(config)
+      
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        'apiConfig': config
+      })
+    })
+
+    it('getApiConfig失败时应该返回默认值', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockRejectedValue(new Error('Storage error'))
+      
+      const result = await storage.getApiConfig()
+      expect(result).toEqual({
+        communicationMode: 'postMessage',
+        requestTimeout: 5,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
+      })
+    })
+
+    it('setApiConfig失败时不应该抛出错误', async () => {
+      ;(chrome.storage.local.set as jest.Mock).mockRejectedValue(new Error('Storage error'))
+      
+      const config = {
+        communicationMode: 'postMessage' as const,
+        requestTimeout: 5
+      }
+      
+      await expect(storage.setApiConfig(config)).resolves.not.toThrow()
     })
   })
 })

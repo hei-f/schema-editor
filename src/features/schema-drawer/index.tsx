@@ -7,6 +7,8 @@
 export { CodeMirrorEditor } from './components/CodeMirrorEditor'
 export { DrawerToolbar } from './components/DrawerToolbar'
 export { SchemaDrawer } from './components/SchemaDrawer'
+export { RecordingPanel } from './components/RecordingPanel'
+export { SchemaDiffView } from './components/SchemaDiffView'
 
 // 导出Hooks
 export { useContentDetection } from './hooks/useContentDetection'
@@ -14,6 +16,7 @@ export { useDraftManagement } from './hooks/useDraftManagement'
 export { useFavoritesManagement } from './hooks/useFavoritesManagement'
 export { useLightNotifications } from './hooks/useLightNotifications'
 export { useSchemaSave } from './hooks/useSchemaSave'
+export { useSchemaRecording } from './hooks/useSchemaRecording'
 
 // 导出服务
 export { schemaTransformer } from './services/schema-transformer'
@@ -24,4 +27,5 @@ export * from './styles/drawer.styles'
 export * from './styles/editor.styles'
 export * from './styles/notifications.styles'
 export * from './styles/toolbar.styles'
+export * from './styles/recording.styles'
 

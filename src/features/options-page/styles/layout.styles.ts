@@ -1,5 +1,5 @@
 import { InfoCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons'
-import { Alert, Card, Collapse, Form, Input, InputNumber, Typography } from 'antd'
+import { Alert, Card, Collapse, Flex, Form, Input, InputNumber, Typography } from 'antd'
 import styled from 'styled-components'
 
 const { Text, Title, Paragraph } = Typography
@@ -67,12 +67,8 @@ export const CodeBlock = styled.pre`
   }
 `
 
-export const HeaderSection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+export const HeaderSection = styled(Flex)`
   margin-bottom: 24px;
-  gap: 16px;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -84,10 +80,7 @@ export const HeaderContent = styled.div`
   flex: 1;
 `
 
-export const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+export const HeaderActions = styled(Flex)`
   flex-shrink: 0;
 `
 
@@ -105,10 +98,7 @@ export const VersionTag = styled.span`
 `
 
 /** SectionCard 面板标题容器 */
-export const PanelHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+export const PanelHeader = styled(Flex)`
   width: 100%;
 `
 
@@ -118,10 +108,54 @@ export const PanelTitle = styled(Typography.Text)`
   font-size: 14px;
 `
 
-export const AutoSaveHint = styled.div`
-  display: flex;
+/** SectionCard 操作按钮组 */
+export const PanelActions = styled(Flex)``
+
+/** SectionCard 操作按钮 */
+export const PanelActionButton = styled.button<{ $variant?: 'default' | 'primary' }>`
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  ${props => props.$variant === 'primary' ? `
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    
+    &:hover {
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    }
+  ` : `
+    background: #fff;
+    color: #666;
+    border: 1px solid #d9d9d9;
+    
+    &:hover {
+      color: #1890ff;
+      border-color: #1890ff;
+    }
+    
+    &:active {
+      color: #096dd9;
+      border-color: #096dd9;
+    }
+  `}
+`
+
+export const AutoSaveHint = styled(Flex)`
   padding: 12px 16px;
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border-left: 3px solid #3b82f6;
@@ -172,12 +206,29 @@ export const StyledCollapse = styled(Collapse)`
   margin-top: 24px;
   margin-bottom: 24px;
   
-  /* 防止折叠面板标题被选中 */
+  /* 折叠面板头部样式 */
   .ant-collapse-header {
+    /* 防止标题被选中 */
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    
+    /* 确保箭头图标和标题垂直居中对齐 */
+    align-items: center !important;
+  }
+  
+  /* 确保箭头图标垂直居中 */
+  .ant-collapse-expand-icon {
+    display: flex;
+    align-items: center;
+    height: auto !important;
+    padding-inline-end: 12px !important;
+  }
+  
+  /* 确保 header 内容区域占满剩余空间 */
+  .ant-collapse-header-text {
+    flex: 1;
   }
 `
 
@@ -218,10 +269,7 @@ export const CardSubtitle = styled(Text)`
 /**
  * 卡片标题容器（带 emoji）
  */
-export const CardTitleContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+export const CardTitleContainer = styled(Flex)`
   font-size: 16px;
   font-weight: 600;
 `
@@ -250,11 +298,7 @@ export const FormSectionLabel = styled.div<{ $noMarginTop?: boolean }>`
  * 横向表单行容器
  * 用于将标签、输入框、帮助图标等元素横向排列
  */
-export const InlineFormRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`
+export const InlineFormRow = styled(Flex)``
 
 /**
  * 可换行表单容器

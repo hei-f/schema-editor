@@ -87,7 +87,7 @@ export const DataManagementSection: React.FC<DataManagementSectionProps> = (prop
 
       <FormSectionLabel>导出配置</FormSectionLabel>
 
-      <InlineFormRow>
+      <InlineFormRow align="center" gap={8}>
         <FormLabel>导出时自定义文件名:</FormLabel>
         <ZeroMarginFormItem
           name={FORM_PATHS.exportConfig.customFileName}

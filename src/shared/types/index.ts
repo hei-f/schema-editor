@@ -22,10 +22,16 @@ export enum MessageType {
   RENDER_PREVIEW = 'RENDER_PREVIEW',
   /** 清除预览 */
   CLEAR_PREVIEW = 'CLEAR_PREVIEW',
+  /** 隐藏预览（拖拽时） */
+  HIDE_PREVIEW = 'HIDE_PREVIEW',
+  /** 显示预览（拖拽结束） */
+  SHOW_PREVIEW = 'SHOW_PREVIEW',
   /** 检查预览函数是否存在 */
   CHECK_PREVIEW_FUNCTION = 'CHECK_PREVIEW_FUNCTION',
   /** 预览函数检查结果 */
   PREVIEW_FUNCTION_RESULT = 'PREVIEW_FUNCTION_RESULT',
+  /** Ping 检测 Content Script 是否存活 */
+  PING = 'PING',
 }
 
 /**
@@ -76,13 +82,19 @@ export interface ToolbarButtonsConfig {
   preview: boolean
   /** 导入导出按钮 */
   importExport: boolean
+  /** 草稿功能 */
+  draft: boolean
+  /** 收藏功能 */
+  favorites: boolean
+  /** 历史记录功能 */
+  history: boolean
 }
 
 /**
  * 预览配置接口
  */
 export interface PreviewConfig {
-  /** 预览区域宽度（百分比，10-60） */
+  /** 预览区域宽度（百分比，20-80） */
   previewWidth: number
   /** 更新延迟（毫秒，100-2000） */
   updateDelay: number
@@ -103,6 +115,79 @@ export interface HighlightAllConfig {
 }
 
 /**
+ * 录制模式配置接口
+ */
+export interface RecordingModeConfig {
+  /** 是否启用功能 */
+  enabled: boolean
+  /** 快捷键字符（单个小写字母，配合 Alt 使用） */
+  keyBinding: string
+  /** 录制模式下的高亮颜色 */
+  highlightColor: string
+  /** 轮询间隔（毫秒） */
+  pollingInterval: number
+}
+
+/**
+ * 通信模式类型
+ * - postMessage: 使用 postMessage 直连通信（推荐）
+ * - windowFunction: 使用 window 函数调用（已废弃）
+ */
+export type CommunicationMode = 'postMessage' | 'windowFunction'
+
+/**
+ * postMessage 模式的消息标识配置
+ */
+export interface PostMessageSourceConfig {
+  /** 插件端发送消息的 source 标识 */
+  contentSource: string
+  /** 宿主端响应消息的 source 标识 */
+  hostSource: string
+}
+
+/**
+ * postMessage 模式的消息类型名称配置
+ */
+export interface PostMessageTypeConfig {
+  /** 获取 Schema 的消息类型 */
+  getSchema: string
+  /** 更新 Schema 的消息类型 */
+  updateSchema: string
+  /** 检查预览函数是否存在的消息类型 */
+  checkPreview: string
+  /** 渲染预览的消息类型 */
+  renderPreview: string
+  /** 清理预览的消息类型 */
+  cleanupPreview: string
+}
+
+/**
+ * API 配置接口
+ */
+export interface ApiConfig {
+  /** 通信模式 */
+  communicationMode: CommunicationMode
+  /** 请求超时时间（秒，1-30） */
+  requestTimeout: number
+  /** postMessage 模式的消息标识配置 */
+  sourceConfig: PostMessageSourceConfig
+  /** postMessage 模式的消息类型名称配置 */
+  messageTypes: PostMessageTypeConfig
+}
+
+/**
+ * Schema快照接口
+ */
+export interface SchemaSnapshot {
+  /** 快照ID（递增序号） */
+  id: number
+  /** Schema内容（字符串） */
+  content: string
+  /** 相对于首次轮询的时间（毫秒） */
+  timestamp: number
+}
+
+/**
  * 导出配置接口
  */
 export interface ExportConfig {
@@ -116,6 +201,35 @@ export interface ExportConfig {
 export type EditorTheme = 'light' | 'dark' | 'schemaEditorDark'
 
 /**
+ * SchemaDrawer 组件配置
+ * 所有配置统一放在此对象中，由父组件加载后传入
+ */
+export interface SchemaDrawerConfig {
+  /** 抽屉宽度 */
+  width: string | number
+  /** API 配置 */
+  apiConfig: ApiConfig
+  /** 工具栏按钮配置 */
+  toolbarButtons: ToolbarButtonsConfig
+  /** 自动保存草稿开关 */
+  autoSaveDraft: boolean
+  /** 预览配置 */
+  previewConfig: PreviewConfig
+  /** 历史记录上限 */
+  maxHistoryCount: number
+  /** AST 类型提示开关 */
+  enableAstTypeHints: boolean
+  /** 导出配置 */
+  exportConfig: ExportConfig
+  /** 编辑器主题 */
+  editorTheme: EditorTheme
+  /** 录制模式配置 */
+  recordingModeConfig: RecordingModeConfig
+  /** 自动解析字符串开关 */
+  autoParseString: boolean
+}
+
+/**
  * 存储数据接口
  */
 export interface StorageData {
@@ -127,9 +241,15 @@ export interface StorageData {
   attributeName: string
   /** 搜索配置 */
   searchConfig: SearchConfig
-  /** 获取Schema的函数名 */
+  /**
+   * 获取Schema的函数名
+   * @deprecated 请使用 apiConfig.communicationMode = 'customEvent' 模式
+   */
   getFunctionName: string
-  /** 更新Schema的函数名 */
+  /**
+   * 更新Schema的函数名
+   * @deprecated 请使用 apiConfig.communicationMode = 'customEvent' 模式
+   */
   updateFunctionName: string
   /** 字符串自动解析为 Markdown Elements */
   autoParseString: boolean
@@ -153,14 +273,21 @@ export interface StorageData {
   maxHistoryCount: number
   /** 高亮所有元素配置 */
   highlightAllConfig: HighlightAllConfig
+  /** 录制模式配置 */
+  recordingModeConfig: RecordingModeConfig
   /** 启用 AST 类型提示 */
   enableAstTypeHints: boolean
   /** 导出配置 */
   exportConfig: ExportConfig
   /** 编辑器主题 */
   editorTheme: EditorTheme
-  /** 预览函数名 */
+  /**
+   * 预览函数名
+   * @deprecated 请使用 apiConfig.communicationMode = 'customEvent' 模式
+   */
   previewFunctionName: string
+  /** API 配置 */
+  apiConfig: ApiConfig
 }
 
 /**
@@ -277,14 +404,23 @@ export interface UpdateResultPayload {
 }
 
 /**
- * 配置同步载荷
+ * 配置同步载荷（仅 windowFunction 模式使用）
  */
 export interface ConfigSyncPayload {
-  /** 获取Schema的函数名 */
+  /**
+   * 获取Schema的函数名
+   * @deprecated 仅 windowFunction 模式使用
+   */
   getFunctionName: string
-  /** 更新Schema的函数名 */
+  /**
+   * 更新Schema的函数名
+   * @deprecated 仅 windowFunction 模式使用
+   */
   updateFunctionName: string
-  /** 预览函数名 */
+  /**
+   * 预览函数名
+   * @deprecated 仅 windowFunction 模式使用
+   */
   previewFunctionName: string
 }
 

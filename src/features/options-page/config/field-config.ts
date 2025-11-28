@@ -7,7 +7,7 @@ import { pathEqual } from '@/shared/utils/form-path'
  * 用于标识各个配置卡片及其对应的默认值键
  */
 export const SECTION_KEYS = {
-  BASIC_INTEGRATION: 'basicIntegration',
+  INTEGRATION_CONFIG: 'integrationConfig',
   ELEMENT_DETECTION: 'elementDetection',
   EDITOR_CONFIG: 'editorConfig',
   FEATURE_TOGGLE: 'featureToggle',
@@ -24,8 +24,8 @@ export type SectionKey = typeof SECTION_KEYS[keyof typeof SECTION_KEYS]
  * value: 该区块包含的配置字段名数组
  */
 export const SECTION_DEFAULT_KEYS: Record<SectionKey, readonly string[]> = {
-  [SECTION_KEYS.BASIC_INTEGRATION]: ['attributeName', 'getFunctionName', 'updateFunctionName', 'previewFunctionName'],
-  [SECTION_KEYS.ELEMENT_DETECTION]: ['searchConfig', 'highlightColor', 'highlightAllConfig'],
+  [SECTION_KEYS.INTEGRATION_CONFIG]: ['apiConfig', 'attributeName', 'getFunctionName', 'updateFunctionName', 'previewFunctionName'],
+  [SECTION_KEYS.ELEMENT_DETECTION]: ['searchConfig', 'highlightColor', 'highlightAllConfig', 'recordingModeConfig'],
   [SECTION_KEYS.EDITOR_CONFIG]: ['drawerWidth', 'enableAstTypeHints', 'editorTheme'],
   [SECTION_KEYS.FEATURE_TOGGLE]: ['toolbarButtons'],
   [SECTION_KEYS.PREVIEW_CONFIG]: ['previewConfig'],
@@ -47,6 +47,22 @@ interface FieldGroup {
  * 字段分组配置 - 需要组合保存的字段
  */
 export const FIELD_GROUPS: Record<string, FieldGroup> = {
+  apiConfig: {
+    fieldPaths: [
+      FORM_PATHS.apiConfig.communicationMode,
+      FORM_PATHS.apiConfig.requestTimeout,
+      FORM_PATHS.apiConfig.sourceConfig.contentSource,
+      FORM_PATHS.apiConfig.sourceConfig.hostSource,
+      FORM_PATHS.apiConfig.messageTypes.getSchema,
+      FORM_PATHS.apiConfig.messageTypes.updateSchema,
+      FORM_PATHS.apiConfig.messageTypes.checkPreview,
+      FORM_PATHS.apiConfig.messageTypes.renderPreview,
+      FORM_PATHS.apiConfig.messageTypes.cleanupPreview
+    ],
+    save: async (allValues: any) => {
+      await storage.setApiConfig(allValues.apiConfig)
+    }
+  },
   searchConfig: {
     fieldPaths: [
       FORM_PATHS.searchConfig.limitUpwardSearch,
@@ -104,6 +120,17 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
       await storage.setHighlightAllConfig(allValues.highlightAllConfig)
     }
   },
+  recordingModeConfig: {
+    fieldPaths: [
+      FORM_PATHS.recordingModeConfig.enabled,
+      FORM_PATHS.recordingModeConfig.keyBinding,
+      FORM_PATHS.recordingModeConfig.highlightColor,
+      FORM_PATHS.recordingModeConfig.pollingInterval
+    ],
+    save: async (allValues: any) => {
+      await storage.setRecordingModeConfig(allValues.recordingModeConfig)
+    }
+  },
   exportConfig: {
     fieldPaths: [
       FORM_PATHS.exportConfig.customFileName
@@ -129,7 +156,18 @@ export const DEBOUNCE_FIELD_PATHS: readonly (readonly string[])[] = [
   FORM_PATHS.highlightColor,
   FORM_PATHS.maxHistoryCount,
   FORM_PATHS.highlightAllConfig.keyBinding,
-  FORM_PATHS.highlightAllConfig.maxHighlightCount
+  FORM_PATHS.highlightAllConfig.maxHighlightCount,
+  FORM_PATHS.recordingModeConfig.keyBinding,
+  FORM_PATHS.recordingModeConfig.highlightColor,
+  FORM_PATHS.recordingModeConfig.pollingInterval,
+  FORM_PATHS.apiConfig.requestTimeout,
+  FORM_PATHS.apiConfig.sourceConfig.contentSource,
+  FORM_PATHS.apiConfig.sourceConfig.hostSource,
+  FORM_PATHS.apiConfig.messageTypes.getSchema,
+  FORM_PATHS.apiConfig.messageTypes.updateSchema,
+  FORM_PATHS.apiConfig.messageTypes.checkPreview,
+  FORM_PATHS.apiConfig.messageTypes.renderPreview,
+  FORM_PATHS.apiConfig.messageTypes.cleanupPreview
 ]
 
 /**

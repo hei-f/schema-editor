@@ -24,7 +24,10 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     serialize: false,
     format: true,
     preview: true,
-    importExport: true
+    importExport: true,
+    draft: true,
+    favorites: true,
+    history: true
   },
   highlightColor: '#39C5BB',
   maxFavoritesCount: 50,
@@ -42,11 +45,32 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     keyBinding: 'a',
     maxHighlightCount: 500
   },
+  recordingModeConfig: {
+    enabled: true,
+    keyBinding: 'r',
+    highlightColor: '#FF4D4F',
+    pollingInterval: 100
+  },
   enableAstTypeHints: true,
   exportConfig: {
     customFileName: false
   },
   editorTheme: 'schemaEditorDark',
+  apiConfig: {
+    communicationMode: 'postMessage',
+    requestTimeout: 5,
+    sourceConfig: {
+      contentSource: 'schema-editor-content',
+      hostSource: 'schema-editor-host'
+    },
+    messageTypes: {
+      getSchema: 'GET_SCHEMA',
+      updateSchema: 'UPDATE_SCHEMA',
+      checkPreview: 'CHECK_PREVIEW',
+      renderPreview: 'RENDER_PREVIEW',
+      cleanupPreview: 'CLEANUP_PREVIEW'
+    }
+  }
 } as const
 
 /**
@@ -72,10 +96,12 @@ export const STORAGE_KEYS = {
   FAVORITES: 'favorites',
   MAX_HISTORY_COUNT: 'maxHistoryCount',
   HIGHLIGHT_ALL_CONFIG: 'highlightAllConfig',
+  RECORDING_MODE_CONFIG: 'recordingModeConfig',
   ENABLE_AST_TYPE_HINTS: 'enableAstTypeHints',
   EXPORT_CONFIG: 'exportConfig',
   EDITOR_THEME: 'editorTheme',
-  PREVIEW_FUNCTION_NAME: 'previewFunctionName'
+  PREVIEW_FUNCTION_NAME: 'previewFunctionName',
+  API_CONFIG: 'apiConfig'
 } as const
 
 

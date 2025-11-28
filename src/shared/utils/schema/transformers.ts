@@ -40,14 +40,14 @@ export const parserSchemaNodeToMarkdown = (elements: Elements[]): string => {
 /**
  * 检查数据是否为字符串类型
  */
-export const isStringData = (data: any): data is string => {
+export const isStringData = (data: unknown): data is string => {
   return typeof data === 'string'
 }
 
 /**
  * 检查数据是否为有效的 Elements[] 结构
  */
-export const isElementsArray = (data: any): data is Elements[] => {
+export const isElementsArray = (data: unknown): data is Elements[] => {
   if (!Array.isArray(data) || data.length === 0) {
     return false
   }
@@ -56,6 +56,8 @@ export const isElementsArray = (data: any): data is Elements[] => {
     return (
       item !== null &&
       typeof item === 'object' &&
+      'type' in item &&
+      typeof item.type === 'string' &&
       'children' in item &&
       Array.isArray(item.children)
     )

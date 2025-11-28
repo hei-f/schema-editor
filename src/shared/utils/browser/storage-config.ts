@@ -1,5 +1,5 @@
 import { DEFAULT_VALUES, STORAGE_KEYS } from '@/shared/constants/defaults'
-import type { EditorTheme, HighlightAllConfig, PreviewConfig } from '@/shared/types'
+import type { ApiConfig, EditorTheme, HighlightAllConfig, PreviewConfig, RecordingModeConfig } from '@/shared/types'
 
 /**
  * 存储字段配置接口
@@ -119,6 +119,25 @@ export const SIMPLE_STORAGE_FIELDS = {
     }
   } as StorageFieldConfig<HighlightAllConfig>,
 
+  recordingModeConfig: {
+    key: STORAGE_KEYS.RECORDING_MODE_CONFIG,
+    defaultValue: DEFAULT_VALUES.recordingModeConfig,
+    validator: (value: any): value is RecordingModeConfig => {
+      return (
+        value &&
+        typeof value.enabled === 'boolean' &&
+        typeof value.keyBinding === 'string' &&
+        value.keyBinding.length === 1 &&
+        /^[a-zA-Z0-9]$/.test(value.keyBinding) &&
+        typeof value.highlightColor === 'string' &&
+        value.highlightColor.length > 0 &&
+        typeof value.pollingInterval === 'number' &&
+        value.pollingInterval >= 50 &&
+        value.pollingInterval <= 1000
+      )
+    }
+  } as StorageFieldConfig<RecordingModeConfig>,
+
   enableAstTypeHints: {
     key: STORAGE_KEYS.ENABLE_AST_TYPE_HINTS,
     defaultValue: DEFAULT_VALUES.enableAstTypeHints
@@ -135,7 +154,39 @@ export const SIMPLE_STORAGE_FIELDS = {
   previewFunctionName: {
     key: STORAGE_KEYS.PREVIEW_FUNCTION_NAME,
     defaultValue: DEFAULT_VALUES.previewFunctionName
-  } as StorageFieldConfig<string>
+  } as StorageFieldConfig<string>,
+
+  apiConfig: {
+    key: STORAGE_KEYS.API_CONFIG,
+    defaultValue: DEFAULT_VALUES.apiConfig,
+    validator: (value: any): value is ApiConfig => {
+      return (
+        value &&
+        ['postMessage', 'windowFunction'].includes(value.communicationMode) &&
+        typeof value.requestTimeout === 'number' &&
+        value.requestTimeout >= 1 &&
+        value.requestTimeout <= 30
+      )
+    },
+    transformer: (value: any): ApiConfig => {
+      // 兼容旧版数据，补充新增字段的默认值
+      return {
+        communicationMode: value.communicationMode ?? DEFAULT_VALUES.apiConfig.communicationMode,
+        requestTimeout: value.requestTimeout ?? DEFAULT_VALUES.apiConfig.requestTimeout,
+        sourceConfig: {
+          contentSource: value.sourceConfig?.contentSource ?? DEFAULT_VALUES.apiConfig.sourceConfig.contentSource,
+          hostSource: value.sourceConfig?.hostSource ?? DEFAULT_VALUES.apiConfig.sourceConfig.hostSource
+        },
+        messageTypes: {
+          getSchema: value.messageTypes?.getSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.getSchema,
+          updateSchema: value.messageTypes?.updateSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.updateSchema,
+          checkPreview: value.messageTypes?.checkPreview ?? DEFAULT_VALUES.apiConfig.messageTypes.checkPreview,
+          renderPreview: value.messageTypes?.renderPreview ?? DEFAULT_VALUES.apiConfig.messageTypes.renderPreview,
+          cleanupPreview: value.messageTypes?.cleanupPreview ?? DEFAULT_VALUES.apiConfig.messageTypes.cleanupPreview
+        }
+      }
+    }
+  } as StorageFieldConfig<ApiConfig>
 }
 
 /**

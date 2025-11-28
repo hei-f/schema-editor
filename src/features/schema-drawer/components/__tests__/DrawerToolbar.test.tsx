@@ -194,7 +194,7 @@ describe('DrawerToolbar组件测试', () => {
       expect(mockHandlers.onDeserialize).toHaveBeenCalledTimes(1)
     })
 
-    it('应该在canParse为false时禁用操作按钮', () => {
+    it('应该在canParse为false时禁用需要解析的操作按钮', () => {
       render(
         <DrawerToolbar
           attributes={mockAttributes}
@@ -210,9 +210,11 @@ describe('DrawerToolbar组件测试', () => {
       const serializeButton = screen.getByText('序列化').closest('button')
       const deserializeButton = screen.getByText('反序列化').closest('button')
 
+      // 格式化和反序列化需要有效JSON，所以被禁用
       expect(formatButton).toBeDisabled()
-      expect(serializeButton).toBeDisabled()
       expect(deserializeButton).toBeDisabled()
+      // 序列化可以处理任何文本，不依赖canParse
+      expect(serializeButton).not.toBeDisabled()
     })
   })
 

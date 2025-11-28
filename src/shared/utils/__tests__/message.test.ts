@@ -239,7 +239,7 @@ describe('Message工具测试', () => {
 
       const result = listener(message, sender, sendResponse)
 
-      expect(handler).toHaveBeenCalledWith(message, sender)
+      expect(handler).toHaveBeenCalledWith(message, sender, sendResponse)
       expect(result).toBe(false)
     })
 
@@ -255,7 +255,7 @@ describe('Message工具测试', () => {
 
       const result = listener(message, sender, sendResponse)
 
-      expect(handler).toHaveBeenCalledWith(message, sender)
+      expect(handler).toHaveBeenCalledWith(message, sender, sendResponse)
       expect(result).toBe(true) // 异步消息应该返回true保持通道开启
     })
   })

@@ -66,7 +66,13 @@ export const FORM_PATHS = {
     /** 预览按钮 */
     preview: ['toolbarButtons', 'preview'],
     /** 导入导出按钮 */
-    importExport: ['toolbarButtons', 'importExport']
+    importExport: ['toolbarButtons', 'importExport'],
+    /** 草稿功能 */
+    draft: ['toolbarButtons', 'draft'],
+    /** 收藏功能 */
+    favorites: ['toolbarButtons', 'favorites'],
+    /** 历史记录功能 */
+    history: ['toolbarButtons', 'history']
   },
   
   /** 最大收藏数量 */
@@ -98,6 +104,18 @@ export const FORM_PATHS = {
     maxHighlightCount: ['highlightAllConfig', 'maxHighlightCount']
   },
   
+  /** 录制模式配置 */
+  recordingModeConfig: {
+    /** 是否启用 */
+    enabled: ['recordingModeConfig', 'enabled'],
+    /** 快捷键 */
+    keyBinding: ['recordingModeConfig', 'keyBinding'],
+    /** 录制模式高亮颜色 */
+    highlightColor: ['recordingModeConfig', 'highlightColor'],
+    /** 轮询间隔 */
+    pollingInterval: ['recordingModeConfig', 'pollingInterval']
+  },
+  
   /** 启用 AST 类型提示 */
   enableAstTypeHints: ['enableAstTypeHints'],
   
@@ -107,6 +125,33 @@ export const FORM_PATHS = {
     customFileName: ['exportConfig', 'customFileName']
   },
   
+  /** API 配置 */
+  apiConfig: {
+    /** 通信模式 */
+    communicationMode: ['apiConfig', 'communicationMode'],
+    /** 请求超时时间 */
+    requestTimeout: ['apiConfig', 'requestTimeout'],
+    /** 消息标识配置 */
+    sourceConfig: {
+      /** 插件端 source */
+      contentSource: ['apiConfig', 'sourceConfig', 'contentSource'],
+      /** 宿主端 source */
+      hostSource: ['apiConfig', 'sourceConfig', 'hostSource']
+    },
+    /** 消息类型名称配置 */
+    messageTypes: {
+      /** 获取 Schema */
+      getSchema: ['apiConfig', 'messageTypes', 'getSchema'],
+      /** 更新 Schema */
+      updateSchema: ['apiConfig', 'messageTypes', 'updateSchema'],
+      /** 检查预览 */
+      checkPreview: ['apiConfig', 'messageTypes', 'checkPreview'],
+      /** 渲染预览 */
+      renderPreview: ['apiConfig', 'messageTypes', 'renderPreview'],
+      /** 清理预览 */
+      cleanupPreview: ['apiConfig', 'messageTypes', 'cleanupPreview']
+    }
+  }
 }
 
 /**

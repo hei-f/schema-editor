@@ -68,11 +68,16 @@ describe('SchemaTransformer 测试', () => {
       expect(result).toEqual(mockResult)
     })
 
-    it('无效JSON应该返回错误', () => {
+    it('无效JSON应该直接序列化原始字符串', () => {
+      // 现在序列化逻辑改为：无效JSON直接序列化原始字符串
+      const mockResult = { success: true, data: '"{invalid json}"' }
+      mockSerializeJson.mockReturnValue(mockResult)
+
       const result = schemaTransformer.serializeJson('{invalid json}')
 
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('序列化失败')
+      // 应该用原始字符串调用serializeJson（因为JSON.parse失败后回退）
+      expect(mockSerializeJson).toHaveBeenCalledWith('{invalid json}')
+      expect(result.success).toBe(true)
     })
   })
 
