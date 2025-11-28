@@ -151,7 +151,18 @@ describe('Storage工具测试', () => {
         previewFunctionName: '__getContentPreview',
         apiConfig: {
           communicationMode: 'postMessage',
-          requestTimeout: 5
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
         }
       })
     })
@@ -227,7 +238,18 @@ describe('Storage工具测试', () => {
         previewFunctionName: '__getContentPreview',
         apiConfig: {
           communicationMode: 'postMessage',
-          requestTimeout: 5
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
         }
       })
     })
@@ -293,7 +315,18 @@ describe('Storage工具测试', () => {
         previewFunctionName: '__getContentPreview',
         apiConfig: {
           communicationMode: 'postMessage',
-          requestTimeout: 5
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
         }
       })
     })
@@ -539,7 +572,18 @@ describe('Storage工具测试', () => {
         previewFunctionName: '__getContentPreview',
         apiConfig: {
           communicationMode: 'postMessage',
-          requestTimeout: 5
+          requestTimeout: 5,
+          sourceConfig: {
+            contentSource: 'schema-editor-content',
+            hostSource: 'schema-editor-host'
+          },
+          messageTypes: {
+            getSchema: 'GET_SCHEMA',
+            updateSchema: 'UPDATE_SCHEMA',
+            checkPreview: 'CHECK_PREVIEW',
+            renderPreview: 'RENDER_PREVIEW',
+            cleanupPreview: 'CLEANUP_PREVIEW'
+          }
         }
       })
     })
@@ -1307,7 +1351,18 @@ describe('Storage工具测试', () => {
       
       expect(result).toEqual({
         communicationMode: 'postMessage',
-        requestTimeout: 5
+        requestTimeout: 5,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
       })
     })
 
@@ -1322,7 +1377,18 @@ describe('Storage工具测试', () => {
       const result = await storage.getApiConfig()
       expect(result).toEqual({
         communicationMode: 'windowFunction',
-        requestTimeout: 10
+        requestTimeout: 10,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
       })
     })
 
@@ -1339,7 +1405,18 @@ describe('Storage工具测试', () => {
       // 应该返回默认值
       expect(result).toEqual({
         communicationMode: 'postMessage',
-        requestTimeout: 5
+        requestTimeout: 5,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
       })
     })
 
@@ -1380,7 +1457,18 @@ describe('Storage工具测试', () => {
       const result = await storage.getApiConfig()
       expect(result).toEqual({
         communicationMode: 'postMessage',
-        requestTimeout: 1
+        requestTimeout: 1,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
       })
     })
 
@@ -1440,7 +1528,18 @@ describe('Storage工具测试', () => {
       const result = await storage.getApiConfig()
       expect(result).toEqual({
         communicationMode: 'postMessage',
-        requestTimeout: 5
+        requestTimeout: 5,
+        sourceConfig: {
+          contentSource: 'schema-editor-content',
+          hostSource: 'schema-editor-host'
+        },
+        messageTypes: {
+          getSchema: 'GET_SCHEMA',
+          updateSchema: 'UPDATE_SCHEMA',
+          checkPreview: 'CHECK_PREVIEW',
+          renderPreview: 'RENDER_PREVIEW',
+          cleanupPreview: 'CLEANUP_PREVIEW'
+        }
       })
     })
 
