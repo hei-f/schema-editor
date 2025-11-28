@@ -1408,21 +1408,6 @@ describe('Storage工具测试', () => {
       expect(result.communicationMode).toBe('windowFunction')
     })
 
-    it('getApiConfig应该将旧的customEvent模式迁移为postMessage', async () => {
-      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
-        'apiConfig': {
-          communicationMode: 'customEvent',
-          requestTimeout: 10
-        }
-      })
-
-      const result = await storage.getApiConfig()
-      expect(result).toEqual({
-        communicationMode: 'postMessage',
-        requestTimeout: 10
-      })
-    })
-
     it('setApiConfig应该设置配置', async () => {
       const config = {
         communicationMode: 'windowFunction' as const,

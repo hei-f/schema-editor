@@ -167,19 +167,6 @@ export const SIMPLE_STORAGE_FIELDS = {
         value.requestTimeout >= 1 &&
         value.requestTimeout <= 30
       )
-    },
-    /** 数据迁移：将旧的 customEvent 模式自动迁移为 postMessage */
-    transformer: (value: ApiConfig): ApiConfig => {
-      if ((value as any).communicationMode === 'customEvent') {
-        return {
-          communicationMode: 'postMessage',
-          requestTimeout: value.requestTimeout
-        }
-      }
-      return {
-        communicationMode: value.communicationMode,
-        requestTimeout: value.requestTimeout
-      }
     }
   } as StorageFieldConfig<ApiConfig>
 }
