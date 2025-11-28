@@ -1,18 +1,17 @@
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
-import type { CommunicationMode } from '@/shared/types'
+import type { ApiConfig, CommunicationMode } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
 import { getChangedFieldPath, getValueByPath, pathToString } from '@/shared/utils/form-path'
 import { CheckCircleOutlined, UndoOutlined } from '@ant-design/icons'
 import { Button, Form, message, Popconfirm } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { FIELD_PATH_STORAGE_MAP, findFieldGroup, SECTION_DEFAULT_KEYS, SECTION_KEYS, type SectionKey } from './config/field-config'
-import { ApiConfigSection } from './sections/ApiConfigSection'
-import { BasicIntegrationSection } from './sections/BasicIntegrationSection'
 import { DataManagementSection } from './sections/DataManagementSection'
 import { DebugSection } from './sections/DebugSection'
 import { EditorConfigSection } from './sections/EditorConfigSection'
 import { ElementDetectionSection } from './sections/ElementDetectionSection'
 import { FeatureToggleSection } from './sections/FeatureToggleSection'
+import { IntegrationConfigSection } from './sections/IntegrationConfigSection'
 import { PreviewConfigSection } from './sections/PreviewConfigSection'
 import { UsageGuideSection } from './sections/UsageGuideSection'
 import {
@@ -46,6 +45,7 @@ export const OptionsApp: React.FC = () => {
   const [updateFunctionName, setUpdateFunctionName] = useState(DEFAULT_VALUES.updateFunctionName)
   const [previewFunctionName, setPreviewFunctionName] = useState(DEFAULT_VALUES.previewFunctionName)
   const [communicationMode, setCommunicationMode] = useState<CommunicationMode>(DEFAULT_VALUES.apiConfig.communicationMode)
+  const [apiConfig, setApiConfig] = useState<ApiConfig | null>(null)
   
   const timeoutMapRef = React.useRef<Map<string, NodeJS.Timeout>>(new Map())
 
@@ -81,6 +81,7 @@ export const OptionsApp: React.FC = () => {
       setUpdateFunctionName(updateFunctionName)
       setPreviewFunctionName(previewFunctionName)
       setCommunicationMode(apiConfig.communicationMode)
+      setApiConfig(apiConfig)
       
       form.setFieldsValue({
         attributeName,
@@ -127,6 +128,7 @@ export const OptionsApp: React.FC = () => {
         
         if (fieldPath[0] === 'apiConfig') {
           setCommunicationMode(allValues.apiConfig.communicationMode)
+          setApiConfig(allValues.apiConfig)
         }
         
         message.success('已保存', 1.5)
@@ -179,11 +181,14 @@ export const OptionsApp: React.FC = () => {
       'attributeName', 'drawerWidth', 'getFunctionName', 'updateFunctionName', 
       'previewFunctionName', 'maxFavoritesCount', 'highlightColor', 'maxHistoryCount'
     ]
+    // apiConfig 下需要防抖的字段
+    const apiConfigDebounceFields = ['requestTimeout', 'sourceConfig', 'messageTypes']
+    
     return debounceFields.includes(fieldPath[0]) || 
            (fieldPath[0] === 'searchConfig' && ['searchDepthUp', 'throttleInterval'].includes(fieldPath[1])) ||
            (fieldPath[0] === 'highlightAllConfig' && ['keyBinding', 'maxHighlightCount'].includes(fieldPath[1])) ||
            (fieldPath[0] === 'recordingModeConfig' && ['keyBinding', 'pollingInterval', 'highlightColor'].includes(fieldPath[1])) ||
-           (fieldPath[0] === 'apiConfig' && fieldPath[1] === 'requestTimeout')
+           (fieldPath[0] === 'apiConfig' && apiConfigDebounceFields.includes(fieldPath[1]))
   }, [])
 
   const handleValuesChange = (changedValues: any, allValues: any) => {
@@ -219,15 +224,13 @@ export const OptionsApp: React.FC = () => {
     }
     
     // 更新 state
-    if (sectionKey === SECTION_KEYS.BASIC_INTEGRATION) {
+    if (sectionKey === SECTION_KEYS.INTEGRATION_CONFIG) {
       setAttributeName(DEFAULT_VALUES.attributeName)
       setGetFunctionName(DEFAULT_VALUES.getFunctionName)
       setUpdateFunctionName(DEFAULT_VALUES.updateFunctionName)
       setPreviewFunctionName(DEFAULT_VALUES.previewFunctionName)
-    }
-    
-    if (sectionKey === SECTION_KEYS.API_CONFIG) {
       setCommunicationMode(DEFAULT_VALUES.apiConfig.communicationMode)
+      setApiConfig(DEFAULT_VALUES.apiConfig)
     }
     
     message.success('已恢复默认配置')
@@ -265,6 +268,7 @@ export const OptionsApp: React.FC = () => {
     setUpdateFunctionName(DEFAULT_VALUES.updateFunctionName)
     setPreviewFunctionName(DEFAULT_VALUES.previewFunctionName)
     setCommunicationMode(DEFAULT_VALUES.apiConfig.communicationMode)
+    setApiConfig(DEFAULT_VALUES.apiConfig)
     
     message.success('已恢复全部默认配置')
   }, [form])
@@ -308,22 +312,15 @@ export const OptionsApp: React.FC = () => {
         onValuesChange={handleValuesChange}
         initialValues={DEFAULT_VALUES}
       >
-        {/* 卡片1: API 配置 - 通信模式 */}
-        <ApiConfigSection
+        {/* 卡片1: 集成配置 - 通信模式、属性名、API配置 */}
+        <IntegrationConfigSection
           communicationMode={communicationMode}
-          getFunctionName={getFunctionName}
-          updateFunctionName={updateFunctionName}
-          previewFunctionName={previewFunctionName}
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.API_CONFIG)}
-        />
-
-        {/* 卡片2: 基础集成配置 - 属性名、核心API函数名、扩展API函数名（windowFunction 模式） */}
-        <BasicIntegrationSection 
           attributeName={attributeName}
           getFunctionName={getFunctionName}
           updateFunctionName={updateFunctionName}
           previewFunctionName={previewFunctionName}
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.BASIC_INTEGRATION)}
+          apiConfig={apiConfig}
+          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.INTEGRATION_CONFIG)}
         />
 
         {/* 卡片2: 元素检测与高亮 - 搜索配置、高亮颜色、快捷键高亮 */}
