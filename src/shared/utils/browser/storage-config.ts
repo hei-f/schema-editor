@@ -162,15 +162,24 @@ export const SIMPLE_STORAGE_FIELDS = {
     validator: (value: any): value is ApiConfig => {
       return (
         value &&
-        ['customEvent', 'windowFunction'].includes(value.communicationMode) &&
+        ['postMessage', 'windowFunction'].includes(value.communicationMode) &&
         typeof value.requestTimeout === 'number' &&
         value.requestTimeout >= 1 &&
-        value.requestTimeout <= 30 &&
-        typeof value.requestEventName === 'string' &&
-        value.requestEventName.length > 0 &&
-        typeof value.responseEventName === 'string' &&
-        value.responseEventName.length > 0
+        value.requestTimeout <= 30
       )
+    },
+    /** 数据迁移：将旧的 customEvent 模式自动迁移为 postMessage */
+    transformer: (value: ApiConfig): ApiConfig => {
+      if ((value as any).communicationMode === 'customEvent') {
+        return {
+          communicationMode: 'postMessage',
+          requestTimeout: value.requestTimeout
+        }
+      }
+      return {
+        communicationMode: value.communicationMode,
+        requestTimeout: value.requestTimeout
+      }
     }
   } as StorageFieldConfig<ApiConfig>
 }

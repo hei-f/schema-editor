@@ -130,10 +130,10 @@ export interface RecordingModeConfig {
 
 /**
  * 通信模式类型
- * - customEvent: 使用 CustomEvent 事件通信（推荐）
+ * - postMessage: 使用 postMessage 直连通信（推荐）
  * - windowFunction: 使用 window 函数调用（已废弃）
  */
-export type CommunicationMode = 'customEvent' | 'windowFunction'
+export type CommunicationMode = 'postMessage' | 'windowFunction'
 
 /**
  * API 配置接口
@@ -141,12 +141,8 @@ export type CommunicationMode = 'customEvent' | 'windowFunction'
 export interface ApiConfig {
   /** 通信模式 */
   communicationMode: CommunicationMode
-  /** 请求超时时间（秒，1-30，仅 customEvent 模式生效） */
+  /** 请求超时时间（秒，1-30） */
   requestTimeout: number
-  /** 请求事件名（仅 customEvent 模式生效） */
-  requestEventName: string
-  /** 响应事件名（仅 customEvent 模式生效） */
-  responseEventName: string
 }
 
 /**
@@ -349,7 +345,7 @@ export interface UpdateResultPayload {
 }
 
 /**
- * 配置同步载荷
+ * 配置同步载荷（仅 windowFunction 模式使用）
  */
 export interface ConfigSyncPayload {
   /**
@@ -367,14 +363,6 @@ export interface ConfigSyncPayload {
    * @deprecated 仅 windowFunction 模式使用
    */
   previewFunctionName: string
-  /** 通信模式 */
-  communicationMode: CommunicationMode
-  /** 请求超时时间（秒，customEvent 模式） */
-  requestTimeout: number
-  /** 请求事件名（customEvent 模式） */
-  requestEventName: string
-  /** 响应事件名（customEvent 模式） */
-  responseEventName: string
 }
 
 /**

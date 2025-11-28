@@ -130,11 +130,7 @@ export const FORM_PATHS = {
     /** 通信模式 */
     communicationMode: ['apiConfig', 'communicationMode'],
     /** 请求超时时间 */
-    requestTimeout: ['apiConfig', 'requestTimeout'],
-    /** 请求事件名 */
-    requestEventName: ['apiConfig', 'requestEventName'],
-    /** 响应事件名 */
-    responseEventName: ['apiConfig', 'responseEventName']
+    requestTimeout: ['apiConfig', 'requestTimeout']
   }
 }
 

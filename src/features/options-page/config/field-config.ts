@@ -52,9 +52,7 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
   apiConfig: {
     fieldPaths: [
       FORM_PATHS.apiConfig.communicationMode,
-      FORM_PATHS.apiConfig.requestTimeout,
-      FORM_PATHS.apiConfig.requestEventName,
-      FORM_PATHS.apiConfig.responseEventName
+      FORM_PATHS.apiConfig.requestTimeout
     ],
     save: async (allValues: any) => {
       await storage.setApiConfig(allValues.apiConfig)
@@ -157,9 +155,7 @@ export const DEBOUNCE_FIELD_PATHS: readonly (readonly string[])[] = [
   FORM_PATHS.recordingModeConfig.keyBinding,
   FORM_PATHS.recordingModeConfig.highlightColor,
   FORM_PATHS.recordingModeConfig.pollingInterval,
-  FORM_PATHS.apiConfig.requestTimeout,
-  FORM_PATHS.apiConfig.requestEventName,
-  FORM_PATHS.apiConfig.responseEventName
+  FORM_PATHS.apiConfig.requestTimeout
 ]
 
 /**

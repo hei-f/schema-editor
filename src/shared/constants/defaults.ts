@@ -57,10 +57,8 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
   },
   editorTheme: 'schemaEditorDark',
   apiConfig: {
-    communicationMode: 'customEvent',
-    requestTimeout: 5,
-    requestEventName: 'schema-editor:request',
-    responseEventName: 'schema-editor:response'
+    communicationMode: 'postMessage',
+    requestTimeout: 5
   }
 } as const
 
