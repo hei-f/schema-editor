@@ -166,6 +166,19 @@ const initialSchemaStore: Record<string, any> = {
   'boolean-true': true,
   'boolean-false': false,
   'recording-test': '"初始内容"',
+  // JSON 修复测试用例（故意使用错误格式的字符串）
+  'json-repair-missing-colon': '{"name" "Alice", "age": 25}',
+  'json-repair-missing-quotes': '{name: "Alice", age: 25}',
+  'json-repair-trailing-comma': '{"name": "Alice", "age": 25,}',
+  'json-repair-incomplete': '{"name": "Alice", "items": [1, 2, 3',
+  'json-repair-single-quotes': "{'name': 'Alice', 'age': 25}",
+  'json-repair-sse-data':
+    '[{"componentPath":"WhiteBox","componentProps":{"data":"工具接口: PolicyToolsFacade.queryAgentMarketingStrategy\\n 策略生成失败","duration":"67073835","iconType":"icon-search3","resultStatus":"error","title":"查询智能策略工具调用失败"}}]\\n',
+  'very-long-param-name-1,another-long-parameter-value-2,user.profile.settings.theme,data[0].items[*].nested.value,https://api.example.com/v1/users':
+    {
+      message: '这是一个用于测试 Params 滚动效果的示例数据',
+      description: '工具栏中应该显示多个长参数，并支持水平滚动',
+    },
 }
 
 const testElements: TestElement[] = [
@@ -298,6 +311,81 @@ const testElements: TestElement[] = [
     badge: 'success',
     badgeText: '有效',
     typeTag: 'Recording',
+  },
+  // JSON 修复测试用例
+  {
+    id: 'json-repair-missing-colon',
+    title: '🔧 缺少冒号',
+    description: '{"name" "Alice"} - 键值对之间缺少冒号，测试定位错误和修复功能',
+    attrs: { 'data-id': 'json-repair-missing-colon' },
+    schemaKey: 'json-repair-missing-colon',
+    badge: 'error',
+    badgeText: '错误JSON',
+    typeTag: 'JsonRepair',
+  },
+  {
+    id: 'json-repair-missing-quotes',
+    title: '🔧 缺少引号',
+    description: '{name: "Alice"} - 键名缺少引号，JavaScript对象字面量风格',
+    attrs: { 'data-id': 'json-repair-missing-quotes' },
+    schemaKey: 'json-repair-missing-quotes',
+    badge: 'error',
+    badgeText: '错误JSON',
+    typeTag: 'JsonRepair',
+  },
+  {
+    id: 'json-repair-trailing-comma',
+    title: '🔧 尾随逗号',
+    description: '{"name": "Alice",} - 对象末尾有多余逗号',
+    attrs: { 'data-id': 'json-repair-trailing-comma' },
+    schemaKey: 'json-repair-trailing-comma',
+    badge: 'error',
+    badgeText: '错误JSON',
+    typeTag: 'JsonRepair',
+  },
+  {
+    id: 'json-repair-incomplete',
+    title: '🔧 不完整JSON',
+    description: '{"items": [1, 2, 3 - 缺少结束括号，模拟SSE传输中断',
+    attrs: { 'data-id': 'json-repair-incomplete' },
+    schemaKey: 'json-repair-incomplete',
+    badge: 'error',
+    badgeText: '错误JSON',
+    typeTag: 'JsonRepair',
+  },
+  {
+    id: 'json-repair-single-quotes',
+    title: '🔧 单引号',
+    description: "{'name': 'Alice'} - 使用单引号而非双引号",
+    attrs: { 'data-id': 'json-repair-single-quotes' },
+    schemaKey: 'json-repair-single-quotes',
+    badge: 'error',
+    badgeText: '错误JSON',
+    typeTag: 'JsonRepair',
+  },
+  {
+    id: 'json-repair-sse-data',
+    title: '🔧 SSE流式数据',
+    description: '模拟真实SSE传输的数据，可能包含转义字符和特殊格式',
+    attrs: { 'data-id': 'json-repair-sse-data' },
+    schemaKey: 'json-repair-sse-data',
+    badge: 'error',
+    badgeText: '错误JSON',
+    typeTag: 'JsonRepair',
+  },
+  {
+    id: 'params-scroll-test',
+    title: '📜 Params 滚动测试',
+    description: '测试工具栏中多个长参数的水平滚动效果和渐变遮罩',
+    attrs: {
+      'data-id':
+        'very-long-param-name-1,another-long-parameter-value-2,user.profile.settings.theme,data[0].items[*].nested.value,https://api.example.com/v1/users',
+    },
+    schemaKey:
+      'very-long-param-name-1,another-long-parameter-value-2,user.profile.settings.theme,data[0].items[*].nested.value,https://api.example.com/v1/users',
+    badge: 'success',
+    badgeText: '有效',
+    typeTag: 'UI',
   },
   {
     id: 'invalid-null',
@@ -633,6 +721,10 @@ export const SchemaTestPage: React.FC = () => {
         return 'cyan'
       case 'Recording':
         return 'red'
+      case 'JsonRepair':
+        return 'volcano'
+      case 'UI':
+        return 'purple'
       default:
         return 'default'
     }
@@ -643,6 +735,8 @@ export const SchemaTestPage: React.FC = () => {
     'Object / Array': testElements.filter((e) => ['Object', 'Array'].includes(e.typeTag || '')),
     Boolean: testElements.filter((e) => e.typeTag === 'Boolean'),
     Recording: testElements.filter((e) => e.typeTag === 'Recording'),
+    'JSON 修复': testElements.filter((e) => e.typeTag === 'JsonRepair'),
+    'UI 测试': testElements.filter((e) => e.typeTag === 'UI'),
     无效元素: testElements.filter((e) => !e.typeTag),
   }
 
@@ -703,7 +797,13 @@ export const SchemaTestPage: React.FC = () => {
       </HeaderCard>
 
       <Collapse
-        defaultActiveKey={['String / Number', 'Object / Array', 'Recording']}
+        defaultActiveKey={[
+          'String / Number',
+          'Object / Array',
+          'Recording',
+          'JSON 修复',
+          'UI 测试',
+        ]}
         items={Object.entries(groupedElements).map(([group, elements]) => ({
           key: group,
           label: <Text strong>{group} 类型测试</Text>,
@@ -716,6 +816,9 @@ export const SchemaTestPage: React.FC = () => {
                     $isValid={elem.badge === 'success'}
                     size="small"
                     {...(elem.attrs['data-id'] ? { 'data-id': elem.attrs['data-id'] } : {})}
+                    {...(elem.attrs['data-schema-params']
+                      ? { 'data-schema-params': elem.attrs['data-schema-params'] }
+                      : {})}
                   >
                     <Space style={{ marginBottom: 8 }}>
                       <Badge
