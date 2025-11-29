@@ -230,3 +230,29 @@ export const PreviewEditorContainer = styled.div`
   flex-direction: column;
   position: relative;
 `
+
+/**
+ * 模式切换淡入动画
+ */
+const modeEnter = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`
+
+/**
+ * 全屏模式过渡容器
+ * 用于 Diff 模式和预览模式之间的平滑切换
+ * $animate: 是否应用过渡动画（仅在全屏模式之间切换时需要）
+ */
+export const FullScreenModeWrapper = styled.div<{ $animate?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  animation: ${(props) => (props.$animate ? modeEnter : 'none')} 150ms ease-out;
+`
