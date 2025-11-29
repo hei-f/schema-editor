@@ -297,8 +297,8 @@ describe('JSON处理工具测试', () => {
 
     it('应该检测过度嵌套', () => {
       // 创建12层嵌套，超过10层限制
-      let input: string | object = { key: 'value' }
-      for (let i = 0; i < 12; i++) {
+      let input = JSON.stringify({ key: 'value' })
+      for (let i = 0; i < 11; i++) {
         input = JSON.stringify(input)
       }
 

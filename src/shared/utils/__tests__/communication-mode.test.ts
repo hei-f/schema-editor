@@ -1,6 +1,7 @@
 import { getCommunicationMode } from '../communication-mode'
 import { COMMUNICATION_MODE } from '@/shared/constants/ui-modes'
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
+import type { ApiConfig } from '@/shared/types'
 
 describe('communication-mode', () => {
   describe('getCommunicationMode', () => {
@@ -19,7 +20,7 @@ describe('communication-mode', () => {
     it('配置为 postMessage 模式时应该正确识别', () => {
       const result = getCommunicationMode({
         communicationMode: COMMUNICATION_MODE.POST_MESSAGE,
-      })
+      } as ApiConfig)
 
       expect(result.communicationMode).toBe(COMMUNICATION_MODE.POST_MESSAGE)
       expect(result.isPostMessageMode).toBe(true)
@@ -29,7 +30,7 @@ describe('communication-mode', () => {
     it('配置为 windowFunction 模式时应该正确识别', () => {
       const result = getCommunicationMode({
         communicationMode: COMMUNICATION_MODE.WINDOW_FUNCTION,
-      })
+      } as ApiConfig)
 
       expect(result.communicationMode).toBe(COMMUNICATION_MODE.WINDOW_FUNCTION)
       expect(result.isPostMessageMode).toBe(false)
@@ -37,9 +38,7 @@ describe('communication-mode', () => {
     })
 
     it('配置对象中 communicationMode 为 undefined 时应该使用默认值', () => {
-      const result = getCommunicationMode({
-        communicationMode: undefined,
-      })
+      const result = getCommunicationMode({} as ApiConfig)
 
       expect(result.communicationMode).toBe(DEFAULT_VALUES.apiConfig.communicationMode)
     })
@@ -58,13 +57,13 @@ describe('communication-mode', () => {
     it('isPostMessageMode 和 isWindowFunctionMode 应该互斥', () => {
       const postMessageResult = getCommunicationMode({
         communicationMode: COMMUNICATION_MODE.POST_MESSAGE,
-      })
+      } as ApiConfig)
       expect(postMessageResult.isPostMessageMode).toBe(true)
       expect(postMessageResult.isWindowFunctionMode).toBe(false)
 
       const windowFunctionResult = getCommunicationMode({
         communicationMode: COMMUNICATION_MODE.WINDOW_FUNCTION,
-      })
+      } as ApiConfig)
       expect(windowFunctionResult.isPostMessageMode).toBe(false)
       expect(windowFunctionResult.isWindowFunctionMode).toBe(true)
     })
