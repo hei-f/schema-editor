@@ -1,4 +1,11 @@
 import styled, { css, keyframes } from 'styled-components'
+import type { EditorThemeVars } from './editor-theme-vars'
+
+/** 扩展 styled-components 的 DefaultTheme，添加编辑器主题变量 */
+declare module 'styled-components' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface DefaultTheme extends EditorThemeVars {}
+}
 
 /**
  * 录制指示器闪烁动画
@@ -30,8 +37,8 @@ export const RecordingStatusBar = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid #2d3748;
+  background: ${(props) => props.theme.toolbarBackground};
+  border-bottom: 1px solid ${(props) => props.theme.toolbarBorder};
 `
 
 /**
@@ -90,7 +97,7 @@ export const RecordingIndicator = styled.div<{ $isRecording: boolean }>`
  * 版本计数
  */
 export const VersionCount = styled.span`
-  color: #8b949e;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 12px;
 `
 
@@ -111,8 +118,8 @@ export const RecordingPanelContainer = styled.div`
   min-width: 280px;
   display: flex;
   flex-direction: column;
-  background: #1a1a2e;
-  border-right: 1px solid #2d3748;
+  background: ${(props) => props.theme.panelBackground};
+  border-right: 1px solid ${(props) => props.theme.panelBorder};
 `
 
 /**
@@ -120,10 +127,10 @@ export const RecordingPanelContainer = styled.div`
  */
 export const PanelHeader = styled.div`
   padding: 12px 16px;
-  border-bottom: 1px solid #2d3748;
+  border-bottom: 1px solid ${(props) => props.theme.panelBorder};
   font-size: 13px;
   font-weight: 500;
-  color: #e6e6e6;
+  color: ${(props) => props.theme.textPrimary};
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -146,11 +153,11 @@ export const VersionListContainer = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #4a5568;
+    background: ${(props) => props.theme.scrollbarThumb};
     border-radius: 3px;
 
     &:hover {
-      background: #5a6878;
+      background: ${(props) => props.theme.scrollbarThumbHover};
     }
   }
 `
@@ -171,16 +178,16 @@ export const VersionItem = styled.div<{ $isActive?: boolean }>`
   ${(props) =>
     props.$isActive
       ? css`
-          background: rgba(24, 144, 255, 0.2);
-          border: 1px solid rgba(24, 144, 255, 0.4);
+          background: ${props.theme.listItemActiveBackground};
+          border: 1px solid ${props.theme.listItemActiveBorder};
         `
       : css`
-          background: rgba(255, 255, 255, 0.03);
+          background: transparent;
           border: 1px solid transparent;
 
           &:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: ${props.theme.listItemHoverBackground};
+            border-color: ${props.theme.listItemHoverBackground};
           }
         `}
 `
@@ -200,7 +207,7 @@ export const VersionInfo = styled.div`
 export const VersionNumber = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: #e6e6e6;
+  color: ${(props) => props.theme.textPrimary};
 `
 
 /**
@@ -208,7 +215,7 @@ export const VersionNumber = styled.span`
  */
 export const VersionTimestamp = styled.span`
   font-size: 11px;
-  color: #8b949e;
+  color: ${(props) => props.theme.textSecondary};
 `
 
 /**
@@ -239,8 +246,8 @@ export const DiffToolbar = styled.div`
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid #2d3748;
+  background: ${(props) => props.theme.toolbarBackground};
+  border-bottom: 1px solid ${(props) => props.theme.toolbarBorder};
 `
 
 /**
@@ -257,7 +264,7 @@ export const VersionSelectorGroup = styled.div`
  */
 export const VersionSelectorLabel = styled.span`
   font-size: 12px;
-  color: #8b949e;
+  color: ${(props) => props.theme.textSecondary};
 `
 
 /**
@@ -552,7 +559,7 @@ export const EmptyState = styled.div`
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #8b949e;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 14px;
   gap: 8px;
 `
@@ -582,12 +589,12 @@ export const DiffHeaderRow = styled.div`
 export const DiffEditorHeader = styled.div<{ $isLeft?: boolean }>`
   flex: 1;
   padding: 8px 16px;
-  background: #282c34;
-  border-bottom: 1px solid #b0b0b0;
+  background: ${(props) => props.theme.headerBackground};
+  border-bottom: 1px solid ${(props) => props.theme.panelBorder};
   font-size: 12px;
-  color: #abb2bf;
+  color: ${(props) => props.theme.headerTextColor};
   font-weight: 500;
-  ${(props) => props.$isLeft && `border-right: 1px solid #b0b0b0;`}
+  ${(props) => props.$isLeft && `border-right: 1px solid ${props.theme.panelBorder};`}
 `
 
 /**
@@ -604,16 +611,16 @@ export const SharedScrollContainer = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: #1a1a2e;
+    background: ${(props) => props.theme.scrollbarTrack};
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #4a5568;
+    background: ${(props) => props.theme.scrollbarThumb};
     border-radius: 6px;
-    border: 3px solid #1a1a2e;
+    border: 3px solid ${(props) => props.theme.scrollbarTrack};
 
     &:hover {
-      background: #5a6878;
+      background: ${(props) => props.theme.scrollbarThumbHover};
     }
   }
 `
@@ -632,7 +639,7 @@ export const DiffEditorsRow = styled.div`
 export const DiffEditorPanel = styled.div<{ $isLeft?: boolean }>`
   flex: 1;
   min-width: 0;
-  ${(props) => props.$isLeft && `border-right: 1px solid #b0b0b0;`}
+  ${(props) => props.$isLeft && `border-right: 1px solid ${props.theme.panelBorder};`}
 `
 
 /**
