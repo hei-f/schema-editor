@@ -1,9 +1,8 @@
 import { SchemaDrawer } from '@/features/schema-drawer'
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import { shadowDomTheme } from '@/shared/constants/theme'
-import { COMMUNICATION_MODE } from '@/shared/constants/ui-modes'
+import { getCommunicationMode } from '@/shared/utils/communication-mode'
 import type {
-  CommunicationMode,
   ElementAttributes,
   Message,
   PreviewFunctionResultPayload,
@@ -48,19 +47,15 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
 
   const configSyncedRef = useRef(false)
 
-  /**
-   * 获取当前通信模式
-   */
-  const getCommunicationMode = useCallback((): CommunicationMode => {
-    return drawerConfig?.apiConfig.communicationMode ?? COMMUNICATION_MODE.POST_MESSAGE
-  }, [drawerConfig])
+  /** 通信模式 */
+  const { isPostMessageMode, isWindowFunctionMode } = getCommunicationMode(drawerConfig?.apiConfig)
 
   /**
    * 同步配置到注入脚本（仅 windowFunction 模式需要）
    */
   const syncConfigToInjected = useCallback(async () => {
     if (configSyncedRef.current) return
-    if (getCommunicationMode() !== COMMUNICATION_MODE.WINDOW_FUNCTION) return
+    if (!isWindowFunctionMode) return
 
     const [getFunctionName, updateFunctionName, previewFunctionName] = await Promise.all([
       storage.getGetFunctionName(),
@@ -78,7 +73,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     })
 
     configSyncedRef.current = true
-  }, [getCommunicationMode])
+  }, [isWindowFunctionMode])
 
   /**
    * 初始化：加载配置
@@ -135,24 +130,20 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     if (!drawerConfig) return
 
     // windowFunction 模式：同步配置到 injected.js
-    if (drawerConfig.apiConfig.communicationMode === COMMUNICATION_MODE.WINDOW_FUNCTION) {
+    if (isWindowFunctionMode) {
       syncConfigToInjected()
     }
-  }, [drawerConfig, syncConfigToInjected])
+  }, [drawerConfig, syncConfigToInjected, isWindowFunctionMode])
 
   /**
    * 初始化宿主消息监听器（postMessage 模式）
    */
   useEffect(() => {
-    if (
-      !drawerConfig ||
-      drawerConfig.apiConfig.communicationMode !== COMMUNICATION_MODE.POST_MESSAGE
-    )
-      return
+    if (!drawerConfig || !isPostMessageMode) return
 
     const cleanup = initHostMessageListener(drawerConfig.apiConfig.sourceConfig)
     return cleanup
-  }, [drawerConfig])
+  }, [drawerConfig, isPostMessageMode])
 
   /**
    * 处理更新结果（windowFunction 模式）
@@ -170,7 +161,6 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     if (!drawerConfig) return
 
     const { apiConfig } = drawerConfig
-    const isPostMessageMode = getCommunicationMode() === COMMUNICATION_MODE.POST_MESSAGE
 
     if (isPostMessageMode) {
       try {
@@ -202,7 +192,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         type: MessageType.CHECK_PREVIEW_FUNCTION,
       })
     }
-  }, [drawerConfig, getCommunicationMode])
+  }, [drawerConfig, isPostMessageMode])
 
   /**
    * 处理 Schema 响应
@@ -224,11 +214,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
    * 监听来自 injected script 的消息（windowFunction 模式）
    */
   useEffect(() => {
-    if (
-      !drawerConfig ||
-      drawerConfig.apiConfig.communicationMode !== COMMUNICATION_MODE.WINDOW_FUNCTION
-    )
-      return
+    if (!drawerConfig || !isWindowFunctionMode) return
 
     const cleanup = listenPageMessages((msg: Message) => {
       switch (msg.type) {
@@ -246,7 +232,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     })
 
     return cleanup
-  }, [drawerConfig, handleSchemaResponse, handleUpdateResult])
+  }, [drawerConfig, isWindowFunctionMode, handleSchemaResponse, handleUpdateResult])
 
   /**
    * 请求获取 Schema
@@ -258,7 +244,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
       const params = attributes.params.join(',')
       const { apiConfig } = drawerConfig
 
-      if (getCommunicationMode() === COMMUNICATION_MODE.POST_MESSAGE) {
+      if (isPostMessageMode) {
         // postMessage 直连模式
         try {
           const messageType =
@@ -285,7 +271,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         })
       }
     },
-    [drawerConfig, getCommunicationMode, handleSchemaResponse]
+    [drawerConfig, isPostMessageMode, handleSchemaResponse]
   )
 
   /**
@@ -318,7 +304,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
       const params = currentAttributes.params.join(',')
       const { apiConfig } = drawerConfig
 
-      if (getCommunicationMode() === COMMUNICATION_MODE.POST_MESSAGE) {
+      if (isPostMessageMode) {
         // postMessage 直连模式
         const messageType =
           apiConfig.messageTypes?.updateSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.updateSchema
@@ -359,7 +345,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         })
       }
     },
-    [currentAttributes, drawerConfig, getCommunicationMode]
+    [currentAttributes, drawerConfig, isPostMessageMode]
   )
 
   /**

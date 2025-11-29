@@ -1,7 +1,9 @@
+import { DEFAULT_VALUES } from '@/shared/constants/defaults'
+import { getCommunicationMode } from '@/shared/utils/communication-mode'
 import type {
   ApiConfig,
-  CommunicationMode,
   ElementAttributes,
+  SchemaResponsePayload,
   SchemaSnapshot,
 } from '@/shared/types'
 import { MessageType } from '@/shared/types'
@@ -64,12 +66,8 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
   /** 录制状态ref（避免闭包问题） */
   const isRecordingRef = useRef(false)
 
-  /**
-   * 获取通信模式
-   */
-  const getCommunicationMode = useCallback((): CommunicationMode => {
-    return apiConfig?.communicationMode ?? 'postMessage'
-  }, [apiConfig])
+  /** 通信模式 */
+  const { isPostMessageMode } = getCommunicationMode(apiConfig ?? undefined)
 
   /**
    * 处理schema响应
@@ -133,11 +131,12 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
   const requestSchemaPostMessage = useCallback(async () => {
     const params = attributes.params.join(',')
     try {
-      const messageType = apiConfig?.messageTypes?.getSchema ?? 'GET_SCHEMA'
-      const response = await sendRequestToHost<{ success: boolean; data?: any; error?: string }>(
+      const messageType =
+        apiConfig?.messageTypes?.getSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.getSchema
+      const response = await sendRequestToHost<SchemaResponsePayload>(
         messageType,
         { params },
-        apiConfig?.requestTimeout ?? 5,
+        apiConfig?.requestTimeout ?? DEFAULT_VALUES.apiConfig.requestTimeout,
         apiConfig?.sourceConfig
       )
       handleSchemaResponse({
@@ -161,6 +160,7 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
     })
   }, [attributes.params])
 
+  //TODO-youling:CR check point
   /**
    * 开始录制
    */
@@ -175,9 +175,7 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
     snapshotIdRef.current = 0
     recordingStartTimeRef.current = Date.now()
 
-    const mode = getCommunicationMode()
-
-    if (mode === 'postMessage') {
+    if (isPostMessageMode) {
       // postMessage 直连模式：直接轮询
       requestSchemaPostMessage()
 
@@ -203,7 +201,7 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
     setIsRecording(true)
   }, [
     pollingInterval,
-    getCommunicationMode,
+    isPostMessageMode,
     requestSchemaPostMessage,
     requestSchemaWindowFunction,
     handleSchemaResponse,
