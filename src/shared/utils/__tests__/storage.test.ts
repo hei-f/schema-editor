@@ -1605,4 +1605,269 @@ describe('Storage工具测试', () => {
       await expect(storage.setApiConfig(config)).resolves.not.toThrow()
     })
   })
+
+  describe('Favorites 收藏相关方法', () => {
+    beforeEach(() => {
+      // 重置 mock 确保每个测试独立
+      ;(chrome.storage.local.get as jest.Mock).mockReset()
+      ;(chrome.storage.local.set as jest.Mock).mockReset()
+      ;(chrome.storage.local.get as jest.Mock).mockImplementation(() => Promise.resolve({}))
+      ;(chrome.storage.local.set as jest.Mock).mockResolvedValue(undefined)
+    })
+
+    it('getFavorites 应该返回收藏列表', async () => {
+      const mockFavorites = [
+        { id: '1', name: 'Fav1', content: '{}', timestamp: Date.now(), lastUsedTime: Date.now() },
+      ]
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ favorites: mockFavorites })
+
+      const result = await storage.getFavorites()
+      expect(result).toEqual(mockFavorites)
+    })
+
+    it('getFavorites 失败时应该返回空数组', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      const result = await storage.getFavorites()
+      expect(result).toEqual([])
+    })
+
+    it('addFavorite 应该添加收藏', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        favorites: [],
+        maxFavoritesCount: 50,
+      })
+
+      await storage.addFavorite('Test', '{"key": "value"}')
+
+      expect(chrome.storage.local.set).toHaveBeenCalled()
+    })
+
+    it('addFavorite 失败时应该抛出错误', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        favorites: [],
+        maxFavoritesCount: 50,
+      })
+      ;(chrome.storage.local.set as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      await expect(storage.addFavorite('Test', '{}')).rejects.toThrow()
+    })
+
+    it('updateFavorite 应该更新收藏', async () => {
+      const mockFavorites = [
+        {
+          id: 'test-id',
+          name: 'Old',
+          content: '{}',
+          timestamp: Date.now(),
+          lastUsedTime: Date.now(),
+        },
+      ]
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ favorites: mockFavorites })
+
+      await storage.updateFavorite('test-id', 'New Name', '{"new": true}')
+
+      expect(chrome.storage.local.set).toHaveBeenCalled()
+    })
+
+    it('updateFavorite 收藏不存在时应该抛出错误', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ favorites: [] })
+
+      await expect(storage.updateFavorite('non-existent', 'Name', '{}')).rejects.toThrow(
+        '收藏不存在'
+      )
+    })
+
+    it('deleteFavorite 应该删除收藏', async () => {
+      const mockFavorites = [
+        {
+          id: 'test-id',
+          name: 'Test',
+          content: '{}',
+          timestamp: Date.now(),
+          lastUsedTime: Date.now(),
+        },
+      ]
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ favorites: mockFavorites })
+
+      await storage.deleteFavorite('test-id')
+
+      expect(chrome.storage.local.set).toHaveBeenCalled()
+    })
+
+    it('deleteFavorite 失败时应该抛出错误', async () => {
+      const mockFavorites = [
+        {
+          id: 'test-id',
+          name: 'Test',
+          content: '{}',
+          timestamp: Date.now(),
+          lastUsedTime: Date.now(),
+        },
+      ]
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ favorites: mockFavorites })
+      ;(chrome.storage.local.set as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      await expect(storage.deleteFavorite('test-id')).rejects.toThrow()
+    })
+
+    it('updateFavoriteUsedTime 应该更新使用时间', async () => {
+      const mockFavorites = [
+        {
+          id: 'test-id',
+          name: 'Test',
+          content: '{}',
+          timestamp: Date.now(),
+          lastUsedTime: Date.now() - 10000,
+        },
+      ]
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ favorites: mockFavorites })
+
+      await storage.updateFavoriteUsedTime('test-id')
+
+      expect(chrome.storage.local.set).toHaveBeenCalled()
+    })
+
+    it('updateFavoriteUsedTime 失败时不应该抛出错误', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      await expect(storage.updateFavoriteUsedTime('test-id')).resolves.not.toThrow()
+    })
+
+    it('cleanOldFavorites 应该清理超过最大数量的收藏', async () => {
+      const now = Date.now()
+      const mockFavorites = Array.from({ length: 10 }, (_, i) => ({
+        id: `fav-${i}`,
+        name: `Fav ${i}`,
+        content: '{}',
+        timestamp: now - i * 1000,
+        lastUsedTime: now - i * 1000,
+      }))
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        favorites: mockFavorites,
+        maxFavoritesCount: 5,
+      })
+
+      await storage.cleanOldFavorites()
+
+      expect(chrome.storage.local.set).toHaveBeenCalled()
+    })
+
+    it('cleanOldFavorites 失败时不应该抛出错误', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      await expect(storage.cleanOldFavorites()).resolves.not.toThrow()
+    })
+  })
+
+  describe('其他未覆盖方法', () => {
+    beforeEach(() => {
+      // 重置 mock 确保每个测试独立
+      ;(chrome.storage.local.get as jest.Mock).mockReset()
+      ;(chrome.storage.local.set as jest.Mock).mockReset()
+      ;(chrome.storage.local.get as jest.Mock).mockImplementation(() => Promise.resolve({}))
+      ;(chrome.storage.local.set as jest.Mock).mockResolvedValue(undefined)
+    })
+
+    it('setPreviewConfig 应该保存预览配置', async () => {
+      const config = { previewWidth: 50, updateDelay: 500, autoUpdate: true }
+      await storage.setPreviewConfig(config)
+
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({ previewConfig: config })
+    })
+
+    it('setRecordingModeConfig 应该保存录制模式配置', async () => {
+      const config = {
+        enabled: true,
+        keyBinding: 'r',
+        highlightColor: '#ff0000',
+        pollingInterval: 100,
+      }
+      await storage.setRecordingModeConfig(config)
+
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({ recordingModeConfig: config })
+    })
+
+    it('setEnableAstTypeHints 应该保存 AST 类型提示设置', async () => {
+      await storage.setEnableAstTypeHints(true)
+
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({ enableAstTypeHints: true })
+    })
+
+    it('setEditorTheme 应该保存编辑器主题', async () => {
+      await storage.setEditorTheme('dark')
+
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({ editorTheme: 'dark' })
+    })
+
+    it('setPreviewFunctionName 应该保存预览函数名', async () => {
+      await storage.setPreviewFunctionName('customPreview')
+
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        previewFunctionName: 'customPreview',
+      })
+    })
+
+    it('getExportConfig 应该返回导出配置', async () => {
+      const config = { customFileName: true }
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ exportConfig: config })
+
+      const result = await storage.getExportConfig()
+      expect(result).toEqual(config)
+    })
+
+    it('getExportConfig 失败时应该返回默认值', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      const result = await storage.getExportConfig()
+      expect(result).toEqual({ customFileName: false })
+    })
+
+    it('setExportConfig 应该保存导出配置', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        exportConfig: { customFileName: false },
+      })
+
+      await storage.setExportConfig({ customFileName: true })
+
+      expect(chrome.storage.local.set).toHaveBeenCalled()
+    })
+
+    it('setExportConfig 失败时应该抛出错误', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ exportConfig: {} })
+      ;(chrome.storage.local.set as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      await expect(storage.setExportConfig({ customFileName: true })).rejects.toThrow()
+    })
+
+    it('cleanExpiredDrafts 应该清理过期草稿', async () => {
+      const now = Date.now()
+      const oldDraft = {
+        content: '{}',
+        timestamp: now - 100 * 24 * 60 * 60 * 1000, // 100天前
+        url: 'https://example.com',
+      }
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
+        draftRetentionDays: 30,
+        'draft:old-param': oldDraft,
+      })
+
+      await storage.cleanExpiredDrafts()
+
+      // 验证调用了 storage 操作
+      expect(chrome.storage.local.get).toHaveBeenCalled()
+    })
+
+    it('cleanExpiredDrafts 失败时不应该抛出错误', async () => {
+      ;(chrome.storage.local.get as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      await expect(storage.cleanExpiredDrafts()).resolves.not.toThrow()
+    })
+
+    it('saveDraft 失败时不应该抛出错误', async () => {
+      ;(chrome.storage.local.set as jest.Mock).mockRejectedValue(new Error('Storage error'))
+
+      await expect(storage.saveDraft('test-param', '{}')).resolves.not.toThrow()
+    })
+  })
 })
