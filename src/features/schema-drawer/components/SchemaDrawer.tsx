@@ -309,7 +309,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     isFirstLoad: isFirstLoadRef.current,
     enabled: toolbarButtons.draft,
     onLoadDraft: handleLoadDraftContent,
-    onSuccess: (msg) => message.success(msg, 1.5),
+    onSuccess: (msg) => showLightNotification(msg),
     onWarning: (msg) => message.warning(msg),
     onError: (msg) => message.error(msg),
   })
@@ -976,7 +976,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       // 检查是否已经是有效 JSON
       try {
         JSON.parse(content)
-        message.success('JSON 格式正确，无需修复')
+        showLightNotification('JSON 格式正确，无需修复')
       } catch {
         message.error(result.error || '无法修复此 JSON，请手动检查')
       }
