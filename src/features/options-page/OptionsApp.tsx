@@ -5,7 +5,8 @@ import { storage } from '@/shared/utils/browser/storage'
 import { getChangedFieldPath, getValueByPath, pathToString } from '@/shared/utils/form-path'
 import { CheckCircleOutlined, UndoOutlined } from '@ant-design/icons'
 import { Button, Form, message, Popconfirm } from 'antd'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { SideMenu } from './components/SideMenu'
 import {
   FIELD_PATH_STORAGE_MAP,
   findFieldGroup,
@@ -13,6 +14,7 @@ import {
   SECTION_KEYS,
   type SectionKey,
 } from './config/field-config'
+import { MENU_CONFIG } from './config/menu-config'
 import { DataManagementSection } from './sections/DataManagementSection'
 import { DebugSection } from './sections/DebugSection'
 import { EditorConfigSection } from './sections/EditorConfigSection'
@@ -28,6 +30,7 @@ import {
   HeaderContent,
   HeaderSection,
   PageDescription,
+  PageRoot,
   PageTitle,
   VersionTag,
 } from './styles/layout.styles'
@@ -56,7 +59,69 @@ export const OptionsApp: React.FC = () => {
   )
   const [apiConfig, setApiConfig] = useState<ApiConfig | null>(null)
 
-  const timeoutMapRef = React.useRef<Map<string, NodeJS.Timeout>>(new Map())
+  /** 菜单折叠状态 */
+  const [menuCollapsed, setMenuCollapsed] = useState(false)
+  /** 当前激活的 Section */
+  const [activeSection, setActiveSection] = useState<string>('')
+
+  const timeoutMapRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  const observerRef = useRef<IntersectionObserver | null>(null)
+
+  /**
+   * 监听 Section 可见性，自动更新激活状态
+   */
+  useEffect(() => {
+    const sectionIds = MENU_CONFIG.map((item) => item.sectionId)
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.3) {
+            setActiveSection(entry.target.id)
+          }
+        })
+      },
+      { threshold: [0.3], rootMargin: '-100px 0px -50% 0px' }
+    )
+
+    sectionIds.forEach((id) => {
+      const element = document.getElementById(id)
+      if (element) {
+        observerRef.current?.observe(element)
+      }
+    })
+
+    return () => {
+      observerRef.current?.disconnect()
+    }
+  }, [])
+
+  /**
+   * 滚动到指定 Section
+   */
+  const scrollToSection = useCallback((sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setActiveSection(sectionId)
+    }
+  }, [])
+
+  /**
+   * 滚动到指定锚点（配置项）
+   */
+  const scrollToAnchor = useCallback((anchorId: string) => {
+    const element = document.getElementById(anchorId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // 高亮效果
+      element.style.transition = 'background-color 0.3s ease'
+      element.style.backgroundColor = 'rgba(22, 119, 255, 0.1)'
+      setTimeout(() => {
+        element.style.backgroundColor = ''
+      }, 1500)
+    }
+  }, [])
 
   const loadSettings = async () => {
     try {
@@ -303,82 +368,111 @@ export const OptionsApp: React.FC = () => {
   }, [form])
 
   return (
-    <Container>
-      <HeaderSection justify="space-between" align="center" gap={16}>
-        <HeaderContent>
-          <PageTitle level={2}>⚙️ Schema Editor 设置</PageTitle>
-          <PageDescription type="secondary">配置插件的行为参数</PageDescription>
-        </HeaderContent>
-        <HeaderActions align="center" gap={12}>
-          <VersionTag>v1.16.0</VersionTag>
-          <Button onClick={openReleasePage}>检查更新</Button>
-        </HeaderActions>
-      </HeaderSection>
+    <PageRoot>
+      {/* 侧边菜单 */}
+      <SideMenu
+        collapsed={menuCollapsed}
+        onCollapsedChange={setMenuCollapsed}
+        activeSection={activeSection}
+        onMenuClick={scrollToSection}
+        onSubMenuClick={scrollToAnchor}
+      />
 
-      <AutoSaveHint align="center" gap={8}>
-        <CheckCircleOutlined />
-        <span>所有配置项通过验证后将自动保存</span>
-        <Popconfirm
-          title="恢复默认配置"
-          description="确定要将所有配置恢复为默认值吗？"
-          onConfirm={resetAllToDefault}
-          okText="确定"
-          cancelText="取消"
+      {/* 内容区域 */}
+      <Container $menuCollapsed={menuCollapsed}>
+        <HeaderSection justify="space-between" align="center" gap={16}>
+          <HeaderContent>
+            <PageTitle level={2}>⚙️ Schema Editor 设置</PageTitle>
+            <PageDescription type="secondary">配置插件的行为参数</PageDescription>
+          </HeaderContent>
+          <HeaderActions align="center" gap={12}>
+            <VersionTag>v1.16.0</VersionTag>
+            <Button onClick={openReleasePage}>检查更新</Button>
+          </HeaderActions>
+        </HeaderSection>
+
+        <AutoSaveHint align="center" gap={8}>
+          <CheckCircleOutlined />
+          <span>所有配置项通过验证后将自动保存</span>
+          <Popconfirm
+            title="恢复默认配置"
+            description="确定要将所有配置恢复为默认值吗？"
+            onConfirm={resetAllToDefault}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button type="link" icon={<UndoOutlined />}>
+              恢复全部默认
+            </Button>
+          </Popconfirm>
+        </AutoSaveHint>
+
+        <Form
+          form={form}
+          layout="vertical"
+          onValuesChange={handleValuesChange}
+          initialValues={DEFAULT_VALUES}
         >
-          <Button type="link" icon={<UndoOutlined />}>
-            恢复全部默认
-          </Button>
-        </Popconfirm>
-      </AutoSaveHint>
+          {/* 卡片1: 集成配置 - 通信模式、属性名、API配置 */}
+          <div id="section-integration-config">
+            <IntegrationConfigSection
+              communicationMode={communicationMode}
+              attributeName={attributeName}
+              getFunctionName={getFunctionName}
+              updateFunctionName={updateFunctionName}
+              previewFunctionName={previewFunctionName}
+              apiConfig={apiConfig}
+              onResetDefault={() => resetSectionToDefault(SECTION_KEYS.INTEGRATION_CONFIG)}
+            />
+          </div>
 
-      <Form
-        form={form}
-        layout="vertical"
-        onValuesChange={handleValuesChange}
-        initialValues={DEFAULT_VALUES}
-      >
-        {/* 卡片1: 集成配置 - 通信模式、属性名、API配置 */}
-        <IntegrationConfigSection
-          communicationMode={communicationMode}
-          attributeName={attributeName}
-          getFunctionName={getFunctionName}
-          updateFunctionName={updateFunctionName}
-          previewFunctionName={previewFunctionName}
-          apiConfig={apiConfig}
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.INTEGRATION_CONFIG)}
-        />
+          {/* 卡片2: 元素检测与高亮 - 搜索配置、高亮颜色、快捷键高亮 */}
+          <div id="section-element-detection">
+            <ElementDetectionSection
+              attributeName={attributeName}
+              onResetDefault={() => resetSectionToDefault(SECTION_KEYS.ELEMENT_DETECTION)}
+            />
+          </div>
 
-        {/* 卡片2: 元素检测与高亮 - 搜索配置、高亮颜色、快捷键高亮 */}
-        <ElementDetectionSection
-          attributeName={attributeName}
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.ELEMENT_DETECTION)}
-        />
+          {/* 卡片3: 编辑器配置 - 抽屉宽度、字符串解析、AST提示、主题 */}
+          <div id="section-editor-config">
+            <EditorConfigSection
+              onResetDefault={() => resetSectionToDefault(SECTION_KEYS.EDITOR_CONFIG)}
+            />
+          </div>
 
-        {/* 卡片3: 编辑器配置 - 抽屉宽度、字符串解析、AST提示、主题 */}
-        <EditorConfigSection
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.EDITOR_CONFIG)}
-        />
+          {/* 卡片4: 功能开关 - 工具栏按钮显示/隐藏 */}
+          <div id="section-feature-toggle">
+            <FeatureToggleSection
+              onResetDefault={() => resetSectionToDefault(SECTION_KEYS.FEATURE_TOGGLE)}
+            />
+          </div>
 
-        {/* 卡片4: 功能开关 - 工具栏按钮显示/隐藏 */}
-        <FeatureToggleSection
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.FEATURE_TOGGLE)}
-        />
+          {/* 卡片5: 实时预览配置 - 自动更新、防抖延迟、预览宽度 */}
+          <div id="section-preview-config">
+            <PreviewConfigSection
+              onResetDefault={() => resetSectionToDefault(SECTION_KEYS.PREVIEW_CONFIG)}
+            />
+          </div>
 
-        {/* 卡片5: 实时预览配置 - 自动更新、防抖延迟、预览宽度 */}
-        <PreviewConfigSection
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.PREVIEW_CONFIG)}
-        />
+          {/* 卡片6: 数据管理配置 - 草稿、收藏、历史记录、导出 */}
+          <div id="section-data-management">
+            <DataManagementSection
+              onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DATA_MANAGEMENT)}
+            />
+          </div>
 
-        {/* 卡片6: 数据管理配置 - 草稿、收藏、历史记录、导出 */}
-        <DataManagementSection
-          onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DATA_MANAGEMENT)}
-        />
+          {/* 卡片7: 开发调试 - 调试日志等开发者选项 */}
+          <div id="section-debug">
+            <DebugSection onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DEBUG)} />
+          </div>
+        </Form>
 
-        {/* 卡片7: 开发调试 - 调试日志等开发者选项 */}
-        <DebugSection onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DEBUG)} />
-      </Form>
-
-      <UsageGuideSection attributeName={attributeName} />
-    </Container>
+        {/* 卡片8: 使用指南 */}
+        <div id="section-usage-guide">
+          <UsageGuideSection attributeName={attributeName} />
+        </div>
+      </Container>
+    </PageRoot>
   )
 }

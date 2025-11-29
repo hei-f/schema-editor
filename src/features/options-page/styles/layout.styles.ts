@@ -1,15 +1,29 @@
 import { InfoCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { Alert, Card, Collapse, Flex, Form, Input, InputNumber, Typography } from 'antd'
 import styled from 'styled-components'
+import { MENU_BREAKPOINT, MENU_COLLAPSED_WIDTH, MENU_EXPANDED_WIDTH } from '../config/menu-config'
 
 const { Text, Title, Paragraph } = Typography
 
-export const Container = styled.div`
+/** 页面根容器 */
+export const PageRoot = styled.div`
+  min-height: 100vh;
+  background: #f5f7fa;
+`
+
+/** 内容容器 - 支持菜单折叠时自适应 */
+export const Container = styled.div<{ $menuCollapsed?: boolean }>`
   max-width: 1000px;
   margin: 0 auto;
   padding: 24px 20px 40px;
   background: #fff;
   min-height: 100vh;
+  margin-left: ${(props) => (props.$menuCollapsed ? MENU_COLLAPSED_WIDTH : MENU_EXPANDED_WIDTH)}px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: ${MENU_BREAKPOINT}px) {
+    margin-left: ${MENU_COLLAPSED_WIDTH}px;
+  }
 `
 
 export const StyledCard = styled(Card)`
