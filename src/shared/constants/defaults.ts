@@ -1,4 +1,5 @@
 import type { StorageData } from '@/shared/types'
+import { DEFAULT_EDITOR_THEME } from './editor-themes'
 
 /**
  * 默认配置值
@@ -56,7 +57,7 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
   exportConfig: {
     customFileName: false,
   },
-  editorTheme: 'schemaEditorDark',
+  editorTheme: DEFAULT_EDITOR_THEME,
   apiConfig: {
     communicationMode: 'postMessage',
     requestTimeout: 5,
