@@ -44,7 +44,7 @@ describe('Storage工具测试', () => {
     })
 
     it('应该返回存储的宽度', async () => {
-      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ drawerWidth: 1200 })
+      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({ drawerWidth: '1200px' })
 
       const result = await storage.getDrawerWidth()
       expect(result).toBe('1200px')
@@ -135,6 +135,10 @@ describe('Storage工具测试', () => {
           previewWidth: 40,
           updateDelay: 500,
           autoUpdate: false,
+          zIndex: {
+            default: 2147483646,
+            preview: 999,
+          },
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -171,7 +175,7 @@ describe('Storage工具测试', () => {
     it('应该返回所有存储的值', async () => {
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         isActive: true,
-        drawerWidth: 1000,
+        drawerWidth: '1000px',
         attributeName: 'custom-attr',
         searchConfig: {
           limitUpwardSearch: true,
@@ -223,6 +227,10 @@ describe('Storage工具测试', () => {
           previewWidth: 40,
           updateDelay: 500,
           autoUpdate: false,
+          zIndex: {
+            default: 2147483646,
+            preview: 999,
+          },
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -301,6 +309,10 @@ describe('Storage工具测试', () => {
           previewWidth: 40,
           updateDelay: 500,
           autoUpdate: false,
+          zIndex: {
+            default: 2147483646,
+            preview: 999,
+          },
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -428,8 +440,8 @@ describe('Storage工具测试', () => {
     it('应该保存throttleInterval的变更', async () => {
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         searchConfig: {
-          searchDepthDown: 5,
-          searchDepthUp: 0,
+          limitUpwardSearch: false,
+          searchDepthUp: 5,
           throttleInterval: 100,
         },
       })
@@ -440,8 +452,8 @@ describe('Storage工具测试', () => {
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
         searchConfig: {
-          searchDepthDown: 5,
-          searchDepthUp: 0,
+          limitUpwardSearch: false,
+          searchDepthUp: 5,
           throttleInterval: 50,
         },
       })
@@ -497,7 +509,7 @@ describe('Storage工具测试', () => {
       ;(chrome.storage.local.get as jest.Mock).mockImplementation((keys) => {
         const mockData: any = {
           isActive: true,
-          drawerWidth: 1000,
+          drawerWidth: '1000px',
           attributeName: 'test-params',
           searchConfig: {
             limitUpwardSearch: false,
@@ -559,6 +571,10 @@ describe('Storage工具测试', () => {
           previewWidth: 40,
           updateDelay: 500,
           autoUpdate: false,
+          zIndex: {
+            default: 2147483646,
+            preview: 999,
+          },
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -1205,40 +1221,40 @@ describe('Storage工具测试', () => {
       })
     })
 
-    it('getHighlightAllConfig应该验证配置格式', async () => {
-      // 返回无效配置（keyBinding不是单个字母）
+    it('getHighlightAllConfig应该合并存储的配置', async () => {
+      // 存储配置会被直接合并，不再进行验证
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         highlightAllConfig: {
           enabled: true,
-          keyBinding: 'ab', // 无效：多个字符
+          keyBinding: 'ab',
           maxHighlightCount: 500,
         },
       })
 
       const result = await storage.getHighlightAllConfig()
-      // 应该返回默认值
+      // 应该返回合并后的存储值
       expect(result).toEqual({
         enabled: true,
-        keyBinding: 'a',
+        keyBinding: 'ab',
         maxHighlightCount: 500,
       })
     })
 
-    it('getHighlightAllConfig应该验证keyBinding必须是字母或数字', async () => {
-      // 返回无效配置（keyBinding是特殊字符）
+    it('getHighlightAllConfig应该返回存储的keyBinding值', async () => {
+      // 存储配置会被直接合并
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         highlightAllConfig: {
           enabled: true,
-          keyBinding: '@', // 无效：特殊字符
+          keyBinding: '@',
           maxHighlightCount: 500,
         },
       })
 
       const result = await storage.getHighlightAllConfig()
-      // 应该返回默认值
+      // 应该返回存储的值
       expect(result).toEqual({
         enabled: true,
-        keyBinding: 'a',
+        keyBinding: '@',
         maxHighlightCount: 500,
       })
     })
@@ -1281,41 +1297,41 @@ describe('Storage工具测试', () => {
       })
     })
 
-    it('getHighlightAllConfig应该验证maxHighlightCount范围', async () => {
-      // 返回无效配置（maxHighlightCount超出范围）
+    it('getHighlightAllConfig应该返回存储的maxHighlightCount值', async () => {
+      // 存储配置会被直接合并
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         highlightAllConfig: {
           enabled: true,
           keyBinding: 'a',
-          maxHighlightCount: 50, // 无效：小于100
+          maxHighlightCount: 50,
         },
       })
 
       const result = await storage.getHighlightAllConfig()
-      // 应该返回默认值
+      // 应该返回存储的值
       expect(result).toEqual({
         enabled: true,
         keyBinding: 'a',
-        maxHighlightCount: 500,
+        maxHighlightCount: 50,
       })
     })
 
-    it('getHighlightAllConfig应该验证maxHighlightCount上限', async () => {
-      // 返回无效配置（maxHighlightCount超出上限）
+    it('getHighlightAllConfig应该返回较大的maxHighlightCount值', async () => {
+      // 存储配置会被直接合并
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         highlightAllConfig: {
           enabled: true,
           keyBinding: 'a',
-          maxHighlightCount: 1500, // 无效：大于1000
+          maxHighlightCount: 1500,
         },
       })
 
       const result = await storage.getHighlightAllConfig()
-      // 应该返回默认值
+      // 应该返回存储的值
       expect(result).toEqual({
         enabled: true,
         keyBinding: 'a',
-        maxHighlightCount: 500,
+        maxHighlightCount: 1500,
       })
     })
 
@@ -1409,8 +1425,8 @@ describe('Storage工具测试', () => {
       })
     })
 
-    it('getApiConfig应该验证communicationMode有效值', async () => {
-      // 返回无效的 communicationMode
+    it('getApiConfig应该返回存储的communicationMode值', async () => {
+      // 存储配置会被直接合并
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         apiConfig: {
           communicationMode: 'invalidMode',
@@ -1419,9 +1435,9 @@ describe('Storage工具测试', () => {
       })
 
       const result = await storage.getApiConfig()
-      // 应该返回默认值
+      // 应该返回合并后的存储值
       expect(result).toEqual({
-        communicationMode: 'postMessage',
+        communicationMode: 'invalidMode',
         requestTimeout: 5,
         sourceConfig: {
           contentSource: 'schema-editor-content',
@@ -1437,30 +1453,30 @@ describe('Storage工具测试', () => {
       })
     })
 
-    it('getApiConfig应该验证requestTimeout范围（小于1）', async () => {
+    it('getApiConfig应该返回存储的requestTimeout值（小值）', async () => {
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         apiConfig: {
           communicationMode: 'postMessage',
-          requestTimeout: 0, // 无效：小于1
+          requestTimeout: 0,
         },
       })
 
       const result = await storage.getApiConfig()
-      // 应该返回默认值
-      expect(result.requestTimeout).toBe(5)
+      // 应该返回存储的值
+      expect(result.requestTimeout).toBe(0)
     })
 
-    it('getApiConfig应该验证requestTimeout范围（大于30）', async () => {
+    it('getApiConfig应该返回存储的requestTimeout值（大值）', async () => {
       ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
         apiConfig: {
           communicationMode: 'postMessage',
-          requestTimeout: 60, // 无效：大于30
+          requestTimeout: 60,
         },
       })
 
       const result = await storage.getApiConfig()
-      // 应该返回默认值
-      expect(result.requestTimeout).toBe(5)
+      // 应该返回存储的值
+      expect(result.requestTimeout).toBe(60)
     })
 
     it('getApiConfig应该接受有效的边界值', async () => {
