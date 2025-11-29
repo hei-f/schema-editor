@@ -53,15 +53,15 @@ describe('Storage工具测试', () => {
 
   describe('setDrawerWidth', () => {
     it('应该保存抽屉宽度', async () => {
-      await storage.setDrawerWidth(1000)
+      await storage.setDrawerWidth('1000px')
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({ drawerWidth: 1000 })
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({ drawerWidth: '1000px' })
     })
 
     it('应该处理最小宽度', async () => {
-      await storage.setDrawerWidth(400)
+      await storage.setDrawerWidth('400px')
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({ drawerWidth: 400 })
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({ drawerWidth: '400px' })
     })
   })
 
@@ -972,21 +972,20 @@ describe('Storage工具测试', () => {
       })
     })
 
-    it('setDrawerWidth应该支持数字类型', async () => {
-      await storage.setDrawerWidth(600)
+    it('setDrawerWidth应该保存带px后缀的宽度', async () => {
+      await storage.setDrawerWidth('600px')
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
-        drawerWidth: 600,
+        drawerWidth: '600px',
       })
     })
 
-    it('getDrawerWidth应该支持transformer转换数字为带px的字符串', async () => {
-      ;(chrome.storage.local.get as jest.Mock).mockResolvedValue({
-        drawerWidth: 500,
-      })
+    it('setDrawerWidth应该保存百分比宽度', async () => {
+      await storage.setDrawerWidth('50%')
 
-      const width = await storage.getDrawerWidth()
-      expect(width).toBe('500px')
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        drawerWidth: '50%',
+      })
     })
 
     it('setSearchConfig应该合并现有配置', async () => {
@@ -1770,7 +1769,15 @@ describe('Storage工具测试', () => {
     })
 
     it('setPreviewConfig 应该保存预览配置', async () => {
-      const config = { previewWidth: 50, updateDelay: 500, autoUpdate: true }
+      const config = {
+        previewWidth: 50,
+        updateDelay: 500,
+        autoUpdate: true,
+        zIndex: {
+          default: 2147483646,
+          preview: 999,
+        },
+      }
       await storage.setPreviewConfig(config)
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith({ previewConfig: config })

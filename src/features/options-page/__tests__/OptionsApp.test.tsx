@@ -74,6 +74,10 @@ describe('OptionsApp组件测试', () => {
       previewWidth: 40,
       rememberState: false,
       updateDelay: 500,
+      zIndex: {
+        default: 2147483646,
+        preview: 999,
+      },
     },
     maxHistoryCount: 50,
   }
