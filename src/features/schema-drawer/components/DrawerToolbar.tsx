@@ -14,6 +14,7 @@ import {
   StyledCopyIcon,
   EditorToolbar as StyledEditorToolbar,
 } from '../styles/toolbar.styles'
+import { DIFF_DISPLAY_MODE_OPTIONS, type DiffDisplayMode } from './SchemaDiffView'
 
 interface DrawerToolbarProps {
   attributes: ElementAttributes
@@ -25,6 +26,12 @@ interface DrawerToolbarProps {
   isRecording?: boolean
   /** 是否显示 diff 按钮 */
   showDiffButton?: boolean
+  /** 是否处于 Diff 模式 */
+  isDiffMode?: boolean
+  /** 当前对比显示模式 */
+  diffDisplayMode?: DiffDisplayMode
+  /** 对比显示模式变化回调 */
+  onDiffDisplayModeChange?: (mode: DiffDisplayMode) => void
   onFormat: () => void
   onEscape: () => void
   onUnescape: () => void
@@ -34,6 +41,8 @@ interface DrawerToolbarProps {
   onRenderPreview?: () => void
   /** 进入 diff 模式 */
   onEnterDiffMode?: () => void
+  /** 退出 diff 模式 */
+  onExitDiffMode?: () => void
 }
 
 /**
@@ -47,6 +56,9 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
   previewEnabled = false,
   isRecording = false,
   showDiffButton = false,
+  isDiffMode = false,
+  diffDisplayMode = 'raw',
+  onDiffDisplayModeChange,
   onFormat,
   onEscape,
   onUnescape,
@@ -55,6 +67,7 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
   onSegmentChange,
   onRenderPreview,
   onEnterDiffMode,
+  onExitDiffMode,
 }) => {
   // 复制状态管理: { [index: number]: 'idle' | 'copied' }
   const [copyStatus, setCopyStatus] = useState<Record<number, 'idle' | 'copied'>>({})
@@ -78,6 +91,30 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
     } catch (err) {
       console.error('复制失败:', err)
     }
+  }
+
+  // Diff 模式下的简化工具栏：只有对比模式 Segmented + 对比按钮（右对齐）
+  if (isDiffMode) {
+    return (
+      <StyledEditorToolbar>
+        <div style={{ flex: 1 }} />
+        <ButtonGroup>
+          <Tooltip title="选择数据展示格式进行对比">
+            <Segmented
+              size="small"
+              value={diffDisplayMode}
+              onChange={(value) => onDiffDisplayModeChange?.(value as DiffDisplayMode)}
+              options={DIFF_DISPLAY_MODE_OPTIONS}
+            />
+          </Tooltip>
+          <Tooltip title="关闭对比模式">
+            <Button size="small" type="primary" icon={<DiffOutlined />} onClick={onExitDiffMode}>
+              对比
+            </Button>
+          </Tooltip>
+        </ButtonGroup>
+      </StyledEditorToolbar>
+    )
   }
 
   return (

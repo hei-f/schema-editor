@@ -1,6 +1,6 @@
-import type { SchemaSnapshot } from '@/shared/types'
-import { RollbackOutlined } from '@ant-design/icons'
-import { Button, Select, Segmented, Tooltip } from 'antd'
+import { DEFAULT_EDITOR_THEME } from '@/shared/constants/editor-themes'
+import type { EditorTheme, SchemaSnapshot } from '@/shared/types'
+import { Select } from 'antd'
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import { diffChars } from 'diff'
 import {
@@ -22,13 +22,31 @@ import { useDiffSync } from '../hooks/useDiffSync'
 import type { DiffRow } from '../utils/diff-algorithm'
 
 /** 对比模式类型 */
-type DiffDisplayMode = 'raw' | 'deserialize' | 'ast'
+export type DiffDisplayMode = 'raw' | 'deserialize' | 'unescape' | 'ast'
+
+/** 对比显示模式常量 */
+const DIFF_DISPLAY_MODES = {
+  RAW: 'raw',
+  DESERIALIZE: 'deserialize',
+  UNESCAPE: 'unescape',
+  AST: 'ast',
+} as const
+
+/** 对比显示模式选项（导出供 DrawerToolbar 使用） */
+export const DIFF_DISPLAY_MODE_OPTIONS: Array<{ label: string; value: DiffDisplayMode }> = [
+  { label: '原始', value: DIFF_DISPLAY_MODES.RAW },
+  { label: '反序列化', value: DIFF_DISPLAY_MODES.DESERIALIZE },
+  { label: '去转义', value: DIFF_DISPLAY_MODES.UNESCAPE },
+  { label: 'AST', value: DIFF_DISPLAY_MODES.AST },
+]
 
 interface SchemaDiffViewProps {
   /** 快照列表 */
   snapshots: SchemaSnapshot[]
-  /** 返回编辑模式回调 */
-  onBackToEditor: () => void
+  /** 当前对比显示模式 */
+  displayMode: DiffDisplayMode
+  /** 编辑器主题 */
+  theme?: EditorTheme
 }
 
 /**
@@ -233,7 +251,7 @@ function convertToRightDiffLines(rows: DiffRow[]): DiffLineInfo[] {
  * Schema Diff 视图组件（可编辑版）
  */
 export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
-  const { snapshots, onBackToEditor } = props
+  const { snapshots, displayMode, theme = DEFAULT_EDITOR_THEME } = props
 
   // 版本选择状态
   const [leftVersionId, setLeftVersionId] = useState<number | null>(
@@ -242,9 +260,6 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
   const [rightVersionId, setRightVersionId] = useState<number | null>(
     snapshots.length > 1 ? snapshots[snapshots.length - 1].id : null
   )
-
-  // 显示模式
-  const [displayMode, setDisplayMode] = useState<DiffDisplayMode>('raw')
 
   // 编辑器引用
   const leftEditorRef = useRef<DiffEditorHandle>(null)
@@ -363,68 +378,40 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
     leftEditorRef.current?.setScrollLeft(scrollLeft)
   }, [])
 
-  // 模式切换处理
-  const handleModeChange = (value: string | number) => {
-    setDisplayMode(value as DiffDisplayMode)
-  }
-
   return (
     <DiffModeContainer>
-      {/* Diff工具栏 */}
-      <DiffToolbar>
-        <Button icon={<RollbackOutlined />} onClick={onBackToEditor} size="small">
-          返回编辑模式
-        </Button>
-
-        {/* 非简单对比模式才显示版本选择器 */}
-        {!isSimpleDiffMode && (
-          <>
-            <VersionSelectorGroup>
-              <VersionSelectorLabel>左侧版本:</VersionSelectorLabel>
-              <Select
-                value={leftVersionId}
-                onChange={setLeftVersionId}
-                options={versionOptions}
-                style={{ width: 180 }}
-                size="small"
-                popupMatchSelectWidth={false}
-                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-              />
-            </VersionSelectorGroup>
-
-            <VersionSelectorGroup>
-              <VersionSelectorLabel>右侧版本:</VersionSelectorLabel>
-              <Select
-                value={rightVersionId}
-                onChange={setRightVersionId}
-                options={versionOptions}
-                style={{ width: 180 }}
-                size="small"
-                popupMatchSelectWidth={false}
-                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-              />
-            </VersionSelectorGroup>
-          </>
-        )}
-
-        <VersionSelectorGroup>
-          <VersionSelectorLabel>对比模式:</VersionSelectorLabel>
-          <Tooltip title="选择数据展示格式进行对比">
-            <Segmented
+      {/* 录制模式下显示版本选择器 */}
+      {!isSimpleDiffMode && (
+        <DiffToolbar>
+          <VersionSelectorGroup>
+            <VersionSelectorLabel>左侧版本:</VersionSelectorLabel>
+            <Select
+              value={leftVersionId}
+              onChange={setLeftVersionId}
+              options={versionOptions}
+              style={{ width: 180 }}
               size="small"
-              value={displayMode}
-              onChange={handleModeChange}
-              options={[
-                { label: '原始', value: 'raw' },
-                { label: '反序列化', value: 'deserialize' },
-                { label: 'AST', value: 'ast' },
-              ]}
+              popupMatchSelectWidth={false}
+              getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
             />
-          </Tooltip>
-        </VersionSelectorGroup>
+          </VersionSelectorGroup>
 
-        {isComputing && <span style={{ color: '#8b949e', fontSize: 12 }}>计算中...</span>}
-      </DiffToolbar>
+          <VersionSelectorGroup>
+            <VersionSelectorLabel>右侧版本:</VersionSelectorLabel>
+            <Select
+              value={rightVersionId}
+              onChange={setRightVersionId}
+              options={versionOptions}
+              style={{ width: 180 }}
+              size="small"
+              popupMatchSelectWidth={false}
+              getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+            />
+          </VersionSelectorGroup>
+
+          {isComputing && <span style={{ color: '#8b949e', fontSize: 12 }}>计算中...</span>}
+        </DiffToolbar>
+      )}
 
       {/* 可编辑 Diff 内容区域 */}
       <EditableDiffContainer>
@@ -444,7 +431,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
                 defaultValue={leftTransformed}
                 onChange={handleLeftChange}
                 onHorizontalScroll={handleLeftHorizontalScroll}
-                isDark={true}
+                theme={theme}
                 diffLines={leftDiffLines}
               />
             </DiffEditorPanel>
@@ -456,7 +443,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
                 defaultValue={rightTransformed}
                 onChange={handleRightChange}
                 onHorizontalScroll={handleRightHorizontalScroll}
-                isDark={true}
+                theme={theme}
                 diffLines={rightDiffLines}
               />
             </DiffEditorPanel>
