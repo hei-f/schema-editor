@@ -441,9 +441,11 @@ describe('DrawerToolbar组件测试', () => {
   })
 
   describe('参数复制功能', () => {
+    let writeTextMock: jest.Mock
+
     beforeEach(() => {
       // Mock clipboard API
-      const writeTextMock = jest.fn().mockResolvedValue(undefined)
+      writeTextMock = jest.fn().mockResolvedValue(undefined)
       Object.defineProperty(navigator, 'clipboard', {
         value: {
           writeText: writeTextMock,
@@ -492,6 +494,160 @@ describe('DrawerToolbar组件测试', () => {
         // 每个param应该在一个包含复制功能的结构中
         expect(param.parentElement).toBeInTheDocument()
       })
+    })
+
+    it('复制按钮应该能够被点击', async () => {
+      const user = userEvent.setup()
+      const { container } = render(
+        <DrawerToolbar
+          attributes={mockAttributes}
+          contentType={ContentType.Ast}
+          canParse={true}
+          toolbarButtons={defaultToolbarButtons}
+          {...mockHandlers}
+        />
+      )
+
+      // 验证复制按钮可以被点击
+      const copyIconWrappers = container.querySelectorAll('.copy-icon-wrapper')
+      expect(copyIconWrappers.length).toBe(3)
+
+      // 点击不应抛出错误
+      await expect(user.click(copyIconWrappers[0])).resolves.not.toThrow()
+    })
+  })
+
+  describe('Diff模式', () => {
+    const diffModeHandlers = {
+      ...mockHandlers,
+      onExitDiffMode: jest.fn(),
+      onDiffDisplayModeChange: jest.fn(),
+    }
+
+    it('在Diff模式下应该显示简化工具栏', () => {
+      render(
+        <DrawerToolbar
+          attributes={mockAttributes}
+          contentType={ContentType.Ast}
+          canParse={true}
+          toolbarButtons={defaultToolbarButtons}
+          isDiffMode={true}
+          diffDisplayMode="raw"
+          {...diffModeHandlers}
+        />
+      )
+
+      // Diff模式下应该显示退出按钮
+      expect(screen.getByText('对比')).toBeInTheDocument()
+    })
+
+    it('有待确认修复时应该显示应用和取消按钮', () => {
+      const onApplyRepair = jest.fn()
+      const onCancelRepair = jest.fn()
+
+      render(
+        <DrawerToolbar
+          attributes={mockAttributes}
+          contentType={ContentType.Ast}
+          canParse={true}
+          toolbarButtons={defaultToolbarButtons}
+          isDiffMode={true}
+          diffDisplayMode="raw"
+          hasPendingRepair={true}
+          onApplyRepair={onApplyRepair}
+          onCancelRepair={onCancelRepair}
+          {...diffModeHandlers}
+        />
+      )
+
+      // 应该显示应用修复和取消按钮（Ant Design 会在两个中文字符间添加空格）
+      expect(screen.getByText('应用修复')).toBeInTheDocument()
+      expect(screen.getByText(/取\s*消/)).toBeInTheDocument()
+    })
+
+    it('点击应用修复按钮应该触发回调', async () => {
+      const user = userEvent.setup()
+      const onApplyRepair = jest.fn()
+      const onCancelRepair = jest.fn()
+
+      render(
+        <DrawerToolbar
+          attributes={mockAttributes}
+          contentType={ContentType.Ast}
+          canParse={true}
+          toolbarButtons={defaultToolbarButtons}
+          isDiffMode={true}
+          diffDisplayMode="raw"
+          hasPendingRepair={true}
+          onApplyRepair={onApplyRepair}
+          onCancelRepair={onCancelRepair}
+          {...diffModeHandlers}
+        />
+      )
+
+      await user.click(screen.getByText('应用修复'))
+      expect(onApplyRepair).toHaveBeenCalled()
+    })
+
+    it('点击取消按钮应该触发回调', async () => {
+      const user = userEvent.setup()
+      const onApplyRepair = jest.fn()
+      const onCancelRepair = jest.fn()
+
+      render(
+        <DrawerToolbar
+          attributes={mockAttributes}
+          contentType={ContentType.Ast}
+          canParse={true}
+          toolbarButtons={defaultToolbarButtons}
+          isDiffMode={true}
+          diffDisplayMode="raw"
+          hasPendingRepair={true}
+          onApplyRepair={onApplyRepair}
+          onCancelRepair={onCancelRepair}
+          {...diffModeHandlers}
+        />
+      )
+
+      await user.click(screen.getByText(/取\s*消/))
+      expect(onCancelRepair).toHaveBeenCalled()
+    })
+
+    it('没有待确认修复时不应该显示应用和取消按钮', () => {
+      render(
+        <DrawerToolbar
+          attributes={mockAttributes}
+          contentType={ContentType.Ast}
+          canParse={true}
+          toolbarButtons={defaultToolbarButtons}
+          isDiffMode={true}
+          diffDisplayMode="raw"
+          hasPendingRepair={false}
+          {...diffModeHandlers}
+        />
+      )
+
+      expect(screen.queryByText('应用修复')).not.toBeInTheDocument()
+      expect(screen.queryByText(/取\s*消/)).not.toBeInTheDocument()
+    })
+
+    it('点击退出对比按钮应该触发回调', async () => {
+      const user = userEvent.setup()
+
+      render(
+        <DrawerToolbar
+          attributes={mockAttributes}
+          contentType={ContentType.Ast}
+          canParse={true}
+          toolbarButtons={defaultToolbarButtons}
+          isDiffMode={true}
+          diffDisplayMode="raw"
+          {...diffModeHandlers}
+        />
+      )
+
+      await user.click(screen.getByText('对比'))
+      expect(diffModeHandlers.onExitDiffMode).toHaveBeenCalled()
     })
   })
 })
