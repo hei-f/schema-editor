@@ -1,5 +1,5 @@
 import { FORM_PATHS } from '@/shared/constants/form-paths'
-import { Form, Switch } from 'antd'
+import { Divider, Form, Switch } from 'antd'
 import React from 'react'
 import { SectionCard } from '../components/SectionCard'
 import { FixedWidthInputNumber } from '../styles/layout.styles'
@@ -46,6 +46,26 @@ export const PreviewConfigSection: React.FC<PreviewConfigSectionProps> = (props)
         extra="预览区域占抽屉的百分比（20-80%）"
       >
         <FixedWidthInputNumber min={20} max={80} $width={120} suffix="%" />
+      </Form.Item>
+
+      <Divider orientation="left" plain style={{ margin: '8px 0' }}>
+        层级配置
+      </Divider>
+
+      <Form.Item
+        label="默认 z-index"
+        name={FORM_PATHS.previewConfig.zIndex.default}
+        extra="非预览模式下的层级，确保插件不被页面元素遮挡"
+      >
+        <FixedWidthInputNumber min={1000} max={2147483647} $width={150} />
+      </Form.Item>
+
+      <Form.Item
+        label="预览模式 z-index"
+        name={FORM_PATHS.previewConfig.zIndex.preview}
+        extra="预览模式下的层级，需低于 antd 弹窗默认值 1000 以显示弹窗"
+      >
+        <FixedWidthInputNumber min={1} max={2147483647} $width={150} />
       </Form.Item>
     </SectionCard>
   )

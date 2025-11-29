@@ -93,6 +93,16 @@ export interface ToolbarButtonsConfig {
 }
 
 /**
+ * z-index 配置接口
+ */
+export interface ZIndexConfig {
+  /** 默认状态 z-index */
+  default: number
+  /** 预览模式 z-index */
+  preview: number
+}
+
+/**
  * 预览配置接口
  */
 export interface PreviewConfig {
@@ -102,6 +112,8 @@ export interface PreviewConfig {
   updateDelay: number
   /** 是否自动更新预览 */
   autoUpdate: boolean
+  /** z-index 配置 */
+  zIndex: ZIndexConfig
 }
 
 /**
