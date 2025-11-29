@@ -1,3 +1,4 @@
+import { getCommunicationMode } from '@/shared/utils/communication-mode'
 import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
 
@@ -7,7 +8,7 @@ import { logger } from '@/shared/utils/logger'
  */
 export const shouldInjectPageScript = async (): Promise<boolean> => {
   const apiConfig = await storage.getApiConfig()
-  return apiConfig.communicationMode === 'windowFunction'
+  return getCommunicationMode(apiConfig).isWindowFunctionMode
 }
 
 /**
