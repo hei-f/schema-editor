@@ -173,7 +173,7 @@ const initialSchemaStore: Record<string, any> = {
   'json-repair-incomplete': '{"name": "Alice", "items": [1, 2, 3',
   'json-repair-single-quotes': "{'name': 'Alice', 'age': 25}",
   'json-repair-sse-data':
-    '[{"componentPath":"WhiteBox","componentProps":{"data":"工具接口: PolicyToolsFacade.queryAgentMarketingStrategy\\n 策略生成失败","duration":"67073835","iconType":"icon-search3","resultStatus":"error","title":"查询智能策略工具调用失败"}}]\\n',
+    '[{"componentPath":"WhiteBox","componentProps":{"data":"工具接口: PolicyToolsFacade.queryAgentMarketingStrategy\\n 策略生成失败","duration":"67073835","iconType":"icon-search3","resultStatus":"error","title":"查询智能策略工具调用失败"}}]\n',
   'very-long-param-name-1,another-long-parameter-value-2,user.profile.settings.theme,data[0].items[*].nested.value,https://api.example.com/v1/users':
     {
       message: '这是一个用于测试 Params 滚动效果的示例数据',

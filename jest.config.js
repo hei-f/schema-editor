@@ -3,10 +3,7 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src', '<rootDir>/test'],
-  testMatch: [
-    '**/__tests__/**/*.{ts,tsx}',
-    '**/*.{spec,test}.{ts,tsx}'
-  ],
+  testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/*.{spec,test}.{ts,tsx}'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
@@ -23,7 +20,9 @@ export default {
     '^@ant-design/agentic-ui$': '<rootDir>/test/__mocks__/mdEditorMock.ts',
     '^@lezer/highlight$': '<rootDir>/test/__mocks__/lezerMock.ts',
     '^@codemirror/language$': '<rootDir>/test/__mocks__/codemirrorLanguageMock.ts',
-    '^@codemirror/lang-json$': '<rootDir>/test/__mocks__/codemirrorLangJsonMock.ts'
+    '^@codemirror/lang-json$': '<rootDir>/test/__mocks__/codemirrorLangJsonMock.ts',
+    '^parse-json$': '<rootDir>/test/__mocks__/parse-json.ts',
+    '^jsonrepair$': '<rootDir>/test/__mocks__/jsonrepair.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   collectCoverageFrom: [
@@ -35,20 +34,22 @@ export default {
     '!src/core/content/index.tsx',
     '!src/core/content/core/monitor.ts',
     '!src/features/options-page/index.tsx',
-    '!src/shared/utils/browser/monaco-loader.ts'
+    '!src/shared/utils/browser/monaco-loader.ts',
   ],
   coverageThreshold: {
     global: {
       branches: 39,
       functions: 50,
       lines: 60,
-      statements: 60
-    }
+      statements: 60,
+    },
   },
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.test.json'
-    }]
-  }
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.test.json',
+      },
+    ],
+  },
 }
-

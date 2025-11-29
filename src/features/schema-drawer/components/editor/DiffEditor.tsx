@@ -145,9 +145,23 @@ const diffDecorationsField = StateField.define<DecorationSet>({
       if (effect.is(setDiffDecorations)) {
         const { lines, placeholderStripe1, placeholderStripe2, placeholderBorder } = effect.value
         const builder: Range<Decoration>[] = []
+        const docLines = tr.state.doc.lines
+        const lastLine = tr.state.doc.line(docLines)
+        const docEnd = lastLine.to
+
+        // 统计超出文档行数的尾部占位行数量
+        let tailPlaceholderCount = 0
 
         for (const line of lines) {
-          if (line.editorLine < 0 || line.editorLine >= tr.state.doc.lines) {
+          if (line.editorLine < 0) {
+            continue
+          }
+
+          // 超出文档行数的占位行，累计到尾部
+          if (line.editorLine >= docLines) {
+            if (line.isPlaceholder) {
+              tailPlaceholderCount++
+            }
             continue
           }
 
@@ -192,6 +206,21 @@ const diffDecorationsField = StateField.define<DecorationSet>({
               }
             }
           }
+        }
+
+        // 在文档末尾追加尾部占位行
+        for (let i = 0; i < tailPlaceholderCount; i++) {
+          builder.push(
+            Decoration.widget({
+              widget: new PlaceholderWidget(
+                placeholderStripe1,
+                placeholderStripe2,
+                placeholderBorder
+              ),
+              block: true,
+              side: 1, // 在位置之后
+            }).range(docEnd)
+          )
         }
 
         // 按位置排序
