@@ -13,11 +13,11 @@ import { storage } from '@/shared/utils/browser/storage'
 import { logger } from '@/shared/utils/logger'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { parseMarkdownString } from '@/shared/utils/schema/transformers'
-import { useFullScreenMode } from '../hooks/useFullScreenMode'
-import { useResizer } from '../hooks/useResizer'
-import { useSchemaRecording } from '../hooks/useSchemaRecording'
-import { RecordingPanel } from './RecordingPanel'
-import { SchemaDiffView, type DiffDisplayMode } from './SchemaDiffView'
+import { useFullScreenMode } from '../hooks/ui/useFullScreenMode'
+import { useResizer } from '../hooks/ui/useResizer'
+import { useSchemaRecording } from '../hooks/schema/useSchemaRecording'
+import { RecordingPanel } from './recording/RecordingPanel'
+import { SchemaDiffView, type DiffDisplayMode } from './editor/SchemaDiffView'
 import {
   BgColorsOutlined,
   DeleteOutlined,
@@ -29,18 +29,18 @@ import {
   StarOutlined,
   UploadOutlined,
 } from '@ant-design/icons'
-import { Button, Drawer, Dropdown, Space, Tooltip, Upload, message } from 'antd'
+import { App, Button, Drawer, Dropdown, Space, Tooltip, Upload } from 'antd'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ThemeProvider } from 'styled-components'
 import { getCommunicationMode } from '@/shared/utils/communication-mode'
 import { useDeferredEffect } from '@/shared/hooks/useDeferredEffect'
-import { useContentDetection } from '../hooks/useContentDetection'
-import { useDraftManagement } from '../hooks/useDraftManagement'
-import { useEditHistory } from '../hooks/useEditHistory'
-import { useFavoritesManagement } from '../hooks/useFavoritesManagement'
-import { useFileImportExport } from '../hooks/useFileImportExport'
-import { useLightNotifications } from '../hooks/useLightNotifications'
-import { useSchemaSave } from '../hooks/useSchemaSave'
+import { useContentDetection } from '../hooks/schema/useContentDetection'
+import { useDraftManagement } from '../hooks/storage/useDraftManagement'
+import { useEditHistory } from '../hooks/storage/useEditHistory'
+import { useFavoritesManagement } from '../hooks/storage/useFavoritesManagement'
+import { useFileImportExport } from '../hooks/storage/useFileImportExport'
+import { useLightNotifications } from '../hooks/ui/useLightNotifications'
+import { useSchemaSave } from '../hooks/schema/useSchemaSave'
 import type { EditorUpdateOptions } from '../types/editor'
 import type { ExportMetadata } from '../types/export'
 import { schemaTransformer } from '../services/schema-transformer'
@@ -61,14 +61,15 @@ import {
   PreviewModeContainer,
   PreviewPlaceholder,
   PreviewResizer,
-} from '../styles/drawer.styles'
-import { EditorContainer } from '../styles/editor.styles'
-import { getEditorThemeVars } from '../styles/editor-theme-vars'
-import { LightSuccessNotification } from '../styles/notifications.styles'
-import type { CodeMirrorEditorHandle } from './CodeMirrorEditor'
-import { CodeMirrorEditor } from './CodeMirrorEditor'
-import { DrawerToolbar } from './DrawerToolbar'
-import { HistoryDropdown } from './HistoryDropdown'
+} from '../styles/layout/drawer.styles'
+import { EditorContainer } from '../styles/editor/editor.styles'
+import { getEditorThemeVars } from '../styles/editor/editor-theme-vars'
+import { LightSuccessNotification } from '../styles/notifications/notifications.styles'
+import type { CodeMirrorEditorHandle } from './editor/CodeMirrorEditor'
+import { CodeMirrorEditor } from './editor/CodeMirrorEditor'
+import { DrawerToolbar } from './toolbar/DrawerToolbar'
+import { HistoryDropdown } from './toolbar/HistoryDropdown'
+import { getJsonError, repairJson } from '../utils/json-repair'
 
 interface SchemaDrawerProps {
   open: boolean
@@ -97,6 +98,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   config,
   hasPreviewFunction,
 }) => {
+  // 使用 App.useApp() 获取 message 实例，确保在 Shadow DOM 中正确显示
+  const { message } = App.useApp()
+
   // 从 config 解构配置
   const {
     width,
@@ -142,6 +146,10 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
 
   // 录制模式相关状态
   const [isInRecordingMode, setIsInRecordingMode] = useState(false)
+
+  // JSON 修复相关状态
+  const [repairOriginalValue, setRepairOriginalValue] = useState<string>('')
+  const [pendingRepairedValue, setPendingRepairedValue] = useState<string>('')
 
   const paramsKey = attributes.params.join(',')
   const isFirstLoadRef = useRef(true)
@@ -873,10 +881,133 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   }, [switchFullScreenMode])
 
   /**
+   * 获取需要检测/修复的内容
+   * 如果当前内容是有效的 JSON 字符串，则返回字符串内部的内容
+   */
+  const getContentToAnalyze = useCallback(
+    (value: string): { content: string; isInnerContent: boolean } => {
+      // 先尝试直接解析
+      try {
+        const parsed = JSON.parse(value)
+        // 如果是字符串类型，检查字符串内部的内容
+        if (typeof parsed === 'string') {
+          return { content: parsed, isInnerContent: true }
+        }
+        // 其他有效 JSON，返回原内容
+        return { content: value, isInnerContent: false }
+      } catch {
+        // 解析失败，返回原内容
+        return { content: value, isInnerContent: false }
+      }
+    },
+    []
+  )
+
+  /**
+   * 定位 JSON 错误
+   * 智能判断：支持检测字符串内部的 JSON 错误
+   * 如果是字符串内部的错误，自动去转义后跳转
+   * 点击按钮显示错误提示，点击提示可关闭
+   */
+  const handleLocateError = useCallback(() => {
+    const { content, isInnerContent } = getContentToAnalyze(editorValue)
+    const errorInfo = getJsonError(content)
+
+    if (errorInfo) {
+      // 使用完整消息，包含 codeFrame
+      const errorMessage = errorInfo.message || `第 ${errorInfo.line} 行, 第 ${errorInfo.column} 列`
+
+      if (isInnerContent) {
+        // 字符串内部的错误，自动去转义后跳转
+        const result = schemaTransformer.unescapeJson(editorValue)
+        if (result.success && result.data) {
+          updateEditorContent(result.data, { markModified: true })
+          // 延迟显示错误，等待编辑器内容更新
+          setTimeout(() => {
+            editorRef.current?.showErrorWidget(errorInfo.line, errorInfo.column, errorMessage)
+          }, 50)
+        } else {
+          // 去转义失败，只提示错误位置
+          message.warning(
+            `字符串内部的 JSON 有错误（第 ${errorInfo.line} 行, 第 ${errorInfo.column} 列）`
+          )
+        }
+      } else {
+        // 直接显示错误提示
+        editorRef.current?.showErrorWidget(errorInfo.line, errorInfo.column, errorMessage)
+      }
+    } else {
+      showLightNotification('JSON 格式正确，无语法错误')
+    }
+  }, [editorValue, getContentToAnalyze, updateEditorContent, message, showLightNotification])
+
+  /**
+   * 修复 JSON
+   * 智能判断：支持修复字符串内部的 JSON
+   * 不立即更新编辑器，进入 diff 模式让用户确认
+   */
+  const handleRepairJson = useCallback(() => {
+    const { content, isInnerContent } = getContentToAnalyze(editorValue)
+    const result = repairJson(content)
+
+    if (result.success && result.repaired) {
+      // 保存修复前的原始内容
+      setRepairOriginalValue(editorValue)
+
+      // 计算修复后的内容
+      const repairedContent = isInnerContent ? JSON.stringify(result.repaired) : result.repaired
+
+      // 保存待确认的修复内容（不立即应用）
+      setPendingRepairedValue(repairedContent)
+
+      // 进入 diff 模式让用户确认
+      switchFullScreenMode(FULL_SCREEN_MODE.DIFF)
+      showLightNotification(
+        isInnerContent ? '字符串内部的 JSON 已修复，请确认是否应用' : 'JSON 已修复，请确认是否应用'
+      )
+    } else {
+      // 检查是否已经是有效 JSON
+      try {
+        JSON.parse(content)
+        message.success('JSON 格式正确，无需修复')
+      } catch {
+        message.error(result.error || '无法修复此 JSON，请手动检查')
+      }
+    }
+  }, [editorValue, getContentToAnalyze, switchFullScreenMode, showLightNotification, message])
+
+  /**
+   * 应用修复
+   */
+  const handleApplyRepair = useCallback(() => {
+    if (pendingRepairedValue) {
+      updateEditorContent(pendingRepairedValue, { markModified: true })
+      showLightNotification('已应用修复')
+    }
+    // 清理状态并退出 diff 模式
+    setPendingRepairedValue('')
+    setRepairOriginalValue('')
+    switchFullScreenMode(FULL_SCREEN_MODE.NONE)
+  }, [pendingRepairedValue, updateEditorContent, showLightNotification, switchFullScreenMode])
+
+  /**
+   * 取消修复
+   */
+  const handleCancelRepair = useCallback(() => {
+    // 清理状态并退出 diff 模式
+    setPendingRepairedValue('')
+    setRepairOriginalValue('')
+    switchFullScreenMode(FULL_SCREEN_MODE.NONE)
+    showLightNotification('已取消修复')
+  }, [switchFullScreenMode, showLightNotification])
+
+  /**
    * 处理返回编辑模式（从Diff模式）
    */
   const handleBackToEditor = useCallback(() => {
     switchFullScreenMode(FULL_SCREEN_MODE.NONE)
+    // 清除修复对比的原始值
+    setRepairOriginalValue('')
   }, [switchFullScreenMode])
 
   /**
@@ -1100,14 +1231,26 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                   onParse={handleParse}
                   onSegmentChange={handleSegmentChange}
                   onExitDiffMode={handleBackToEditor}
+                  hasPendingRepair={!!pendingRepairedValue}
+                  onApplyRepair={handleApplyRepair}
+                  onCancelRepair={handleCancelRepair}
                 />
                 <SchemaDiffView
                   snapshots={
                     isInRecordingMode
                       ? snapshots
                       : [
-                          { id: 1, content: originalValue, timestamp: 0 },
-                          { id: 2, content: editorValue, timestamp: 1 },
+                          {
+                            id: 1,
+                            content: repairOriginalValue || originalValue,
+                            timestamp: 0,
+                          },
+                          {
+                            id: 2,
+                            // 如果有待确认的修复内容，使用它；否则使用当前编辑器值
+                            content: pendingRepairedValue || editorValue,
+                            timestamp: 1,
+                          },
                         ]
                   }
                   displayMode={diffDisplayMode}
@@ -1138,6 +1281,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                   onParse={handleParse}
                   onSegmentChange={handleSegmentChange}
                   onRenderPreview={handleRenderPreview}
+                  onLocateError={handleLocateError}
+                  onRepairJson={handleRepairJson}
                 />
                 <EditorContainer>
                   {lightNotifications.map((notification, index) => (
@@ -1180,6 +1325,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                     onSegmentChange={handleSegmentChange}
                     onRenderPreview={handleRenderPreview}
                     onEnterDiffMode={handleEnterDiffMode}
+                    onLocateError={handleLocateError}
+                    onRepairJson={handleRepairJson}
                   />
 
                   {/* 预览区域和编辑器并排 */}
@@ -1240,6 +1387,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
                   onSegmentChange={handleSegmentChange}
                   onRenderPreview={handleRenderPreview}
                   onEnterDiffMode={handleEnterDiffMode}
+                  onLocateError={handleLocateError}
+                  onRepairJson={handleRepairJson}
                 />
 
                 <EditorContainer>
