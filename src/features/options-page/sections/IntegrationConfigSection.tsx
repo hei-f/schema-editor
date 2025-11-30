@@ -21,6 +21,10 @@ interface IntegrationConfigSectionProps {
   previewFunctionName: string
   /** 当前 API 配置 */
   apiConfig: ApiConfig | null
+  /** 是否展开 */
+  isActive?: boolean
+  /** 展开状态变化回调 */
+  onActiveChange?: (active: boolean) => void
   /** 恢复默认回调 */
   onResetDefault?: () => void
 }
@@ -37,6 +41,8 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
     updateFunctionName,
     previewFunctionName,
     apiConfig,
+    isActive,
+    onActiveChange,
     onResetDefault,
   } = props
 
@@ -45,6 +51,8 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
       title="集成配置"
       subtitle="配置插件与宿主页面的通信方式和接口"
       panelKey="integration-config"
+      isActive={isActive}
+      onActiveChange={onActiveChange}
       onResetDefault={onResetDefault}
     >
       {/* 通信模式选择 */}
@@ -356,11 +364,12 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
             style={{ marginBottom: 16 }}
           />
 
-          <FormSectionLabel>核心 API（必需）</FormSectionLabel>
+          <FormSectionLabel id="field-window-functions">核心 API（必需）</FormSectionLabel>
 
           <Form.Item
             label="获取Schema函数名"
             name={FORM_PATHS.getFunctionName}
+            id="field-get-function"
             rules={[
               { required: true, message: '请输入函数名' },
               { pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/, message: '必须是有效的JavaScript函数名' },
@@ -376,6 +385,7 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
           <Form.Item
             label="更新Schema函数名"
             name={FORM_PATHS.updateFunctionName}
+            id="field-update-function"
             rules={[
               { required: true, message: '请输入函数名' },
               { pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/, message: '必须是有效的JavaScript函数名' },
@@ -393,6 +403,7 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
           <Form.Item
             label="预览函数名"
             name={FORM_PATHS.previewFunctionName}
+            id="field-preview-function"
             rules={[
               { required: true, message: '请输入函数名' },
               { pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/, message: '必须是有效的JavaScript函数名' },
