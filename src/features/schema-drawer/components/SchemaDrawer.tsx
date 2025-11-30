@@ -401,7 +401,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         document.body.style.overflow = 'hidden'
 
         // 如果是录制模式打开，设置录制状态并自动开始录制
-        if (initialRecordingMode && recordingConfig && schemaData !== null) {
+        if (initialRecordingMode && recordingConfig && schemaData !== undefined) {
           setIsInRecordingMode(true)
           resetFullScreenMode()
 
@@ -475,8 +475,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
    * 当schemaData变化时，更新编辑器内容
    */
   useEffect(() => {
-    // 卫语句：前置条件不满足直接返回
-    if (schemaData === null || schemaData === undefined || !open) {
+    // 卫语句：schemaData 未加载或抽屉未打开时不更新
+    if (schemaData === undefined || !open) {
       return
     }
 

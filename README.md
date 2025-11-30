@@ -2,7 +2,7 @@
 
 Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 
-![Version](https://img.shields.io/badge/version-1.17.0-blue)
+![Version](https://img.shields.io/badge/version-1.17.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ## 功能
@@ -91,8 +91,8 @@ npm run demo
 无论使用哪种通信模式，获取和更新 Schema 的类型定义一致：
 
 ```typescript
-/** Schema 数据类型（对象、数组或字符串，不能为 null） */
-type SchemaValue = Record<string, unknown> | unknown[] | string
+/** Schema 数据类型（支持所有 JSON 类型） */
+type SchemaValue = Record<string, unknown> | unknown[] | string | number | boolean | null
 
 /** 获取 Schema 函数 */
 type GetSchemaFunc<T extends SchemaValue = SchemaValue> = (params: string) => T
@@ -102,7 +102,7 @@ type UpdateSchemaFunc<T extends SchemaValue = SchemaValue> = (schema: T, params:
 ```
 
 - `params`: 参数字符串，格式为 `'param1'` 或 `'param1,param2'`
-- `schema`: Schema 数据，必须是对象、数组或字符串，不能为 `null`/`undefined`
+- `schema`: Schema 数据，支持所有 `JSON.parse` 可返回的类型（对象、数组、字符串、数字、布尔值、null）
 
 ### 预览 API 类型定义
 
@@ -111,7 +111,7 @@ type UpdateSchemaFunc<T extends SchemaValue = SchemaValue> = (schema: T, params:
 ```typescript
 /**
  * 预览函数类型（两种模式统一）
- * @param schema - 当前编辑的 Schema 数据（对象、数组或字符串）
+ * @param schema - 当前编辑的 Schema 数据（支持所有 JSON 类型）
  * @param containerId - 预览容器 ID，通过 document.getElementById() 获取
  * @returns 可选的清理函数，插件关闭预览时自动调用
  */
@@ -200,6 +200,32 @@ const cleanup = createSchemaEditorBridge({
 
 // 需要清理时调用
 cleanup()
+```
+
+**SDK 配置项说明：**
+
+| 配置项          | 类型                                                                 | 必需 | 说明                                                   |
+| --------------- | -------------------------------------------------------------------- | ---- | ------------------------------------------------------ |
+| `getSchema`     | `(params: string) => SchemaValue`                                    | ✅   | 获取 Schema 数据                                       |
+| `updateSchema`  | `(schema: SchemaValue, params: string) => boolean`                   | ✅   | 更新 Schema 数据                                       |
+| `renderPreview` | `(schema: SchemaValue, containerId: string) => (() => void) \| void` | ❌   | 渲染预览，可返回清理函数                               |
+| `enabled`       | `boolean`（React）/ `MaybeRefOrGetter<boolean>`（Vue）               | ❌   | 是否启用桥接，默认 `true`。仅当明确设为 `false` 时禁用 |
+| `sourceConfig`  | `Partial<PostMessageSourceConfig>`                                   | ❌   | 自定义消息标识                                         |
+| `messageTypes`  | `Partial<PostMessageTypeConfig>`                                     | ❌   | 自定义消息类型                                         |
+
+**条件启用示例（React）：**
+
+```typescript
+const [isReady, setIsReady] = useState(false)
+
+useSchemaEditor({
+  enabled: isReady, // 仅在 isReady 为 true 时启用
+  getSchema: (params) => dataStore[params],
+  updateSchema: (schema, params) => {
+    dataStore[params] = schema
+    return true
+  },
+})
 ```
 
 #### 手动实现 postMessage 监听

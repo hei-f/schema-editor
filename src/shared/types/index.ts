@@ -478,19 +478,19 @@ export interface PreviewFunctionResultPayload {
 
 /**
  * Schema 数据类型
- * Schema 必须是对象、数组或字符串，不能为 null/undefined
+ * 支持所有 JSON.parse 可返回的类型
  */
-export type SchemaValue = Record<string, unknown> | unknown[] | string
+export type SchemaValue = Record<string, unknown> | unknown[] | string | number | boolean | null
 
 /**
  * 获取Schema的函数类型
- * @template T Schema数据类型，必须是对象、数组或字符串
+ * @template T Schema数据类型，支持所有 JSON 类型
  */
 export type GetSchemaFunction<T extends SchemaValue = SchemaValue> = (params: string) => T
 
 /**
  * 更新Schema的函数类型
- * @template T Schema数据类型，必须是对象、数组或字符串
+ * @template T Schema数据类型，支持所有 JSON 类型
  */
 export type UpdateSchemaFunction<T extends SchemaValue = SchemaValue> = (
   schema: T,
