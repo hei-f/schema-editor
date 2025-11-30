@@ -20,9 +20,9 @@ const DEFAULT_MESSAGE_TYPES = {
 
 /**
  * Schema 数据类型
- * Schema 必须是对象、数组或字符串，不能为 null/undefined
+ * 支持所有 JSON.parse 可返回的类型
  */
-export type SchemaValue = Record<string, unknown> | unknown[] | string
+export type SchemaValue = Record<string, unknown> | unknown[] | string | number | boolean | null
 
 /** postMessage 消息标识配置 */
 export interface PostMessageSourceConfig {
@@ -48,13 +48,13 @@ export interface SchemaEditorConfig {
   /**
    * 获取 Schema 数据
    * @param params - 元素参数（通常是 data-id 的值）
-   * @returns Schema 数据（对象、数组或字符串，不能为 null）
+   * @returns Schema 数据（支持所有 JSON 类型）
    */
   getSchema: (params: string) => SchemaValue
 
   /**
    * 更新 Schema 数据
-   * @param schema - 新的 Schema 数据（对象、数组或字符串，不能为 null）
+   * @param schema - 新的 Schema 数据（支持所有 JSON 类型）
    * @param params - 元素参数
    * @returns 是否更新成功
    */
@@ -62,7 +62,7 @@ export interface SchemaEditorConfig {
 
   /**
    * 渲染预览（可选）
-   * @param schema - Schema 数据（对象、数组或字符串，不能为 null）
+   * @param schema - Schema 数据（支持所有 JSON 类型）
    * @param containerId - 预览容器 ID
    * @returns 清理函数（可选）
    */
