@@ -169,6 +169,12 @@ describe('Storage工具测试', () => {
             cleanupPreview: 'CLEANUP_PREVIEW',
           },
         },
+        drawerShortcuts: {
+          save: { key: 's', ctrlOrCmd: false, shift: false, alt: true },
+          format: { key: 'f', ctrlOrCmd: false, shift: false, alt: true },
+          openOrUpdatePreview: { key: 'p', ctrlOrCmd: false, shift: false, alt: true },
+          closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
+        },
       })
     })
 
@@ -261,6 +267,12 @@ describe('Storage工具测试', () => {
             cleanupPreview: 'CLEANUP_PREVIEW',
           },
         },
+        drawerShortcuts: {
+          save: { key: 's', ctrlOrCmd: false, shift: false, alt: true },
+          format: { key: 'f', ctrlOrCmd: false, shift: false, alt: true },
+          openOrUpdatePreview: { key: 'p', ctrlOrCmd: false, shift: false, alt: true },
+          closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
+        },
       })
     })
 
@@ -342,6 +354,12 @@ describe('Storage工具测试', () => {
             renderPreview: 'RENDER_PREVIEW',
             cleanupPreview: 'CLEANUP_PREVIEW',
           },
+        },
+        drawerShortcuts: {
+          save: { key: 's', ctrlOrCmd: false, shift: false, alt: true },
+          format: { key: 'f', ctrlOrCmd: false, shift: false, alt: true },
+          openOrUpdatePreview: { key: 'p', ctrlOrCmd: false, shift: false, alt: true },
+          closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
         },
       })
     })
@@ -604,6 +622,12 @@ describe('Storage工具测试', () => {
             renderPreview: 'RENDER_PREVIEW',
             cleanupPreview: 'CLEANUP_PREVIEW',
           },
+        },
+        drawerShortcuts: {
+          save: { key: 's', ctrlOrCmd: false, shift: false, alt: true },
+          format: { key: 'f', ctrlOrCmd: false, shift: false, alt: true },
+          openOrUpdatePreview: { key: 'p', ctrlOrCmd: false, shift: false, alt: true },
+          closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
         },
       })
     })
