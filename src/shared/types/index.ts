@@ -210,6 +210,34 @@ export interface ExportConfig {
 }
 
 /**
+ * 单个快捷键定义
+ */
+export interface ShortcutKey {
+  /** 按键（单个字母或特殊键如 Enter, Escape） */
+  key: string
+  /** 是否需要 Ctrl/Cmd 键 */
+  ctrlOrCmd: boolean
+  /** 是否需要 Shift 键 */
+  shift: boolean
+  /** 是否需要 Alt/Option 键 */
+  alt: boolean
+}
+
+/**
+ * 抽屉快捷键配置接口
+ */
+export interface DrawerShortcutsConfig {
+  /** 保存快捷键 */
+  save: ShortcutKey
+  /** 格式化快捷键 */
+  format: ShortcutKey
+  /** 打开/更新预览快捷键 */
+  openOrUpdatePreview: ShortcutKey
+  /** 关闭预览快捷键 */
+  closePreview: ShortcutKey
+}
+
+/**
  * 编辑器主题类型
  */
 export type EditorTheme = 'light' | 'dark' | 'schemaEditorDark'
@@ -241,6 +269,15 @@ export interface SchemaDrawerConfig {
   recordingModeConfig: RecordingModeConfig
   /** 自动解析字符串开关 */
   autoParseString: boolean
+}
+
+/**
+ * SchemaDrawer 运行时配置
+ * 包含 SchemaDrawerConfig 加上快捷键配置
+ */
+export interface SchemaDrawerRuntimeConfig extends SchemaDrawerConfig {
+  /** 抽屉快捷键配置 */
+  drawerShortcuts: DrawerShortcutsConfig
 }
 
 /**
@@ -302,6 +339,8 @@ export interface StorageData {
   previewFunctionName: string
   /** API 配置 */
   apiConfig: ApiConfig
+  /** 抽屉快捷键配置 */
+  drawerShortcuts: DrawerShortcutsConfig
 }
 
 /**

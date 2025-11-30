@@ -77,6 +77,12 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
       cleanupPreview: 'CLEANUP_PREVIEW',
     },
   },
+  drawerShortcuts: {
+    save: { key: 's', ctrlOrCmd: false, shift: false, alt: true },
+    format: { key: 'f', ctrlOrCmd: false, shift: false, alt: true },
+    openOrUpdatePreview: { key: 'p', ctrlOrCmd: false, shift: false, alt: true },
+    closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
+  },
 } as const
 
 /**
@@ -108,4 +114,5 @@ export const STORAGE_KEYS = {
   EDITOR_THEME: 'editorTheme',
   PREVIEW_FUNCTION_NAME: 'previewFunctionName',
   API_CONFIG: 'apiConfig',
+  DRAWER_SHORTCUTS: 'drawerShortcuts',
 } as const

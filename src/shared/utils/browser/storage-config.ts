@@ -1,6 +1,7 @@
 import { DEFAULT_VALUES, STORAGE_KEYS } from '@/shared/constants/defaults'
 import type {
   ApiConfig,
+  DrawerShortcutsConfig,
   EditorTheme,
   HighlightAllConfig,
   PreviewConfig,
@@ -167,6 +168,22 @@ export const SIMPLE_STORAGE_FIELDS = {
       )
     },
   } as StorageFieldConfig<ApiConfig>,
+
+  drawerShortcuts: {
+    key: STORAGE_KEYS.DRAWER_SHORTCUTS,
+    defaultValue: DEFAULT_VALUES.drawerShortcuts,
+    validator: (value: any): value is DrawerShortcutsConfig => {
+      const isValidShortcut = (s: any) =>
+        s && typeof s.key === 'string' && typeof s.ctrlOrCmd === 'boolean'
+      return (
+        value &&
+        isValidShortcut(value.save) &&
+        isValidShortcut(value.format) &&
+        isValidShortcut(value.openOrUpdatePreview) &&
+        isValidShortcut(value.closePreview)
+      )
+    },
+  } as StorageFieldConfig<DrawerShortcutsConfig>,
 }
 
 /**

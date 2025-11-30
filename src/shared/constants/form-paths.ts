@@ -161,6 +161,18 @@ export const FORM_PATHS = {
       cleanupPreview: ['apiConfig', 'messageTypes', 'cleanupPreview'],
     },
   },
+
+  /** 抽屉快捷键配置 */
+  drawerShortcuts: {
+    /** 保存快捷键 */
+    save: ['drawerShortcuts', 'save'],
+    /** 格式化快捷键 */
+    format: ['drawerShortcuts', 'format'],
+    /** 打开/更新预览快捷键 */
+    openOrUpdatePreview: ['drawerShortcuts', 'openOrUpdatePreview'],
+    /** 关闭预览快捷键 */
+    closePreview: ['drawerShortcuts', 'closePreview'],
+  },
 }
 
 /**

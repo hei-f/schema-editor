@@ -62,6 +62,9 @@ export class ElementMonitor {
   private scrollUpdateRafId: number | null = null
   private readonly SCROLL_STOP_DELAY = 150
 
+  // 抽屉打开时暂停检测
+  private isPaused: boolean = false
+
   /**
    * 启动监听
    */
@@ -87,6 +90,8 @@ export class ElementMonitor {
     document.addEventListener('keyup', this.handleKeyUp, true)
     document.addEventListener('scroll', this.handleScroll, true)
     window.addEventListener('schema-editor:clear-highlight', this.handleClearHighlight)
+    window.addEventListener('schema-editor:pause-monitor', this.handlePauseMonitor)
+    window.addEventListener('schema-editor:resume-monitor', this.handleResumeMonitor)
 
     // 创建tooltip元素
     this.createTooltip()
@@ -109,6 +114,8 @@ export class ElementMonitor {
     document.removeEventListener('keyup', this.handleKeyUp, true)
     document.removeEventListener('scroll', this.handleScroll, true) // 移除滚动监听
     window.removeEventListener('schema-editor:clear-highlight', this.handleClearHighlight)
+    window.removeEventListener('schema-editor:pause-monitor', this.handlePauseMonitor)
+    window.removeEventListener('schema-editor:resume-monitor', this.handleResumeMonitor)
 
     // 清理当前高亮
     this.clearHighlight()
@@ -122,6 +129,25 @@ export class ElementMonitor {
    */
   private handleClearHighlight = (): void => {
     this.clearHighlight()
+  }
+
+  /**
+   * 处理暂停监听事件（抽屉打开时）
+   */
+  private handlePauseMonitor = (): void => {
+    this.isPaused = true
+    this.isControlPressed = false
+    this.clearHighlight()
+    this.clearAllHighlights()
+    logger.log('元素监听器已暂停（抽屉已打开）')
+  }
+
+  /**
+   * 处理恢复监听事件（抽屉关闭时）
+   */
+  private handleResumeMonitor = (): void => {
+    this.isPaused = false
+    logger.log('元素监听器已恢复')
   }
 
   /**
@@ -186,7 +212,7 @@ export class ElementMonitor {
    * 处理键盘按下事件
    */
   private handleKeyDown = (event: KeyboardEvent): void => {
-    if (!this.isActive) return
+    if (!this.isActive || this.isPaused) return
 
     // 检测 Alt 键（Mac 上是 Option 键）
     if (event.altKey) {
@@ -302,7 +328,7 @@ export class ElementMonitor {
    * 处理键盘释放事件
    */
   private handleKeyUp = (event: KeyboardEvent): void => {
-    if (!this.isActive) return
+    if (!this.isActive || this.isPaused) return
 
     // Alt 键释放
     if (!event.altKey) {
@@ -367,7 +393,7 @@ export class ElementMonitor {
    * 处理鼠标移动事件
    */
   private handleMouseMove = (event: MouseEvent): void => {
-    if (!this.isActive) return
+    if (!this.isActive || this.isPaused) return
 
     // 记录鼠标位置，供按键时使用
     this.lastMouseX = event.clientX
@@ -458,7 +484,7 @@ export class ElementMonitor {
    * 处理点击事件
    */
   private handleClick = async (event: MouseEvent): Promise<void> => {
-    if (!this.isActive) return
+    if (!this.isActive || this.isPaused) return
 
     // 只有在按住 Alt/Option 键时才响应点击
     if (!this.isControlPressed) return

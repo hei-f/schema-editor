@@ -4,6 +4,7 @@ import { favoritesManager } from '@/shared/managers/favorites-manager'
 import type {
   ApiConfig,
   Draft,
+  DrawerShortcutsConfig,
   EditorTheme,
   ExportConfig,
   Favorite,
@@ -274,6 +275,7 @@ class StorageManager {
       editorTheme,
       previewFunctionName,
       apiConfig,
+      drawerShortcuts,
     ] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
@@ -297,6 +299,7 @@ class StorageManager {
       this.getEditorTheme(),
       this.getPreviewFunctionName(),
       this.getApiConfig(),
+      this.getDrawerShortcuts(),
     ])
     const exportConfig = await this.getExportConfig()
     return {
@@ -323,6 +326,7 @@ class StorageManager {
       editorTheme,
       previewFunctionName,
       apiConfig,
+      drawerShortcuts,
     }
   }
 
@@ -747,6 +751,60 @@ class StorageManager {
    */
   async setApiConfig(config: ApiConfig): Promise<void> {
     return this.setSimple('apiConfig', config)
+  }
+
+  /**
+   * 获取抽屉快捷键配置
+   */
+  async getDrawerShortcuts(): Promise<DrawerShortcutsConfig> {
+    try {
+      const result = await chrome.storage.local.get(this.STORAGE_KEYS.DRAWER_SHORTCUTS)
+      const storedConfig = result[this.STORAGE_KEYS.DRAWER_SHORTCUTS]
+      if (!storedConfig) {
+        return this.DEFAULT_VALUES.drawerShortcuts
+      }
+      // 深度合并每个快捷键配置，确保旧格式数据不会破坏结构
+      const defaults = this.DEFAULT_VALUES.drawerShortcuts
+      return {
+        save: this.mergeShortcutKey(defaults.save, storedConfig.save),
+        format: this.mergeShortcutKey(defaults.format, storedConfig.format),
+        openOrUpdatePreview: this.mergeShortcutKey(
+          defaults.openOrUpdatePreview,
+          storedConfig.openOrUpdatePreview || storedConfig.togglePreview
+        ),
+        closePreview: this.mergeShortcutKey(defaults.closePreview, storedConfig.closePreview),
+      }
+    } catch (error) {
+      console.error('获取抽屉快捷键配置失败:', error)
+      return this.DEFAULT_VALUES.drawerShortcuts
+    }
+  }
+
+  /**
+   * 合并快捷键配置，处理旧格式兼容
+   */
+  private mergeShortcutKey(
+    defaultKey: { key: string; ctrlOrCmd: boolean; shift: boolean; alt: boolean },
+    storedKey: unknown
+  ): { key: string; ctrlOrCmd: boolean; shift: boolean; alt: boolean } {
+    // 如果存储的值不存在或不是对象，返回默认值
+    if (!storedKey || typeof storedKey !== 'object') {
+      return defaultKey
+    }
+    const stored = storedKey as Record<string, unknown>
+    return {
+      key: typeof stored.key === 'string' ? stored.key : defaultKey.key,
+      ctrlOrCmd: typeof stored.ctrlOrCmd === 'boolean' ? stored.ctrlOrCmd : defaultKey.ctrlOrCmd,
+      shift: typeof stored.shift === 'boolean' ? stored.shift : defaultKey.shift,
+      alt: typeof stored.alt === 'boolean' ? stored.alt : defaultKey.alt,
+    }
+  }
+
+  /**
+   * 设置抽屉快捷键配置
+   */
+  async setDrawerShortcuts(config: DrawerShortcutsConfig): Promise<void> {
+    return this.setSimple('drawerShortcuts', config)
   }
 }
 

@@ -3,6 +3,7 @@ import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import { shadowDomTheme } from '@/shared/constants/theme'
 import { getCommunicationMode } from '@/shared/utils/communication-mode'
 import type {
+  DrawerShortcutsConfig,
   ElementAttributes,
   Message,
   PreviewFunctionResultPayload,
@@ -41,6 +42,8 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
 
   /** SchemaDrawer 配置 */
   const [drawerConfig, setDrawerConfig] = useState<SchemaDrawerConfig | null>(null)
+  /** 抽屉快捷键配置 */
+  const [drawerShortcuts, setDrawerShortcuts] = useState<DrawerShortcutsConfig | null>(null)
 
   const configSyncedRef = useRef(false)
 
@@ -96,6 +99,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         editorTheme,
         recordingModeConfig,
         autoParseString,
+        shortcuts,
       ] = await Promise.all([
         storage.getDrawerWidth(),
         storage.getApiConfig(),
@@ -108,6 +112,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         storage.getEditorTheme(),
         storage.getRecordingModeConfig(),
         storage.getAutoParseString(),
+        storage.getDrawerShortcuts(),
       ])
       setDrawerConfig({
         width,
@@ -122,6 +127,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         recordingModeConfig,
         autoParseString,
       })
+      setDrawerShortcuts(shortcuts)
     }
     loadConfig()
     storage.cleanExpiredDrafts()
@@ -206,6 +212,8 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
       if (payload.success && payload.data !== undefined) {
         setSchemaData(payload.data)
         setDrawerOpen(true)
+        // 抽屉打开时暂停元素监听
+        window.dispatchEvent(new CustomEvent('schema-editor:pause-monitor'))
         checkPreviewFunction()
       } else {
         antdMessage.error(payload.error || '获取Schema失败')
@@ -360,8 +368,8 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     setIsRecordingMode(false)
     setHasPreviewFunction(false)
 
-    // 抽屉关闭时，触发清除高亮的事件
-    window.dispatchEvent(new CustomEvent('schema-editor:clear-highlight'))
+    // 抽屉关闭时，恢复元素监听
+    window.dispatchEvent(new CustomEvent('schema-editor:resume-monitor'))
   }
 
   return (
@@ -372,7 +380,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         getPopupContainer={() => shadowRoot as unknown as HTMLElement}
       >
         <AntdApp>
-          {drawerConfig && (
+          {drawerConfig && drawerShortcuts && (
             <SchemaDrawer
               open={drawerOpen}
               schemaData={schemaData}
@@ -382,6 +390,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
               isRecordingMode={isRecordingMode}
               config={drawerConfig}
               hasPreviewFunction={hasPreviewFunction}
+              shortcuts={drawerShortcuts}
             />
           )}
         </AntdApp>
