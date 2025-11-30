@@ -6,7 +6,7 @@ import {
   PanelActions,
   PanelHeader,
   PanelTitle,
-  StyledCollapse,
+  StyledCollapseModern,
 } from '../styles/layout.styles'
 
 const { Panel } = Collapse
@@ -20,8 +20,12 @@ interface SectionCardProps {
   children: React.ReactNode
   /** 唯一的key，用于Collapse */
   panelKey: string
-  /** 是否默认展开 */
+  /** 是否默认展开（非受控模式） */
   defaultActive?: boolean
+  /** 是否展开（受控模式） */
+  isActive?: boolean
+  /** 展开状态变化回调 */
+  onActiveChange?: (active: boolean) => void
   /** 恢复默认回调 */
   onResetDefault?: () => void
   /** 额外的操作按钮配置 */
@@ -42,12 +46,23 @@ export const SectionCard: React.FC<SectionCardProps> = (props) => {
     subtitle,
     children,
     panelKey,
-    defaultActive = true,
+    defaultActive = false,
+    isActive,
+    onActiveChange,
     onResetDefault,
     extraActions,
   } = props
 
   const { token } = theme.useToken()
+
+  // 判断是否为受控模式
+  const isControlled = isActive !== undefined
+
+  /** 处理展开/折叠变化 */
+  const handleChange = (keys: string | string[]) => {
+    const activeKeys = Array.isArray(keys) ? keys : [keys]
+    onActiveChange?.(activeKeys.includes(panelKey))
+  }
 
   const handleResetClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -93,12 +108,17 @@ export const SectionCard: React.FC<SectionCardProps> = (props) => {
     </PanelHeader>
   )
 
+  // 受控模式使用 activeKey，非受控模式使用 defaultActiveKey
+  const collapseProps = isControlled
+    ? { activeKey: isActive ? [panelKey] : [], onChange: handleChange }
+    : { defaultActiveKey: defaultActive ? [panelKey] : [], onChange: handleChange }
+
   return (
-    <StyledCollapse defaultActiveKey={defaultActive ? [panelKey] : []}>
+    <StyledCollapseModern {...collapseProps}>
       <Panel header={headerContent} key={panelKey}>
         {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
         {children}
       </Panel>
-    </StyledCollapse>
+    </StyledCollapseModern>
   )
 }
