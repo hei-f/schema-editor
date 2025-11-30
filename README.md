@@ -91,8 +91,8 @@ npm run demo
 无论使用哪种通信模式，获取和更新 Schema 的类型定义一致：
 
 ```typescript
-/** Schema 数据类型（对象、数组或字符串，不能为 null） */
-type SchemaValue = Record<string, unknown> | unknown[] | string
+/** Schema 数据类型（支持所有 JSON 类型） */
+type SchemaValue = Record<string, unknown> | unknown[] | string | number | boolean | null
 
 /** 获取 Schema 函数 */
 type GetSchemaFunc<T extends SchemaValue = SchemaValue> = (params: string) => T
@@ -102,7 +102,7 @@ type UpdateSchemaFunc<T extends SchemaValue = SchemaValue> = (schema: T, params:
 ```
 
 - `params`: 参数字符串，格式为 `'param1'` 或 `'param1,param2'`
-- `schema`: Schema 数据，必须是对象、数组或字符串，不能为 `null`/`undefined`
+- `schema`: Schema 数据，支持所有 `JSON.parse` 可返回的类型（对象、数组、字符串、数字、布尔值、null）
 
 ### 预览 API 类型定义
 
@@ -111,7 +111,7 @@ type UpdateSchemaFunc<T extends SchemaValue = SchemaValue> = (schema: T, params:
 ```typescript
 /**
  * 预览函数类型（两种模式统一）
- * @param schema - 当前编辑的 Schema 数据（对象、数组或字符串）
+ * @param schema - 当前编辑的 Schema 数据（支持所有 JSON 类型）
  * @param containerId - 预览容器 ID，通过 document.getElementById() 获取
  * @returns 可选的清理函数，插件关闭预览时自动调用
  */
