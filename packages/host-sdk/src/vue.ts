@@ -37,6 +37,13 @@ export interface VueSchemaEditorConfig {
     ((schema: SchemaValue, containerId: string) => (() => void) | void) | undefined
   >
 
+  /**
+   * 是否启用桥接（默认 true）
+   * 设为 false 时不创建桥接器，不监听消息
+   * 支持响应式值
+   */
+  enabled?: MaybeRefOrGetter<boolean>
+
   /** 消息标识配置（可选，有默认值） */
   sourceConfig?: Partial<PostMessageSourceConfig>
 
@@ -69,15 +76,24 @@ export interface VueSchemaEditorConfig {
  * ```
  */
 export function useSchemaEditor(config: VueSchemaEditorConfig): void {
-  const { getSchema, updateSchema, renderPreview, sourceConfig, messageTypes } = config
+  const { getSchema, updateSchema, renderPreview, sourceConfig, messageTypes, enabled } = config
 
   let cleanup: (() => void) | null = null
 
-  const createBridge = () => {
-    // 清理之前的桥接
+  const destroyBridge = () => {
     if (cleanup) {
       cleanup()
       cleanup = null
+    }
+  }
+
+  const createBridge = () => {
+    // 清理之前的桥接
+    destroyBridge()
+
+    // enabled 明确为 false 时不创建桥接
+    if (toValue(enabled) === false) {
+      return
     }
 
     // 创建代理配置，始终使用最新的值
@@ -99,15 +115,13 @@ export function useSchemaEditor(config: VueSchemaEditorConfig): void {
   })
 
   onUnmounted(() => {
-    if (cleanup) {
-      cleanup()
-      cleanup = null
-    }
+    destroyBridge()
   })
 
   // 监听配置变化，重新创建桥接
   watch(
     () => [
+      toValue(enabled),
       sourceConfig?.contentSource,
       sourceConfig?.hostSource,
       messageTypes?.getSchema,

@@ -202,6 +202,32 @@ const cleanup = createSchemaEditorBridge({
 cleanup()
 ```
 
+**SDK 配置项说明：**
+
+| 配置项          | 类型                                                                 | 必需 | 说明                                                   |
+| --------------- | -------------------------------------------------------------------- | ---- | ------------------------------------------------------ |
+| `getSchema`     | `(params: string) => SchemaValue`                                    | ✅   | 获取 Schema 数据                                       |
+| `updateSchema`  | `(schema: SchemaValue, params: string) => boolean`                   | ✅   | 更新 Schema 数据                                       |
+| `renderPreview` | `(schema: SchemaValue, containerId: string) => (() => void) \| void` | ❌   | 渲染预览，可返回清理函数                               |
+| `enabled`       | `boolean`（React）/ `MaybeRefOrGetter<boolean>`（Vue）               | ❌   | 是否启用桥接，默认 `true`。仅当明确设为 `false` 时禁用 |
+| `sourceConfig`  | `Partial<PostMessageSourceConfig>`                                   | ❌   | 自定义消息标识                                         |
+| `messageTypes`  | `Partial<PostMessageTypeConfig>`                                     | ❌   | 自定义消息类型                                         |
+
+**条件启用示例（React）：**
+
+```typescript
+const [isReady, setIsReady] = useState(false)
+
+useSchemaEditor({
+  enabled: isReady, // 仅在 isReady 为 true 时启用
+  getSchema: (params) => dataStore[params],
+  updateSchema: (schema, params) => {
+    dataStore[params] = schema
+    return true
+  },
+})
+```
+
 #### 手动实现 postMessage 监听
 
 如果不使用 SDK，也可以手动实现 postMessage 监听：
