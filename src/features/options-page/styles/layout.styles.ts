@@ -1,7 +1,7 @@
 import { InfoCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { Alert, Card, Collapse, Flex, Form, Input, InputNumber, Typography } from 'antd'
 import styled, { keyframes } from 'styled-components'
-import { MENU_BREAKPOINT, MENU_COLLAPSED_WIDTH, MENU_EXPANDED_WIDTH } from '../config/menu-config'
+import { MENU_COLLAPSED_WIDTH, MENU_EXPANDED_WIDTH } from '../config/menu-config'
 
 const { Text, Title, Paragraph } = Typography
 
@@ -357,10 +357,6 @@ export const Container = styled.div<{ $menuCollapsed?: boolean }>`
     0 4px 24px rgba(57, 197, 187, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.35);
-
-  @media (max-width: ${MENU_BREAKPOINT}px) {
-    margin-left: ${MENU_COLLAPSED_WIDTH + 20}px;
-  }
 `
 
 export const StyledCard = styled(Card)`
@@ -563,7 +559,8 @@ export const SectionSubTitle = styled(Title)`
   }
 `
 
-export const StyledCollapse = styled(Collapse)`
+/** 基础折叠面板样式 */
+const baseCollapseStyles = `
   margin-top: 24px;
   margin-bottom: 24px;
 
@@ -592,6 +589,104 @@ export const StyledCollapse = styled(Collapse)`
     flex: 1;
   }
 `
+
+/**
+ * Section 折叠面板样式
+ * 设计理念：简洁现代，强调排版和留白，底部边框作为视觉锚点
+ */
+export const StyledCollapseModern = styled(Collapse)`
+  ${baseCollapseStyles}
+
+  border: none;
+  background: transparent;
+
+  .ant-collapse-item {
+    border: none;
+    border-radius: 12px !important;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.04),
+      0 4px 16px rgba(57, 197, 187, 0.06);
+    transition: all 0.3s ease;
+
+    /* 底部强调线 - 使用透明渐变 */
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        rgba(57, 197, 187, 0.6) 0%,
+        rgba(57, 197, 187, 0.3) 30%,
+        rgba(57, 197, 187, 0.1) 60%,
+        transparent 100%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+  }
+
+  .ant-collapse-header {
+    padding: 16px 20px;
+    background: transparent;
+
+    .ant-collapse-header-text {
+      color: #262626;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .ant-collapse-expand-icon {
+      color: #8c8c8c;
+    }
+  }
+
+  .ant-collapse-content {
+    border-top: 1px solid #f0f0f0;
+    background: transparent;
+  }
+
+  .ant-collapse-content-box {
+    padding: 20px;
+  }
+
+  /* 悬停效果 */
+  .ant-collapse-item:hover {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.06),
+      0 8px 24px rgba(57, 197, 187, 0.1);
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  /* 展开状态 */
+  .ant-collapse-item-active {
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.05),
+      0 8px 24px rgba(57, 197, 187, 0.08);
+
+    &::after {
+      opacity: 1;
+    }
+
+    .ant-collapse-header .ant-collapse-expand-icon {
+      color: #39c5bb;
+    }
+  }
+`
+
+/** 默认样式 */
+export const StyledCollapse = StyledCollapseModern
 
 export const HelpIcon = styled(InfoCircleOutlined)`
   color: #1890ff;
