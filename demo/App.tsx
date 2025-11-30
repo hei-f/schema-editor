@@ -6,9 +6,11 @@ import {
   BugOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  RobotOutlined,
 } from '@ant-design/icons'
 import { AstTestPage } from './pages/AstTestPage'
 import { SchemaTestPage } from './pages/SchemaTestPage'
+import { AgenticDemoPage } from './pages/AgenticDemoPage'
 import styled from 'styled-components'
 
 const { Header, Content, Sider } = Layout
@@ -82,7 +84,7 @@ const AppContent = styled(Content)<{ $siderCollapsed: boolean }>`
   transition: margin-left 0.2s ease;
 `
 
-type PageKey = 'ast-test' | 'schema-test'
+type PageKey = 'ast-test' | 'schema-test' | 'agentic-demo'
 
 export const TestApp: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageKey>('schema-test')
@@ -99,6 +101,11 @@ export const TestApp: React.FC = () => {
       icon: <ExperimentOutlined />,
       label: 'AST 转换测试',
     },
+    {
+      key: 'agentic-demo',
+      icon: <RobotOutlined />,
+      label: 'Agentic UI Demo',
+    },
   ]
 
   const renderPage = () => {
@@ -107,6 +114,8 @@ export const TestApp: React.FC = () => {
         return <AstTestPage siderCollapsed={siderCollapsed} />
       case 'schema-test':
         return <SchemaTestPage siderCollapsed={siderCollapsed} />
+      case 'agentic-demo':
+        return <AgenticDemoPage siderCollapsed={siderCollapsed} />
       default:
         return <SchemaTestPage siderCollapsed={siderCollapsed} />
     }
