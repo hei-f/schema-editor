@@ -34,7 +34,7 @@ interface AppProps {
  */
 export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [schemaData, setSchemaData] = useState<any>(null)
+  const [schemaData, setSchemaData] = useState<unknown>(undefined)
   const [currentAttributes, setCurrentAttributes] = useState<ElementAttributes>({ params: [] })
   const [isRecordingMode, setIsRecordingMode] = useState(false)
   const [hasPreviewFunction, setHasPreviewFunction] = useState(false)
@@ -203,7 +203,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
    */
   const handleSchemaResponse = useCallback(
     (payload: SchemaResponsePayload) => {
-      if (payload.success && payload.data != null) {
+      if (payload.success && payload.data !== undefined) {
         setSchemaData(payload.data)
         setDrawerOpen(true)
         checkPreviewFunction()
