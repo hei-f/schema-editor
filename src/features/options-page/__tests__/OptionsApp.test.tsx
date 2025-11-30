@@ -109,9 +109,9 @@ describe('OptionsApp组件测试', () => {
     exportConfig: {
       customFileName: false,
     },
-    editorTheme: 'vs-dark',
+    editorTheme: 'schemaEditorDark' as const,
     apiConfig: {
-      communicationMode: 'postMessage',
+      communicationMode: 'postMessage' as const,
       requestTimeout: 5,
       sourceConfig: {
         contentSource: 'schema-editor-content',
