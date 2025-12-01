@@ -37,6 +37,7 @@ export const SECTION_DEFAULT_KEYS: Record<SectionKey, readonly string[]> = {
     'highlightColor',
     'highlightAllConfig',
     'recordingModeConfig',
+    'iframeConfig',
   ],
   [SECTION_KEYS.EDITOR_CONFIG]: ['drawerWidth', 'enableAstTypeHints', 'editorTheme'],
   [SECTION_KEYS.FEATURE_TOGGLE]: ['toolbarButtons'],
@@ -151,6 +152,12 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
     ],
     save: async (allValues: any) => {
       await storage.setRecordingModeConfig(allValues.recordingModeConfig)
+    },
+  },
+  iframeConfig: {
+    fieldPaths: [FORM_PATHS.iframeConfig.enabled, FORM_PATHS.iframeConfig.schemaTarget],
+    save: async (allValues: any) => {
+      await storage.setIframeConfig(allValues.iframeConfig)
     },
   },
   exportConfig: {

@@ -189,6 +189,7 @@ export const OptionsApp: React.FC = () => {
       const maxHistoryCount = await storage.getMaxHistoryCount()
       const highlightAllConfig = await storage.getHighlightAllConfig()
       const recordingModeConfig = await storage.getRecordingModeConfig()
+      const iframeConfig = await storage.getIframeConfig()
       const enableAstTypeHints = await storage.getEnableAstTypeHints()
       const exportConfig = await storage.getExportConfig()
       const editorTheme = await storage.getEditorTheme()
@@ -219,6 +220,7 @@ export const OptionsApp: React.FC = () => {
         maxHistoryCount,
         highlightAllConfig,
         recordingModeConfig,
+        iframeConfig,
         enableAstTypeHints,
         exportConfig,
         editorTheme,
@@ -403,6 +405,7 @@ export const OptionsApp: React.FC = () => {
     await storage.setMaxHistoryCount(DEFAULT_VALUES.maxHistoryCount)
     await storage.setHighlightAllConfig(DEFAULT_VALUES.highlightAllConfig)
     await storage.setRecordingModeConfig(DEFAULT_VALUES.recordingModeConfig)
+    await storage.setIframeConfig(DEFAULT_VALUES.iframeConfig)
     await storage.setEnableAstTypeHints(DEFAULT_VALUES.enableAstTypeHints)
     await storage.setExportConfig(DEFAULT_VALUES.exportConfig)
     await storage.setEditorTheme(DEFAULT_VALUES.editorTheme)

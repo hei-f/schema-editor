@@ -1,5 +1,6 @@
 import { FORM_PATHS } from '@/shared/constants/form-paths'
-import { Form, Switch } from 'antd'
+import type { IframeSchemaTarget } from '@/shared/types'
+import { Form, Radio, Space, Switch, Typography } from 'antd'
 import React from 'react'
 import { ColorPickerField } from '../components/ColorPickerField'
 import { SectionCard } from '../components/SectionCard'
@@ -9,6 +10,8 @@ import {
   FixedWidthInputNumber,
   SpacedAlert,
 } from '../styles/layout.styles'
+
+const { Text } = Typography
 
 interface ElementDetectionSectionProps {
   /** 当前属性名（用于Alert提示） */
@@ -191,6 +194,69 @@ export const ElementDetectionSection: React.FC<ElementDetectionSectionProps> = (
             <p>2. 点击目标元素，以录制模式打开Schema编辑器</p>
             <p>3. 录制模式会每隔指定时间轮询Schema变化，并记录每个不同的版本</p>
             <p>4. 停止录制后，可以选择任意两个版本进行差异对比</p>
+          </div>
+        }
+        type="info"
+        showIcon
+        $marginTop={16}
+      />
+
+      <FormSectionLabel id="field-iframe-config">iframe 支持</FormSectionLabel>
+
+      <Form.Item
+        label="启用 iframe 元素检测"
+        name={FORM_PATHS.iframeConfig.enabled}
+        valuePropName="checked"
+        extra="开启后可检测页面中同源 iframe 内的元素"
+      >
+        <Switch />
+      </Form.Item>
+
+      <Form.Item
+        noStyle
+        shouldUpdate={(prevValues, currentValues) =>
+          prevValues.iframeConfig?.enabled !== currentValues.iframeConfig?.enabled
+        }
+      >
+        {({ getFieldValue }) => {
+          const iframeEnabled = getFieldValue(FORM_PATHS.iframeConfig.enabled)
+          return (
+            <Form.Item
+              label="Schema 数据来源"
+              name={FORM_PATHS.iframeConfig.schemaTarget}
+              extra="配置 iframe 内元素的 Schema 数据由谁提供"
+            >
+              <Radio.Group disabled={!iframeEnabled}>
+                <Space direction="vertical">
+                  <Radio value={'iframe' as IframeSchemaTarget}>
+                    <Text strong>iframe 内部</Text>
+                    <Text type="secondary" style={{ marginLeft: 8 }}>
+                      向 iframe 的 window 发送 postMessage（默认）
+                    </Text>
+                  </Radio>
+                  <Radio value={'topFrame' as IframeSchemaTarget}>
+                    <Text strong>主页面</Text>
+                    <Text type="secondary" style={{ marginLeft: 8 }}>
+                      向 top frame 的 window 发送 postMessage
+                    </Text>
+                  </Radio>
+                </Space>
+              </Radio.Group>
+            </Form.Item>
+          )
+        }}
+      </Form.Item>
+
+      <SpacedAlert
+        message="iframe 支持说明"
+        description={
+          <div>
+            <p>1. 仅支持同源 iframe，跨域 iframe 会显示"跨域 iframe 暂不支持"提示</p>
+            <p>
+              2. 默认向 iframe 内部发送 postMessage 获取 Schema，如果 iframe
+              内没有集成响应逻辑，可切换为主页面
+            </p>
+            <p>3. 高亮框和 tooltip 统一渲染在主页面，不会被 iframe 边界裁剪</p>
           </div>
         }
         type="info"
