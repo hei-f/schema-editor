@@ -143,6 +143,23 @@ export interface RecordingModeConfig {
 }
 
 /**
+ * iframe 内元素的 Schema 数据来源
+ * - iframe: 向 iframe 内的 window 发送 postMessage（默认）
+ * - topFrame: 向 top frame 的 window 发送 postMessage
+ */
+export type IframeSchemaTarget = 'iframe' | 'topFrame'
+
+/**
+ * iframe 支持配置接口
+ */
+export interface IframeConfig {
+  /** 是否启用 iframe 内元素检测 */
+  enabled: boolean
+  /** iframe 内元素的 Schema 数据来源 */
+  schemaTarget: IframeSchemaTarget
+}
+
+/**
  * 通信模式类型
  * - postMessage: 使用 postMessage 直连通信（推荐）
  * - windowFunction: 使用 window 函数调用（已废弃）
@@ -326,6 +343,8 @@ export interface StorageData {
   highlightAllConfig: HighlightAllConfig
   /** 录制模式配置 */
   recordingModeConfig: RecordingModeConfig
+  /** iframe 支持配置 */
+  iframeConfig: IframeConfig
   /** 启用 AST 类型提示 */
   enableAstTypeHints: boolean
   /** 导出配置 */
@@ -485,6 +504,75 @@ export interface ElementPosition {
   y: number
   width: number
   height: number
+}
+
+/**
+ * iframe 元素的位置信息（相对于 top frame 视口）
+ */
+export interface IframeElementRect {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+/**
+ * 跨 frame 消息类型
+ */
+export enum IframeBridgeMessageType {
+  /** iframe 内检测到元素悬停 */
+  ELEMENT_HOVER = 'IFRAME_ELEMENT_HOVER',
+  /** iframe 内元素点击 */
+  ELEMENT_CLICK = 'IFRAME_ELEMENT_CLICK',
+  /** 清除 iframe 元素高亮 */
+  CLEAR_HIGHLIGHT = 'IFRAME_CLEAR_HIGHLIGHT',
+  /** iframe 内高亮所有元素请求 */
+  HIGHLIGHT_ALL_REQUEST = 'IFRAME_HIGHLIGHT_ALL_REQUEST',
+  /** iframe 内高亮所有元素响应 */
+  HIGHLIGHT_ALL_RESPONSE = 'IFRAME_HIGHLIGHT_ALL_RESPONSE',
+  /** 跨域 iframe 检测到 */
+  CROSS_ORIGIN_DETECTED = 'IFRAME_CROSS_ORIGIN_DETECTED',
+  /** 同步 Alt 键状态到 iframe */
+  SYNC_ALT_KEY = 'IFRAME_SYNC_ALT_KEY',
+}
+
+/**
+ * iframe 元素悬停消息载荷
+ */
+export interface IframeElementHoverPayload {
+  /** 元素相对于 top frame 视口的位置 */
+  rect: IframeElementRect
+  /** 元素属性 */
+  attrs: ElementAttributes
+  /** 是否为有效元素 */
+  isValid: boolean
+  /** 鼠标位置（用于定位 tooltip） */
+  mousePosition: { x: number; y: number }
+  /** 是否处于录制模式 */
+  isRecordingMode: boolean
+}
+
+/**
+ * iframe 元素点击消息载荷
+ */
+export interface IframeElementClickPayload {
+  /** 元素属性 */
+  attrs: ElementAttributes
+  /** 是否处于录制模式 */
+  isRecordingMode: boolean
+  /** iframe 的 origin */
+  iframeOrigin: string
+}
+
+/**
+ * iframe 高亮所有元素响应载荷
+ */
+export interface IframeHighlightAllResponsePayload {
+  /** 所有元素的信息 */
+  elements: Array<{
+    rect: IframeElementRect
+    params: string[]
+  }>
 }
 
 /**

@@ -57,6 +57,10 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     highlightColor: '#FF4D4F',
     pollingInterval: 100,
   },
+  iframeConfig: {
+    enabled: true,
+    schemaTarget: 'iframe',
+  },
   enableAstTypeHints: true,
   exportConfig: {
     customFileName: false,
@@ -109,6 +113,7 @@ export const STORAGE_KEYS = {
   MAX_HISTORY_COUNT: 'maxHistoryCount',
   HIGHLIGHT_ALL_CONFIG: 'highlightAllConfig',
   RECORDING_MODE_CONFIG: 'recordingModeConfig',
+  IFRAME_CONFIG: 'iframeConfig',
   ENABLE_AST_TYPE_HINTS: 'enableAstTypeHints',
   EXPORT_CONFIG: 'exportConfig',
   EDITOR_THEME: 'editorTheme',

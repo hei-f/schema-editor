@@ -125,6 +125,14 @@ export const FORM_PATHS = {
     pollingInterval: ['recordingModeConfig', 'pollingInterval'],
   },
 
+  /** iframe 支持配置 */
+  iframeConfig: {
+    /** 是否启用 */
+    enabled: ['iframeConfig', 'enabled'],
+    /** Schema 数据来源 */
+    schemaTarget: ['iframeConfig', 'schemaTarget'],
+  },
+
   /** 启用 AST 类型提示 */
   enableAstTypeHints: ['enableAstTypeHints'],
 
