@@ -127,6 +127,10 @@ describe('Storage工具测试', () => {
           customFileName: false,
         },
         highlightColor: '#39C5BB',
+        iframeConfig: {
+          enabled: true,
+          schemaTarget: 'iframe',
+        },
         maxFavoritesCount: 50,
         draftRetentionDays: 1,
         autoSaveDraft: false,
@@ -225,6 +229,10 @@ describe('Storage工具测试', () => {
           customFileName: false,
         },
         highlightColor: '#39C5BB',
+        iframeConfig: {
+          enabled: true,
+          schemaTarget: 'iframe',
+        },
         maxFavoritesCount: 50,
         draftRetentionDays: 1,
         autoSaveDraft: false,
@@ -313,6 +321,10 @@ describe('Storage工具测试', () => {
           customFileName: false,
         },
         highlightColor: '#39C5BB',
+        iframeConfig: {
+          enabled: true,
+          schemaTarget: 'iframe',
+        },
         maxFavoritesCount: 50,
         draftRetentionDays: 1,
         autoSaveDraft: false,
@@ -581,6 +593,10 @@ describe('Storage工具测试', () => {
           customFileName: false,
         },
         highlightColor: '#39C5BB',
+        iframeConfig: {
+          enabled: true,
+          schemaTarget: 'iframe',
+        },
         maxFavoritesCount: 50,
         draftRetentionDays: 1,
         autoSaveDraft: false,
