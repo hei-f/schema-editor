@@ -227,6 +227,46 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   /** 轻量提示 */
   const { lightNotifications, showLightNotification } = useLightNotifications()
 
+  /**
+   * 清理预览容器（纯清理，不改变状态）
+   * 先立即清除 DOM（同步），再异步通知宿主
+   */
+  const cleanupPreviewContainer = useCallback(() => {
+    // 立即清除 DOM 容器（同步操作，无延迟）
+    previewContainerManager.clear()
+    logger.log('预览容器已清理')
+
+    // 异步通知宿主清理其内部状态
+    if (isPostMessageMode) {
+      const messageType =
+        apiConfig?.messageTypes?.cleanupPreview ??
+        DEFAULT_VALUES.apiConfig.messageTypes.cleanupPreview
+      sendRequestToHost(
+        messageType,
+        { containerId: PREVIEW_CONTAINER_ID },
+        2,
+        apiConfig?.sourceConfig
+      ).catch((error) => {
+        logger.warn('预览容器清理请求失败:', error)
+      })
+    } else {
+      postMessageToPage({
+        type: MessageType.CLEAR_PREVIEW,
+      })
+    }
+  }, [apiConfig, isPostMessageMode])
+
+  /**
+   * 处理抽屉关闭
+   * 在动画开始前立即清理预览容器，确保与抽屉关闭同步
+   */
+  const handleClose = useCallback(() => {
+    // 立即清理预览容器（与抽屉关闭同步）
+    cleanupPreviewContainer()
+    // 调用原始关闭回调
+    onClose()
+  }, [cleanupPreviewContainer, onClose])
+
   /** 保存逻辑 */
   const { isSaving, handleSave } = useSchemaSave({
     editorValue,
@@ -237,7 +277,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       message.success('保存成功')
       // 记录保存版本
       recordSpecialVersion(HistoryEntryType.Save, '保存版本')
-      onClose()
+      handleClose()
     },
     onSave,
   })
@@ -368,35 +408,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   const getPortalContainer = shadowRootManager.getContainer
 
   /**
-   * 清理预览容器（纯清理，不改变状态）
-   * 先立即清除 DOM（同步），再异步通知宿主
-   */
-  const cleanupPreviewContainer = useCallback(() => {
-    // 立即清除 DOM 容器（同步操作，无延迟）
-    previewContainerManager.clear()
-    logger.log('预览容器已清理')
-
-    // 异步通知宿主清理其内部状态
-    if (isPostMessageMode) {
-      const messageType =
-        apiConfig?.messageTypes?.cleanupPreview ??
-        DEFAULT_VALUES.apiConfig.messageTypes.cleanupPreview
-      sendRequestToHost(
-        messageType,
-        { containerId: PREVIEW_CONTAINER_ID },
-        2,
-        apiConfig?.sourceConfig
-      ).catch((error) => {
-        logger.warn('预览容器清理请求失败:', error)
-      })
-    } else {
-      postMessageToPage({
-        type: MessageType.CLEAR_PREVIEW,
-      })
-    }
-  }, [apiConfig, isPostMessageMode])
-
-  /**
    * 抽屉打开/关闭回调 - 统一处理生命周期逻辑
    */
   const handleAfterOpenChange = useCallback(
@@ -440,17 +451,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       clearSnapshots,
     ]
   )
-
-  /**
-   * 处理抽屉关闭
-   * 在动画开始前立即清理预览容器，确保与抽屉关闭同步
-   */
-  const handleClose = useCallback(() => {
-    // 立即清理预览容器（与抽屉关闭同步）
-    cleanupPreviewContainer()
-    // 调用原始关闭回调
-    onClose()
-  }, [cleanupPreviewContainer, onClose])
 
   /**
    * 格式化 Schema 数据，返回用于编辑器显示的内容
