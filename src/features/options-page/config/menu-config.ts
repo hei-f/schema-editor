@@ -87,6 +87,7 @@ export const MENU_CONFIG: MenuItemConfig[] = [
       { key: 'highlight-color', label: '高亮颜色', anchorId: 'field-highlight-color' },
       { key: 'highlight-all', label: '快捷键高亮', anchorId: 'field-highlight-all' },
       { key: 'recording-mode', label: '录制模式', anchorId: 'field-recording-mode' },
+      { key: 'iframe-config', label: 'iframe 支持', anchorId: 'field-iframe-config' },
     ],
   },
   {
