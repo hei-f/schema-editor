@@ -129,7 +129,7 @@ function sendToTopFrame<T>(type: IframeBridgeMessageType, payload: T): void {
     payload,
   }
 
-  console.log('[iframe-bridge] 发送消息到 top frame:', type, payload)
+  logger.log('[iframe-bridge] 发送消息到 top frame:', type, payload)
   window.top.postMessage(message, '*')
 }
 
@@ -214,7 +214,7 @@ export function broadcastAltKeyState(
   isPressed: boolean,
   mousePosition: { x: number; y: number }
 ): void {
-  console.log('[iframe-bridge] 广播 Alt 键状态到 iframes:', { isPressed, mousePosition })
+  logger.log('[iframe-bridge] 广播 Alt 键状态到 iframes:', { isPressed, mousePosition })
   broadcastToIframes(MessageType.SYNC_ALT_KEY, { isPressed, mousePosition })
 }
 
@@ -253,14 +253,14 @@ export interface IframeBridgeHandlers {
  * @returns 清理函数
  */
 export function initIframeBridgeListener(handlers: IframeBridgeHandlers): () => void {
-  console.log('[iframe-bridge] 初始化 iframe bridge 监听器')
+  logger.log('[iframe-bridge] 初始化 iframe bridge 监听器')
 
   const listener = (event: MessageEvent) => {
     // 只处理来自同源的消息
     if (!event.data || event.data.source !== IFRAME_BRIDGE_SOURCE) return
 
     const message = event.data as IframeBridgeMessage
-    console.log('[iframe-bridge] 收到消息:', message.type, message.payload)
+    logger.log('[iframe-bridge] 收到消息:', message.type, message.payload)
 
     switch (message.type) {
       case MessageType.ELEMENT_HOVER:

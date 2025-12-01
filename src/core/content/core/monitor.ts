@@ -92,14 +92,13 @@ export class ElementMonitor {
    */
   async start(isIframeMode: boolean = false): Promise<void> {
     if (this.isActive) {
-      console.log('[Monitor] 已经启动，跳过')
       return
     }
 
     this.isActive = true
     this.isIframeMode = isIframeMode
     const modeInfo = isIframeMode ? '(iframe 模式)' : '(top frame)'
-    console.log(`[Monitor] 启动 ${modeInfo}`, { url: window.location.href })
+    logger.log(`[Monitor] 启动 ${modeInfo}`, { url: window.location.href })
 
     // 加载搜索配置
     this.searchConfig = await storage.getSearchConfig()
@@ -148,7 +147,7 @@ export class ElementMonitor {
       },
       onAltKeySync: (payload: AltKeySyncPayload) => {
         // 收到主页面的 Alt 键状态同步
-        console.log('[Monitor iframe] 收到 Alt 键状态同步:', payload)
+        logger.log('[Monitor iframe] 收到 Alt 键状态同步:', payload)
         this.handleAltKeySync(payload)
       },
     })
@@ -175,7 +174,6 @@ export class ElementMonitor {
    */
   private handleAltKeySync(payload: AltKeySyncPayload): void {
     if (!this.isActive || this.isPaused) {
-      console.log('[Monitor iframe] 忽略 Alt 同步：未激活或已暂停')
       return
     }
 
@@ -373,20 +371,11 @@ export class ElementMonitor {
    */
   private handleKeyDown = (event: KeyboardEvent): void => {
     if (!this.isActive || this.isPaused) {
-      if (event.altKey) {
-        console.log('[Monitor] Alt 按下但未激活/已暂停', {
-          isActive: this.isActive,
-          isPaused: this.isPaused,
-          isIframeMode: this.isIframeMode,
-          url: window.location.href,
-        })
-      }
       return
     }
 
     // 检测 Alt 键（Mac 上是 Option 键）
     if (event.altKey) {
-      console.log('[Monitor] Alt 键按下', { isIframeMode: this.isIframeMode })
       // 使用 event.code 而不是 event.key，因为 Mac 上 Alt+A 会产生特殊字符 'å'
       const keyCode = event.code.toLowerCase()
 
@@ -588,12 +577,6 @@ export class ElementMonitor {
     }
 
     const target = event.target as HTMLElement
-    console.log('[Monitor] mousemove with Alt', {
-      isIframeMode: this.isIframeMode,
-      targetTag: target.tagName,
-      x: event.clientX,
-      y: event.clientY,
-    })
 
     // 忽略我们自己创建的元素
     if (

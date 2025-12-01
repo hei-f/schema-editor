@@ -110,8 +110,7 @@ export class SchemaEditorContent {
    * 初始化
    */
   private async init(): Promise<void> {
-    // 调试：打印 frame 信息
-    console.log('[Schema Editor] 初始化开始', {
+    logger.log('[Schema Editor] 初始化开始', {
       isTop: this.isTop,
       isIframe: this.isIframe,
       isSameOrigin: this.isSameOrigin,
@@ -120,31 +119,31 @@ export class SchemaEditorContent {
 
     // 加载 iframe 配置
     this.iframeConfig = await storage.getIframeConfig()
-    console.log('[Schema Editor] iframe 配置:', this.iframeConfig)
+    logger.log('[Schema Editor] iframe 配置:', this.iframeConfig)
 
     // 检查初始激活状态
     this.isActive = await storage.getActiveState()
-    console.log('[Schema Editor] 激活状态:', this.isActive)
+    logger.log('[Schema Editor] 激活状态:', this.isActive)
 
     // iframe 内且 iframe 功能未启用时，跳过初始化
     if (this.isIframe && !this.iframeConfig.enabled) {
-      console.log('[Schema Editor] iframe 内且功能未启用，跳过初始化')
+      logger.log('[Schema Editor] iframe 内且功能未启用，跳过初始化')
       this.isDestroyed = true
       return
     }
 
     // iframe 内且非同源时，跳过初始化（跨域 iframe 不支持）
     if (this.isIframe && !this.isSameOrigin) {
-      console.log('[Schema Editor] 跨域 iframe，跳过初始化')
+      logger.log('[Schema Editor] 跨域 iframe，跳过初始化')
       this.isDestroyed = true
       return
     }
 
     if (this.isActive) {
-      console.log('[Schema Editor] 开始启动 monitor...')
+      logger.log('[Schema Editor] 开始启动 monitor...')
       this.start()
     } else {
-      console.log('[Schema Editor] 插件未激活，跳过启动 monitor')
+      logger.log('[Schema Editor] 插件未激活，跳过启动 monitor')
     }
 
     // 监听来自background的消息
@@ -164,12 +163,12 @@ export class SchemaEditorContent {
 
     // 如果是 top frame 且 iframe 功能启用，初始化 iframe bridge 监听器
     if (this.isTop && this.iframeConfig.enabled) {
-      console.log('[Schema Editor] top frame: 初始化 iframe bridge 监听器')
+      logger.log('[Schema Editor] top frame: 初始化 iframe bridge 监听器')
       this.initIframeBridge()
     }
 
     const frameInfo = this.isTop ? 'top frame' : `iframe (同源: ${this.isSameOrigin})`
-    console.log(`[Schema Editor] 初始化完成 [${frameInfo}], 激活状态:`, this.isActive)
+    logger.log(`[Schema Editor] 初始化完成 [${frameInfo}], 激活状态:`, this.isActive)
   }
 
   /**
