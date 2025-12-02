@@ -25,7 +25,7 @@ import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { App as AntdApp, ConfigProvider, message as antdMessage } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { StyleSheetManager } from 'styled-components'
 import { IframeHighlightOverlay } from './IframeHighlightOverlay'
 
@@ -233,6 +233,17 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     },
     [checkPreviewFunction]
   )
+
+  /**
+   * 抽屉打开时立即隐藏滚动条，避免打开动画时画面抖动
+   * 使用 useLayoutEffect 确保在 DOM 更新后同步执行
+   * 注意：滚动条恢复在 SchemaDrawer 的 afterOpenChange 中处理（动画完成后）
+   */
+  useLayoutEffect(() => {
+    if (drawerOpen) {
+      document.body.style.overflow = 'hidden'
+    }
+  }, [drawerOpen])
 
   /**
    * 监听来自 injected script 的消息（windowFunction 模式）
@@ -506,6 +517,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
 
     // 抽屉关闭时，恢复元素监听
     window.dispatchEvent(new CustomEvent('schema-editor:resume-monitor'))
+    // 注意：滚动条恢复在 SchemaDrawer 的 afterOpenChange 中处理，确保动画完成后再恢复
   }
 
   return (

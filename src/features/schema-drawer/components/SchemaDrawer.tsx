@@ -409,6 +409,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
 
   /**
    * 抽屉打开/关闭回调 - 统一处理生命周期逻辑
+   * 注意：滚动条隐藏在 ContentApp 的打开回调中处理，滚动条恢复在此处理（动画完成后）
    */
   const handleAfterOpenChange = useCallback(
     (isOpen: boolean) => {
@@ -416,9 +417,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         // 打开时的初始化逻辑
         isFirstLoadRef.current = true
         checkDraft()
-
-        // 禁止背景页面滚动
-        document.body.style.overflow = 'hidden'
 
         // 如果是录制模式打开，设置录制状态并自动开始录制
         if (initialRecordingMode && recordingConfig && schemaData !== undefined) {
