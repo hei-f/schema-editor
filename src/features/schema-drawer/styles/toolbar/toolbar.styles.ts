@@ -148,8 +148,9 @@ export const ParamLabel = styled.span`
 
 /**
  * 复制图标包装器
+ * $forceVisible: 复制成功时强制显示图标
  */
-export const CopyIconWrapper = styled.span`
+export const CopyIconWrapper = styled.span<{ $forceVisible?: boolean }>`
   position: absolute;
   right: 4px;
   top: 3px;
@@ -157,7 +158,7 @@ export const CopyIconWrapper = styled.span`
   align-items: center;
   justify-content: center;
   height: 16px;
-  opacity: 0;
+  opacity: ${(props) => (props.$forceVisible ? 1 : 0)};
   transition:
     opacity 0.2s ease,
     background-color 0.2s ease;
@@ -186,18 +187,20 @@ export const StyledCopyIcon = styled.span<{ $isSuccess?: boolean }>`
   height: 16px;
   line-height: 1;
   vertical-align: middle;
+  transform: translateZ(0);
+  transform-origin: center center;
+  will-change: transform, color;
   transition:
-    color 0.2s ease,
-    transform 0.2s ease,
-    opacity 0.2s ease;
+    color 0.15s ease-out,
+    transform 0.15s ease-out;
 
   &:hover {
     color: ${(props) => (props.$isSuccess ? '#52c41a' : '#003a8c')};
-    transform: scale(1.1);
+    transform: translateZ(0) scale(1.1);
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: translateZ(0) scale(0.95);
   }
 
   svg {

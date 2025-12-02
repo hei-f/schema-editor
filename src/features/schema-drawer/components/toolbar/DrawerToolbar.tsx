@@ -2,7 +2,7 @@ import type { ElementAttributes, ToolbarButtonsConfig } from '@/shared/types'
 import { ContentType } from '@/shared/types'
 import { Button, Segmented, Tooltip } from 'antd'
 import { DiffOutlined } from '@ant-design/icons'
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   ButtonGroup,
   EditorToolbar as StyledEditorToolbar,
@@ -78,6 +78,15 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
   onApplyRepair,
   onCancelRepair,
 }) => {
+  /**
+   * 预览模式下的 Tooltip 容器获取函数
+   * 挂载到 document.body，避免被预览容器的 overflow 裁剪
+   */
+  const tooltipContainer = useMemo(() => {
+    if (!previewEnabled) return undefined
+    return () => document.body
+  }, [previewEnabled])
+
   // Diff 模式下的简化工具栏
   if (isDiffMode) {
     return (
@@ -119,7 +128,7 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
 
   return (
     <StyledEditorToolbar>
-      <ScrollableParams params={attributes.params || []} />
+      <ScrollableParams params={attributes.params || []} previewEnabled={previewEnabled} />
       <ButtonGroup>
         {previewEnabled && onRenderPreview && (
           <Button size="small" type="primary" onClick={onRenderPreview}>
@@ -135,6 +144,7 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
                   ? '当前数据类型错误'
                   : ''
             }
+            getPopupContainer={tooltipContainer}
           >
             <Segmented
               size="small"
@@ -151,12 +161,18 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
         )}
         {toolbarButtons.escape && (
           <>
-            <Tooltip title="将内容包装成字符串值，添加引号和转义">
+            <Tooltip
+              title="将内容包装成字符串值，添加引号和转义"
+              getPopupContainer={tooltipContainer}
+            >
               <Button size="small" onClick={onEscape}>
                 转义
               </Button>
             </Tooltip>
-            <Tooltip title="将字符串值还原，移除外层引号和转义">
+            <Tooltip
+              title="将字符串值还原，移除外层引号和转义"
+              getPopupContainer={tooltipContainer}
+            >
               <Button size="small" onClick={onUnescape}>
                 去转义
               </Button>
@@ -164,21 +180,27 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
           </>
         )}
         {toolbarButtons.serialize && (
-          <Tooltip title="将 JSON 压缩成一行">
+          <Tooltip title="将 JSON 压缩成一行" getPopupContainer={tooltipContainer}>
             <Button size="small" onClick={onCompact}>
               压缩
             </Button>
           </Tooltip>
         )}
         {toolbarButtons.deserialize && (
-          <Tooltip title={!canParse ? '当前内容不是有效的 JSON 格式' : '解析多层嵌套/转义的 JSON'}>
+          <Tooltip
+            title={!canParse ? '当前内容不是有效的 JSON 格式' : '解析多层嵌套/转义的 JSON'}
+            getPopupContainer={tooltipContainer}
+          >
             <Button size="small" onClick={onParse} disabled={!canParse}>
               解析
             </Button>
           </Tooltip>
         )}
         {toolbarButtons.format && (
-          <Tooltip title={!canParse ? '当前内容不是有效的 JSON 格式' : ''}>
+          <Tooltip
+            title={!canParse ? '当前内容不是有效的 JSON 格式' : ''}
+            getPopupContainer={tooltipContainer}
+          >
             <Button size="small" onClick={onFormat} disabled={!canParse}>
               格式化
             </Button>
@@ -186,21 +208,27 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = ({
         )}
         {/* JSON 错误诊断按钮（始终可用，点击时智能判断） */}
         {onLocateError && (
-          <Tooltip title="定位 JSON 语法错误位置（支持检测字符串内部的 JSON）">
+          <Tooltip
+            title="定位 JSON 语法错误位置（支持检测字符串内部的 JSON）"
+            getPopupContainer={tooltipContainer}
+          >
             <Button size="small" onClick={onLocateError}>
               定位错误
             </Button>
           </Tooltip>
         )}
         {onRepairJson && (
-          <Tooltip title="尝试自动修复 JSON 语法错误（支持修复字符串内部的 JSON）">
+          <Tooltip
+            title="尝试自动修复 JSON 语法错误（支持修复字符串内部的 JSON）"
+            getPopupContainer={tooltipContainer}
+          >
             <Button size="small" onClick={onRepairJson}>
               修复JSON
             </Button>
           </Tooltip>
         )}
         {showDiffButton && onEnterDiffMode && (
-          <Tooltip title="对比模式：对比两段内容的差异">
+          <Tooltip title="对比模式：对比两段内容的差异" getPopupContainer={tooltipContainer}>
             <Button size="small" onClick={onEnterDiffMode}>
               Diff
             </Button>
