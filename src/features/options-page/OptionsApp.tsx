@@ -423,7 +423,7 @@ export const OptionsApp: React.FC = () => {
   }, [form])
 
   /** 当前插件版本 */
-  const currentVersion = 'v1.19.2'
+  const currentVersion = 'v1.20.0'
 
   /**
    * 设置页面标题
