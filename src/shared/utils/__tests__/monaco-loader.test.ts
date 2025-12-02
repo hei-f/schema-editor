@@ -5,30 +5,30 @@
  */
 
 // Mock monaco-editor modules
-jest.mock('monaco-editor', () => ({}), { virtual: true })
-jest.mock(
+vi.mock('monaco-editor', () => ({}), { virtual: true })
+vi.mock(
   'monaco-editor/esm/vs/editor/editor.worker?worker',
   () => {
-    return jest.fn().mockImplementation(() => ({
-      terminate: jest.fn(),
+    return vi.fn().mockImplementation(() => ({
+      terminate: vi.fn(),
     }))
   },
   { virtual: true }
 )
-jest.mock(
+vi.mock(
   'monaco-editor/esm/vs/language/json/json.worker?worker',
   () => {
-    return jest.fn().mockImplementation(() => ({
-      terminate: jest.fn(),
+    return vi.fn().mockImplementation(() => ({
+      terminate: vi.fn(),
     }))
   },
   { virtual: true }
 )
-jest.mock(
+vi.mock(
   '@monaco-editor/react',
   () => ({
     loader: {
-      config: jest.fn(),
+      config: vi.fn(),
     },
   }),
   { virtual: true }
@@ -46,7 +46,7 @@ describe('Monaco Loader', () => {
     delete (self as any).MonacoEnvironment
 
     // 清除模块缓存并重新导入
-    jest.resetModules()
+    vi.resetModules()
 
     // 模拟 configureMonaco 函数的核心逻辑
     configureMonaco = () => {
@@ -119,7 +119,7 @@ describe('Monaco Loader', () => {
     it('应该在已有配置时返回 false', () => {
       // 预先设置 MonacoEnvironment
       ;(self as any).MonacoEnvironment = {
-        getWorker: jest.fn(),
+        getWorker: vi.fn(),
       }
 
       const result = configureMonaco()
@@ -128,7 +128,7 @@ describe('Monaco Loader', () => {
     })
 
     it('不应该覆盖已有的 MonacoEnvironment', () => {
-      const existingGetWorker = jest.fn()
+      const existingGetWorker = vi.fn()
       ;(self as any).MonacoEnvironment = {
         getWorker: existingGetWorker,
         customProperty: 'custom-value',

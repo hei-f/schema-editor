@@ -6,21 +6,21 @@ import { useFavoritesManagement } from '../../storage/useFavoritesManagement'
 import type { Favorite } from '@/shared/types'
 
 // Mock dependencies
-jest.mock('@/shared/utils/browser/storage')
-jest.mock('antd', () => ({
+vi.mock('@/shared/utils/browser/storage')
+vi.mock('antd', () => ({
   Modal: {
-    confirm: jest.fn(),
+    confirm: vi.fn(),
   },
 }))
 
-const mockStorage = storage as jest.Mocked<typeof storage>
-const mockModal = Modal as jest.Mocked<typeof Modal>
+const mockStorage = storage as vi.Mocked<typeof storage>
+const mockModal = Modal as vi.Mocked<typeof Modal>
 
 describe('useFavoritesManagement Hook 测试', () => {
-  const mockOnApplyFavorite = jest.fn()
-  const mockOnShowLightNotification = jest.fn()
-  const mockOnWarning = jest.fn()
-  const mockOnError = jest.fn()
+  const mockOnApplyFavorite = vi.fn()
+  const mockOnShowLightNotification = vi.fn()
+  const mockOnWarning = vi.fn()
+  const mockOnError = vi.fn()
 
   const defaultProps = {
     editorValue: 'test content',
@@ -40,7 +40,7 @@ describe('useFavoritesManagement Hook 测试', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // 初始化 shadowRootManager
     const mockShadowRoot = document.createElement('div') as unknown as ShadowRoot

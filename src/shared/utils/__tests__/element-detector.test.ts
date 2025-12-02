@@ -7,21 +7,21 @@ import {
 } from '../ui/dom'
 
 // Mock storage模块
-jest.mock('../browser/storage', () => ({
+vi.mock('../browser/storage', () => ({
   storage: {
-    getAttributeName: jest.fn(),
-    getSearchConfig: jest.fn(),
-    getHighlightColor: jest.fn(),
+    getAttributeName: vi.fn(),
+    getSearchConfig: vi.fn(),
+    getHighlightColor: vi.fn(),
   },
 }))
 
 describe('Element Detector测试', () => {
-  const mockGetAttributeName = storage.getAttributeName as jest.Mock
-  const mockGetSearchConfig = storage.getSearchConfig as jest.Mock
-  const mockGetHighlightColor = storage.getHighlightColor as jest.Mock
+  const mockGetAttributeName = storage.getAttributeName as vi.Mock
+  const mockGetSearchConfig = storage.getSearchConfig as vi.Mock
+  const mockGetHighlightColor = storage.getHighlightColor as vi.Mock
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     // 默认返回schema-params
     mockGetAttributeName.mockResolvedValue('schema-params')
     // 默认搜索配置
@@ -34,7 +34,7 @@ describe('Element Detector测试', () => {
     mockGetHighlightColor.mockResolvedValue('#39C5BB')
 
     // Mock document.elementsFromPoint
-    document.elementsFromPoint = jest.fn(() => [])
+    document.elementsFromPoint = vi.fn(() => [])
   })
 
   describe('getElementAttributes', () => {
@@ -391,7 +391,7 @@ describe('Element Detector测试', () => {
       document.body.appendChild(target)
 
       // Mock elementsFromPoint返回目标元素
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         target,
         document.body,
         document.documentElement,
@@ -413,7 +413,7 @@ describe('Element Detector测试', () => {
       document.body.appendChild(parent)
 
       // Mock elementsFromPoint返回子元素
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         child,
         parent,
         document.body,
@@ -431,7 +431,7 @@ describe('Element Detector测试', () => {
     it('应该返回null如果没找到任何元素', async () => {
       const element = document.createElement('div')
       document.body.appendChild(element)
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         element,
         document.body,
         document.documentElement,
@@ -450,7 +450,7 @@ describe('Element Detector测试', () => {
       uiElement.setAttribute('data-schema-editor-ui', 'true')
       uiElement.setAttribute('data-schema-params', 'param1')
       document.body.appendChild(uiElement)
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         uiElement,
         document.body,
         document.documentElement,
@@ -473,7 +473,7 @@ describe('Element Detector测试', () => {
       parent.appendChild(child1)
       parent.appendChild(child2)
       document.body.appendChild(parent)
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         parent,
         document.body,
         document.documentElement,
@@ -493,7 +493,7 @@ describe('Element Detector测试', () => {
       document.body.appendChild(element)
 
       // Mock返回重复的元素
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         element,
         element,
         document.body,
@@ -514,7 +514,7 @@ describe('Element Detector测试', () => {
       const element = document.createElement('div')
       element.setAttribute('data-custom-attr', 'value1')
       document.body.appendChild(element)
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         element,
         document.body,
         document.documentElement,
@@ -544,7 +544,7 @@ describe('Element Detector测试', () => {
       level1.appendChild(level2)
       level2.appendChild(level3)
       document.body.appendChild(level0)
-      ;(document.elementsFromPoint as jest.Mock).mockReturnValue([
+      ;(document.elementsFromPoint as vi.Mock).mockReturnValue([
         level0,
         document.body,
         document.documentElement,

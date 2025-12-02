@@ -22,17 +22,17 @@ describe('DrawerToolbar组件测试', () => {
   }
 
   const mockHandlers = {
-    onFormat: jest.fn(),
-    onEscape: jest.fn(),
-    onUnescape: jest.fn(),
-    onCompact: jest.fn(),
-    onParse: jest.fn(),
-    onSegmentChange: jest.fn(),
-    onRenderPreview: jest.fn(),
+    onFormat: vi.fn(),
+    onEscape: vi.fn(),
+    onUnescape: vi.fn(),
+    onCompact: vi.fn(),
+    onParse: vi.fn(),
+    onSegmentChange: vi.fn(),
+    onRenderPreview: vi.fn(),
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('基本渲染', () => {
@@ -441,11 +441,11 @@ describe('DrawerToolbar组件测试', () => {
   })
 
   describe('参数复制功能', () => {
-    let writeTextMock: jest.Mock
+    let writeTextMock: vi.Mock
 
     beforeEach(() => {
       // Mock clipboard API
-      writeTextMock = jest.fn().mockResolvedValue(undefined)
+      writeTextMock = vi.fn().mockResolvedValue(undefined)
       Object.defineProperty(navigator, 'clipboard', {
         value: {
           writeText: writeTextMock,
@@ -520,8 +520,8 @@ describe('DrawerToolbar组件测试', () => {
   describe('Diff模式', () => {
     const diffModeHandlers = {
       ...mockHandlers,
-      onExitDiffMode: jest.fn(),
-      onDiffDisplayModeChange: jest.fn(),
+      onExitDiffMode: vi.fn(),
+      onDiffDisplayModeChange: vi.fn(),
     }
 
     it('在Diff模式下应该显示简化工具栏', () => {
@@ -542,8 +542,8 @@ describe('DrawerToolbar组件测试', () => {
     })
 
     it('有待确认修复时应该显示应用和取消按钮', () => {
-      const onApplyRepair = jest.fn()
-      const onCancelRepair = jest.fn()
+      const onApplyRepair = vi.fn()
+      const onCancelRepair = vi.fn()
 
       render(
         <DrawerToolbar
@@ -567,8 +567,8 @@ describe('DrawerToolbar组件测试', () => {
 
     it('点击应用修复按钮应该触发回调', async () => {
       const user = userEvent.setup()
-      const onApplyRepair = jest.fn()
-      const onCancelRepair = jest.fn()
+      const onApplyRepair = vi.fn()
+      const onCancelRepair = vi.fn()
 
       render(
         <DrawerToolbar
@@ -591,8 +591,8 @@ describe('DrawerToolbar组件测试', () => {
 
     it('点击取消按钮应该触发回调', async () => {
       const user = userEvent.setup()
-      const onApplyRepair = jest.fn()
-      const onCancelRepair = jest.fn()
+      const onApplyRepair = vi.fn()
+      const onCancelRepair = vi.fn()
 
       render(
         <DrawerToolbar
