@@ -7,7 +7,14 @@ import manifest from './src/manifest.json'
 export default defineConfig({
   // Chrome扩展需要使用相对路径，不能使用绝对路径
   base: './',
-  plugins: [react(), crx({ manifest: manifest as any })],
+  plugins: [
+    react({
+      babel: {
+        plugins: [['babel-plugin-react-compiler', {}]],
+      },
+    }),
+    crx({ manifest: manifest as any }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
