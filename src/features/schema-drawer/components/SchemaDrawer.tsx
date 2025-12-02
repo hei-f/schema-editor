@@ -258,9 +258,11 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
 
   /**
    * 处理抽屉关闭
-   * 在动画开始前立即清理预览容器，确保与抽屉关闭同步
+   * 在动画开始前立即清理预览容器和恢复滚动条，确保与抽屉关闭同步
    */
   const handleClose = useCallback(() => {
+    // 立即恢复 body 滚动（与点击同步，避免等待动画）
+    document.body.style.overflow = ''
     // 立即清理预览容器（与抽屉关闭同步）
     cleanupPreviewContainer()
     // 调用原始关闭回调
@@ -430,7 +432,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         }
       } else {
         // 关闭时的清理逻辑（动画完成后）
-        document.body.style.overflow = ''
+        // 注意：overflow 清除已移至 handleClose，在点击时立即执行
 
         // 重置所有模式状态
         setIsInRecordingMode(false)
@@ -736,9 +738,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           shadowDomContainerManager.resetZIndex()
         }
 
-        // 进入预览模式时降低 z-index
+        // 进入预览模式时降低 z-index，使预览容器能显示
         if (newMode === FULL_SCREEN_MODE.PREVIEW && prevMode !== FULL_SCREEN_MODE.PREVIEW) {
-          shadowDomContainerManager.setZIndex(previewConfig.zIndex.preview)
+          shadowDomContainerManager.setZIndex(previewConfig.zIndex.preview - 1)
         }
 
         return newMode
