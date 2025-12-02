@@ -26,8 +26,8 @@ interface UseResizerReturn {
   setWidth: (width: number) => void
   /** 是否正在拖拽 */
   isDragging: boolean
-  /** 容器 ref */
-  containerRef: React.RefObject<HTMLDivElement>
+  /** 容器 ref（React 19: RefObject 类型包含 null） */
+  containerRef: React.RefObject<HTMLDivElement | null>
   /** 开始拖拽处理函数 */
   handleResizeStart: (e: React.MouseEvent) => void
 }
