@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest'
 import { ContentType } from '@/shared/types'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -441,7 +442,7 @@ describe('DrawerToolbar组件测试', () => {
   })
 
   describe('参数复制功能', () => {
-    let writeTextMock: vi.Mock
+    let writeTextMock: Mock
 
     beforeEach(() => {
       // Mock clipboard API

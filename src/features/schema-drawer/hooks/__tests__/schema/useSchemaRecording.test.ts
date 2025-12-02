@@ -1,3 +1,4 @@
+import type { MockedFunction } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { useSchemaRecording } from '../../schema/useSchemaRecording'
 import { MessageType } from '@/shared/types'
@@ -40,6 +41,7 @@ describe('useSchemaRecording Hook 测试', () => {
 
     // 默认设置为 windowFunction 模式
     mockGetCommunicationMode.mockReturnValue({
+      communicationMode: 'windowFunction',
       isPostMessageMode: false,
       isWindowFunctionMode: true,
     })
@@ -70,6 +72,7 @@ describe('useSchemaRecording Hook 测试', () => {
   describe('开始录制 - windowFunction 模式', () => {
     beforeEach(() => {
       mockGetCommunicationMode.mockReturnValue({
+        communicationMode: 'windowFunction',
         isPostMessageMode: false,
         isWindowFunctionMode: true,
       })
@@ -195,6 +198,7 @@ describe('useSchemaRecording Hook 测试', () => {
 
     beforeEach(() => {
       mockGetCommunicationMode.mockReturnValue({
+        communicationMode: 'postMessage',
         isPostMessageMode: true,
         isWindowFunctionMode: false,
       })
@@ -817,6 +821,7 @@ describe('useSchemaRecording Hook 测试', () => {
   describe('API 配置', () => {
     it('应该使用默认的 messageTypes 当 apiConfig 未提供时', async () => {
       mockGetCommunicationMode.mockReturnValue({
+        communicationMode: 'postMessage',
         isPostMessageMode: true,
         isWindowFunctionMode: false,
       })
@@ -844,6 +849,7 @@ describe('useSchemaRecording Hook 测试', () => {
 
     it('应该使用自定义的 requestTimeout', async () => {
       mockGetCommunicationMode.mockReturnValue({
+        communicationMode: 'postMessage',
         isPostMessageMode: true,
         isWindowFunctionMode: false,
       })

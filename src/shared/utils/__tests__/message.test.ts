@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest'
 import { MessageType } from '@/shared/types'
 import {
   listenChromeMessages,
@@ -22,7 +23,7 @@ describe('Message工具测试', () => {
         payload: { params: 'test-param' },
       }
 
-      ;(chrome.runtime.sendMessage as vi.Mock).mockResolvedValue({ success: true })
+      ;(chrome.runtime.sendMessage as Mock).mockResolvedValue({ success: true })
 
       await sendMessageToBackground(message)
 
@@ -36,7 +37,7 @@ describe('Message工具测试', () => {
         { type: MessageType.TOGGLE_ACTIVE, payload: { active: true } },
       ]
 
-      ;(chrome.runtime.sendMessage as vi.Mock).mockResolvedValue({ success: true })
+      ;(chrome.runtime.sendMessage as Mock).mockResolvedValue({ success: true })
 
       for (const msg of messages) {
         await sendMessageToBackground(msg)
@@ -52,7 +53,7 @@ describe('Message工具测试', () => {
       }
       const mockResponse = { data: { key: 'value' } }
 
-      ;(chrome.runtime.sendMessage as vi.Mock).mockResolvedValue(mockResponse)
+      ;(chrome.runtime.sendMessage as Mock).mockResolvedValue(mockResponse)
 
       const result = await sendMessageToBackground(message)
 
@@ -86,7 +87,7 @@ describe('Message工具测试', () => {
 
       postMessageToPage(message)
 
-      const call = (window.postMessage as vi.Mock).mock.calls[0]
+      const call = (window.postMessage as Mock).mock.calls[0]
       expect(call[0]).toHaveProperty('source', 'schema-editor-content')
       expect(call[1]).toBe('*')
     })
@@ -123,7 +124,7 @@ describe('Message工具测试', () => {
         payload: complexPayload,
       })
 
-      const call = (window.postMessage as vi.Mock).mock.calls[0]
+      const call = (window.postMessage as Mock).mock.calls[0]
       expect(call[0].payload).toEqual(complexPayload)
     })
   })
@@ -154,7 +155,7 @@ describe('Message工具测试', () => {
 
       postMessageToPage(message)
 
-      const call = (window.postMessage as vi.Mock).mock.calls[0]
+      const call = (window.postMessage as Mock).mock.calls[0]
       expect(call[0].payload).toHaveProperty('params')
     })
 
@@ -169,7 +170,7 @@ describe('Message工具测试', () => {
 
       postMessageToPage(message)
 
-      const call = (window.postMessage as vi.Mock).mock.calls[0]
+      const call = (window.postMessage as Mock).mock.calls[0]
       expect(call[0].payload).toHaveProperty('schema')
       expect(call[0].payload).toHaveProperty('params')
     })
@@ -185,7 +186,7 @@ describe('Message工具测试', () => {
 
       postMessageToPage(message)
 
-      const call = (window.postMessage as vi.Mock).mock.calls[0]
+      const call = (window.postMessage as Mock).mock.calls[0]
       expect(call[0].payload).toHaveProperty('success')
       expect(call[0].payload).toHaveProperty('data')
     })
@@ -199,7 +200,7 @@ describe('Message工具测试', () => {
         payload: { params: 'test-param' },
       }
 
-      ;(chrome.tabs.sendMessage as vi.Mock).mockResolvedValue({ success: true })
+      ;(chrome.tabs.sendMessage as Mock).mockResolvedValue({ success: true })
 
       await sendMessageToContent(tabId, message)
 
@@ -214,7 +215,7 @@ describe('Message工具测试', () => {
       }
       const mockResponse = { data: { key: 'value' } }
 
-      ;(chrome.tabs.sendMessage as vi.Mock).mockResolvedValue(mockResponse)
+      ;(chrome.tabs.sendMessage as Mock).mockResolvedValue(mockResponse)
 
       const result = await sendMessageToContent(tabId, message)
 
@@ -228,7 +229,7 @@ describe('Message工具测试', () => {
         payload: { params: 'test' },
       }
 
-      ;(chrome.tabs.sendMessage as vi.Mock).mockRejectedValue(new Error('Tab not found'))
+      ;(chrome.tabs.sendMessage as Mock).mockRejectedValue(new Error('Tab not found'))
 
       await expect(sendMessageToContent(tabId, message)).rejects.toThrow('Tab not found')
     })
@@ -243,7 +244,7 @@ describe('Message工具测试', () => {
       listenChromeMessages(handler)
 
       // 获取注册的监听器
-      const listener = (chrome.runtime.onMessage.addListener as vi.Mock).mock.calls[0][0]
+      const listener = (chrome.runtime.onMessage.addListener as Mock).mock.calls[0][0]
       const sendResponse = vi.fn()
 
       const result = listener(message, sender, sendResponse)
@@ -259,7 +260,7 @@ describe('Message工具测试', () => {
 
       listenChromeMessages(handler)
 
-      const listener = (chrome.runtime.onMessage.addListener as vi.Mock).mock.calls[0][0]
+      const listener = (chrome.runtime.onMessage.addListener as Mock).mock.calls[0][0]
       const sendResponse = vi.fn()
 
       const result = listener(message, sender, sendResponse)
@@ -275,7 +276,7 @@ describe('Message工具测试', () => {
 
       listenChromeMessages(handler)
 
-      const listener = (chrome.runtime.onMessage.addListener as vi.Mock).mock.calls[0][0]
+      const listener = (chrome.runtime.onMessage.addListener as Mock).mock.calls[0][0]
       const sendResponse = vi.fn()
 
       const result = listener(message, sender, sendResponse)
@@ -398,7 +399,7 @@ describe('Message工具测试', () => {
       )
 
       // 获取 requestId
-      const callArgs = (window.postMessage as vi.Mock).mock.calls[0][0]
+      const callArgs = (window.postMessage as Mock).mock.calls[0][0]
       const requestId = callArgs.requestId
 
       // 模拟宿主响应
@@ -523,7 +524,7 @@ describe('Message工具测试', () => {
 
   describe('错误场景', () => {
     it('应该处理sendMessageToBackground失败', async () => {
-      ;(chrome.runtime.sendMessage as vi.Mock).mockRejectedValue(new Error('SendMessage failed'))
+      ;(chrome.runtime.sendMessage as Mock).mockRejectedValue(new Error('SendMessage failed'))
 
       await expect(
         sendMessageToBackground({
@@ -551,7 +552,7 @@ describe('Message工具测试', () => {
   describe('边界情况测试', () => {
     it('应该处理非常长的params字符串', async () => {
       const longParams = 'a'.repeat(10000)
-      ;(chrome.runtime.sendMessage as vi.Mock).mockResolvedValue({ success: true })
+      ;(chrome.runtime.sendMessage as Mock).mockResolvedValue({ success: true })
 
       await sendMessageToBackground({
         type: MessageType.GET_SCHEMA,
@@ -589,7 +590,7 @@ describe('Message工具测试', () => {
         payload: specialPayload,
       })
 
-      const call = (window.postMessage as vi.Mock).mock.calls[0]
+      const call = (window.postMessage as Mock).mock.calls[0]
       expect(call[0].payload).toEqual(specialPayload)
     })
 

@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest'
 import {
   isVisibleElement,
   findElementWithSchemaParams,
@@ -84,8 +85,8 @@ describe('dom 工具函数', () => {
   describe('findElementWithSchemaParams', () => {
     beforeEach(() => {
       vi.clearAllMocks()
-      ;(storage.getAttributeName as vi.Mock).mockResolvedValue('schema-params')
-      ;(storage.getSearchConfig as vi.Mock).mockResolvedValue({
+      ;(storage.getAttributeName as Mock).mockResolvedValue('schema-params')
+      ;(storage.getSearchConfig as Mock).mockResolvedValue({
         limitUpwardSearch: true,
         searchDepthUp: 5,
       })
@@ -177,7 +178,7 @@ describe('dom 工具函数', () => {
     })
 
     it('应该限制向上搜索深度', async () => {
-      ;(storage.getSearchConfig as vi.Mock).mockResolvedValue({
+      ;(storage.getSearchConfig as Mock).mockResolvedValue({
         limitUpwardSearch: true,
         searchDepthUp: 1,
       })
@@ -205,7 +206,7 @@ describe('dom 工具函数', () => {
     })
 
     it('不限制搜索深度时应该搜索到根元素', async () => {
-      ;(storage.getSearchConfig as vi.Mock).mockResolvedValue({
+      ;(storage.getSearchConfig as Mock).mockResolvedValue({
         limitUpwardSearch: false,
         searchDepthUp: 5,
       })
@@ -263,7 +264,7 @@ describe('dom 工具函数', () => {
       const child = document.createElement('div')
       parent.appendChild(child)
       document.body.appendChild(grandparent)
-      ;(storage.getSearchConfig as vi.Mock).mockResolvedValue({
+      ;(storage.getSearchConfig as Mock).mockResolvedValue({
         limitUpwardSearch: true,
         searchDepthUp: 10,
       })
@@ -293,7 +294,7 @@ describe('dom 工具函数', () => {
       const child = document.createElement('div')
       uiMiddle.appendChild(child)
       document.body.appendChild(target)
-      ;(storage.getSearchConfig as vi.Mock).mockResolvedValue({
+      ;(storage.getSearchConfig as Mock).mockResolvedValue({
         limitUpwardSearch: true,
         searchDepthUp: 10,
       })
@@ -323,7 +324,7 @@ describe('dom 工具函数', () => {
       const child = document.createElement('div')
       uiElement.appendChild(child)
       document.body.appendChild(grandparent)
-      ;(storage.getSearchConfig as vi.Mock).mockResolvedValue({
+      ;(storage.getSearchConfig as Mock).mockResolvedValue({
         limitUpwardSearch: true,
         searchDepthUp: 10,
       })
@@ -345,7 +346,7 @@ describe('dom 工具函数', () => {
 
   describe('getElementAttributes', () => {
     beforeEach(() => {
-      ;(storage.getAttributeName as vi.Mock).mockResolvedValue('schema-params')
+      ;(storage.getAttributeName as Mock).mockResolvedValue('schema-params')
     })
 
     it('应该返回空 params 当元素没有属性时', async () => {

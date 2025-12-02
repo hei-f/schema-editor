@@ -1,3 +1,4 @@
+import type { Mocked } from 'vitest'
 import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { act, renderHook, waitFor } from '@testing-library/react'
@@ -18,8 +19,8 @@ vi.mock('antd', () => ({
   },
 }))
 
-const mockStorage = storage as vi.Mocked<typeof storage>
-const mockModal = Modal as vi.Mocked<typeof Modal>
+const mockStorage = storage as Mocked<typeof storage>
+const mockModal = Modal as Mocked<typeof Modal>
 
 describe('useDraftManagement Hook 测试', () => {
   const mockOnLoadDraft = vi.fn()
@@ -157,7 +158,7 @@ describe('useDraftManagement Hook 测试', () => {
         content: 'draft content',
         timestamp: Date.now(),
       })
-      mockModal.confirm.mockImplementation(({ onOk }) => {
+      mockModal.confirm.mockImplementation(({ onOk }: { onOk?: () => void }) => {
         onOk?.()
         return {} as any
       })
@@ -210,7 +211,7 @@ describe('useDraftManagement Hook 测试', () => {
   describe('handleDeleteDraft 删除草稿', () => {
     it('应该显示确认对话框并删除草稿', async () => {
       mockStorage.deleteDraft.mockResolvedValue(undefined)
-      mockModal.confirm.mockImplementation(({ onOk }) => {
+      mockModal.confirm.mockImplementation(({ onOk }: { onOk?: () => void }) => {
         onOk?.()
         return {} as any
       })
@@ -237,7 +238,7 @@ describe('useDraftManagement Hook 测试', () => {
 
     it('删除失败时应该显示错误提示', async () => {
       mockStorage.deleteDraft.mockRejectedValue(new Error('Delete error'))
-      mockModal.confirm.mockImplementation(({ onOk }) => {
+      mockModal.confirm.mockImplementation(({ onOk }: { onOk?: () => void }) => {
         onOk?.()
         return {} as any
       })

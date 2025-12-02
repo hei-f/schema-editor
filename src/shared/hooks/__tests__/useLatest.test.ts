@@ -274,7 +274,7 @@ describe('useLatest Hook 测试', () => {
 
       expect(result.current.current).toBe('initial')
 
-      rerender({})
+      rerender({ value: undefined as unknown as string })
       expect(result.current.current).toBeUndefined()
     })
 

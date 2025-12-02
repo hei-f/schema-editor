@@ -1,3 +1,4 @@
+import type { Mocked } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
@@ -13,8 +14,8 @@ vi.mock('antd', () => ({
   },
 }))
 
-const mockStorage = storage as vi.Mocked<typeof storage>
-const mockModal = Modal as vi.Mocked<typeof Modal>
+const mockStorage = storage as Mocked<typeof storage>
+const mockModal = Modal as Mocked<typeof Modal>
 
 describe('useFavoritesManagement Hook 测试', () => {
   const mockOnApplyFavorite = vi.fn()
@@ -227,7 +228,7 @@ describe('useFavoritesManagement Hook 测试', () => {
 
     it('已修改时应该显示确认对话框', async () => {
       mockStorage.updateFavoriteUsedTime.mockResolvedValue(undefined)
-      mockModal.confirm.mockImplementation(({ onOk }) => {
+      mockModal.confirm.mockImplementation(({ onOk }: { onOk?: () => void }) => {
         onOk?.()
         return {} as any
       })

@@ -1,3 +1,4 @@
+import type { Mocked, MockedFunction } from 'vitest'
 import {
   convertToASTString,
   convertToMarkdownString,
@@ -30,7 +31,7 @@ const mockParserMarkdownToSlateNode = parserMarkdownToSlateNode as MockedFunctio
 const mockParserSlateNodeToMarkdown = parserSlateNodeToMarkdown as MockedFunction<
   typeof parserSlateNodeToMarkdown
 >
-const mockLogger = logger as vi.Mocked<typeof logger>
+const mockLogger = logger as Mocked<typeof logger>
 
 describe('transformers 工具函数测试', () => {
   beforeEach(() => {

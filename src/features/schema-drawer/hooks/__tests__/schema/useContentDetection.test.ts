@@ -10,8 +10,8 @@ vi.mock('@/shared/utils/schema/transformers', () => ({
 
 import { isElementsArray, isStringData } from '@/shared/utils/schema/transformers'
 
-const mockIsElementsArray = isElementsArray as MockedFunction<typeof isElementsArray>
-const mockIsStringData = isStringData as MockedFunction<typeof isStringData>
+const mockIsElementsArray = vi.mocked(isElementsArray)
+const mockIsStringData = vi.mocked(isStringData)
 
 describe('useContentDetection Hook 测试', () => {
   beforeEach(() => {

@@ -1,11 +1,9 @@
 import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
 
-// Mock build-time constants
-declare global {
-  var __IS_RELEASE_BUILD__: boolean
-}
-global.__IS_RELEASE_BUILD__ = false
+// Mock build-time constants - 测试环境下设置为开发模式
+// 注：__IS_RELEASE_BUILD__ 类型已在 src/vite-env.d.ts 中声明
+;(globalThis as any).__IS_RELEASE_BUILD__ = false
 
 // Mock Chrome API
 global.chrome = {

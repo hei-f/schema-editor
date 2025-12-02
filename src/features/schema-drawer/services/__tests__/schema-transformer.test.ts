@@ -32,20 +32,16 @@ import {
   parserSchemaNodeToMarkdown,
 } from '@/shared/utils/schema/transformers'
 
-const mockEscapeJson = escapeJson as MockedFunction<typeof escapeJson>
-const mockUnescapeJson = unescapeJson as MockedFunction<typeof unescapeJson>
-const mockCompactJson = compactJson as MockedFunction<typeof compactJson>
-const mockParseNestedJson = parseNestedJson as MockedFunction<typeof parseNestedJson>
-const mockFormatJsonString = formatJsonString as MockedFunction<typeof formatJsonString>
-const mockConvertToASTString = convertToASTString as MockedFunction<typeof convertToASTString>
-const mockConvertToMarkdownString = convertToMarkdownString as MockedFunction<
-  typeof convertToMarkdownString
->
-const mockParserSchemaNodeToMarkdown = parserSchemaNodeToMarkdown as MockedFunction<
-  typeof parserSchemaNodeToMarkdown
->
-const mockIsElementsArray = isElementsArray as MockedFunction<typeof isElementsArray>
-const mockIsStringData = isStringData as MockedFunction<typeof isStringData>
+const mockEscapeJson = vi.mocked(escapeJson)
+const mockUnescapeJson = vi.mocked(unescapeJson)
+const mockCompactJson = vi.mocked(compactJson)
+const mockParseNestedJson = vi.mocked(parseNestedJson)
+const mockFormatJsonString = vi.mocked(formatJsonString)
+const mockConvertToASTString = vi.mocked(convertToASTString)
+const mockConvertToMarkdownString = vi.mocked(convertToMarkdownString)
+const mockParserSchemaNodeToMarkdown = vi.mocked(parserSchemaNodeToMarkdown)
+const mockIsElementsArray = vi.mocked(isElementsArray)
+const mockIsStringData = vi.mocked(isStringData)
 
 describe('SchemaTransformer 测试', () => {
   beforeEach(() => {
