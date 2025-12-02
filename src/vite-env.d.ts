@@ -7,3 +7,10 @@ declare module '*?worker' {
   }
   export default workerConstructor
 }
+
+/**
+ * 发布模式标识（由 vite.config.ts 注入）
+ * - true: 发布版本，隐藏调试开关
+ * - false: 开发版本，显示调试开关
+ */
+declare const __IS_RELEASE_BUILD__: boolean

@@ -59,9 +59,16 @@ export const SideMenu: React.FC<SideMenuProps> = (props) => {
   /**
    * 根据通信模式动态生成菜单配置
    * 集成配置的子项根据 communicationMode 动态获取
+   * 发布模式下隐藏调试菜单
    */
   const menuConfig = useMemo(() => {
-    return MENU_CONFIG.map((item) => {
+    return MENU_CONFIG.filter((item) => {
+      /** 发布模式下隐藏调试菜单 */
+      if (__IS_RELEASE_BUILD__ && item.key === 'debug') {
+        return false
+      }
+      return true
+    }).map((item) => {
       if (item.key === 'integration-config') {
         return {
           ...item,

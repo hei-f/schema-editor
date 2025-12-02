@@ -591,14 +591,16 @@ export const OptionsApp: React.FC = () => {
               />
             </div>
 
-            {/* 卡片9: 开发调试 - 调试日志等开发者选项 */}
-            <div id="section-debug">
-              <DebugSection
-                isActive={expandedSections.has('section-debug')}
-                onActiveChange={(active) => toggleSectionExpanded('section-debug', active)}
-                onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DEBUG)}
-              />
-            </div>
+            {/* 卡片8: 开发调试 - 仅在非发布模式显示 */}
+            {!__IS_RELEASE_BUILD__ && (
+              <div id="section-debug">
+                <DebugSection
+                  isActive={expandedSections.has('section-debug')}
+                  onActiveChange={(active) => toggleSectionExpanded('section-debug', active)}
+                  onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DEBUG)}
+                />
+              </div>
+            )}
           </Form>
 
           {/* 卡片10: 使用指南 */}
