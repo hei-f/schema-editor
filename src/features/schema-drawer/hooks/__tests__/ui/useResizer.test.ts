@@ -303,6 +303,71 @@ describe('useResizer Hook 测试', () => {
     })
   })
 
+  /**
+   * React 19 RefObject 类型兼容性测试
+   * React 19 中 useRef<T>(null) 返回 RefObject<T | null> 而非 RefObject<T>
+   */
+  describe('React 19 RefObject 类型兼容性', () => {
+    it('containerRef 初始值为 null（React 19 类型：RefObject<HTMLDivElement | null>）', () => {
+      const { result } = renderHook(() => useResizer({ initialWidth: 40 }))
+
+      // React 19: useRef<HTMLDivElement>(null) 返回 RefObject<HTMLDivElement | null>
+      // 因此 containerRef.current 可以是 HTMLDivElement 或 null
+      expect(result.current.containerRef.current).toBeNull()
+    })
+
+    it('containerRef 类型应该允许 null 值', () => {
+      const { result } = renderHook(() => useResizer({ initialWidth: 40 }))
+
+      // 验证类型兼容性：可以安全地检查 null
+      const isNull = result.current.containerRef.current === null
+      expect(isNull).toBe(true)
+    })
+
+    it('containerRef 赋值后应该能正确访问', () => {
+      const { result } = renderHook(() => useResizer({ initialWidth: 40 }))
+
+      // 模拟 containerRef 被赋值后的情况
+      const mockContainer = {
+        getBoundingClientRect: () => ({
+          left: 0,
+          width: 1000,
+        }),
+      } as HTMLDivElement
+
+      Object.defineProperty(result.current.containerRef, 'current', {
+        value: mockContainer,
+        writable: true,
+      })
+
+      // React 19 类型系统下，访问 current 需要处理可能的 null
+      expect(result.current.containerRef.current).not.toBeNull()
+      expect(result.current.containerRef.current).toBe(mockContainer)
+    })
+
+    it('在 containerRef 为 null 时鼠标移动不应该崩溃', () => {
+      const { result } = renderHook(() => useResizer({ initialWidth: 40 }))
+
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      } as unknown as React.MouseEvent
+
+      // containerRef.current 为 null
+      expect(result.current.containerRef.current).toBeNull()
+
+      act(() => {
+        result.current.handleResizeStart(mockEvent)
+      })
+
+      // 不应该抛出错误
+      expect(() => {
+        act(() => {
+          document.dispatchEvent(new MouseEvent('mousemove', { clientX: 500 }))
+        })
+      }).not.toThrow()
+    })
+  })
+
   describe('边界情况', () => {
     it('初始宽度为 0 时正常工作', () => {
       const { result } = renderHook(() => useResizer({ initialWidth: 0 }))
