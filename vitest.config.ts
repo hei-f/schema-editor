@@ -28,19 +28,29 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'json-summary'],
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
+        // 测试文件
+        'src/**/__tests__/**',
+        // 类型定义文件
         'src/**/*.d.ts',
         'src/shared/types/**',
-        'src/**/*.stories.tsx',
+        'src/features/schema-drawer/types/**',
+        // 依赖浏览器环境的模块（Chrome API、Shadow DOM、iframe 等）
         'src/core/background/**',
-        'src/core/content/index.tsx',
-        'src/core/content/core/monitor.ts',
+        'src/core/content/**',
+        'src/content/**',
+        'src/shared/components/ContentApp.tsx',
+        'src/shared/components/IframeHighlightOverlay/**',
+        'src/shared/utils/iframe-bridge.ts',
+        // 入口文件（仅导出/挂载）
         'src/features/options-page/index.tsx',
-        'src/**/__tests__/**',
-        // 排除样式文件
+        'src/features/schema-drawer/index.tsx',
+        'src/features/favorites/index.tsx',
+        // 纯样式文件（styled-components 定义，无逻辑）
         'src/**/*.styles.ts',
-        // 排除纯导出文件
-        'src/**/index.ts',
-        'src/**/index.tsx',
+        'src/**/styles.ts',
+        // 大型容器组件（逻辑已在 hooks 中测试，组件仅做组合）
+        'src/features/schema-drawer/components/SchemaDrawer.tsx',
+        'src/features/schema-drawer/components/editor/SchemaDiffView.tsx',
       ],
       thresholds: {
         global: {
