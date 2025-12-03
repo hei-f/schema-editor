@@ -4,17 +4,9 @@ import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import type { ShortcutKey } from '@/shared/types'
 import { Alert, Form } from 'antd'
 import React from 'react'
-import styled from 'styled-components'
-import { SectionCard } from '../components/SectionCard'
-import { ShortcutInput } from '../components/ShortcutInput'
-
-/** 快捷键符号样式（调整垂直对齐） */
-const ShortcutText = styled.span`
-  display: inline-flex;
-  align-items: center;
-  vertical-align: middle;
-  line-height: 1;
-`
+import { SectionCard } from '../../components/SectionCard'
+import { ShortcutInput } from '../../components/ShortcutInput'
+import { ShortcutText } from './styles'
 
 /** 生成带样式的 extra 说明 */
 const renderExtra = (description: string, defaultShortcut: ShortcutKey) => (
