@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { Tooltip } from '../Tooltip'
+import { Tooltip } from '../index'
 
 describe('Tooltip组件测试', () => {
   const mockAttributes = {

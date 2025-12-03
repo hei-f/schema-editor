@@ -1,7 +1,7 @@
 import type { ElementAttributes } from '@/shared/types'
 import { formatTooltipContent } from '@/shared/utils/ui/tooltip'
 import React from 'react'
-import { TooltipContainer } from './styles/tooltip.styles'
+import { TooltipContainer } from './styles'
 
 interface TooltipProps {
   visible: boolean

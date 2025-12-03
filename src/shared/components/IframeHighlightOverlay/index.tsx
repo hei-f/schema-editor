@@ -5,63 +5,7 @@ import type {
 } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
 import React, { useCallback, useEffect, useState } from 'react'
-import styled from 'styled-components'
-
-/** 高亮框样式 */
-const HighlightBox = styled.div<{ $color: string; $isRecording: boolean }>`
-  position: fixed;
-  pointer-events: none;
-  z-index: 999998;
-  box-sizing: border-box;
-  border: 2px solid ${(props) => props.$color};
-  box-shadow: 0 0 10px ${(props) => props.$color}80;
-`
-
-/** Tooltip 样式 */
-const Tooltip = styled.div<{ $isValid: boolean }>`
-  position: fixed;
-  z-index: 2147483647;
-  background: ${(props) => (props.$isValid ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 77, 79, 0.9)')};
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  pointer-events: none;
-  max-width: 300px;
-  word-wrap: break-word;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-`
-
-/** 录制模式标签 */
-const RecordingLabel = styled.div`
-  background: #ff4d4f;
-  color: white;
-  padding: 4px 8px;
-  margin: -8px -12px 8px -12px;
-  border-radius: 6px 6px 0 0;
-  font-weight: 600;
-  font-size: 13px;
-  text-align: center;
-`
-
-/** 高亮所有元素时的标签 */
-const HighlightLabel = styled.div`
-  position: absolute;
-  top: -26px;
-  left: 0;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  font-size: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  border-radius: 6px;
-  white-space: nowrap;
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-`
+import { HighlightBox, HighlightLabel, IframeTooltip, RecordingLabel } from './styles'
 
 interface IframeHighlightOverlayProps {
   /** 录制模式高亮颜色 */
@@ -182,7 +126,10 @@ export const IframeHighlightOverlay: React.FC<IframeHighlightOverlayProps> = (pr
             $isRecording={hoverState.isRecordingMode}
             style={getHighlightBoxStyle(hoverState.rect)}
           />
-          <Tooltip $isValid={hoverState.isValid} style={getTooltipStyle(hoverState.mousePosition)}>
+          <IframeTooltip
+            $isValid={hoverState.isValid}
+            style={getTooltipStyle(hoverState.mousePosition)}
+          >
             {hoverState.isRecordingMode && <RecordingLabel>🔴 录制模式</RecordingLabel>}
             {hoverState.isValid
               ? hoverState.attrs.params.map((param, index) => (
@@ -191,7 +138,7 @@ export const IframeHighlightOverlay: React.FC<IframeHighlightOverlayProps> = (pr
                   </div>
                 ))
               : '非法目标'}
-          </Tooltip>
+          </IframeTooltip>
         </>
       )}
 
