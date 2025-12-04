@@ -302,6 +302,7 @@ class StorageManager {
       previewFunctionName,
       apiConfig,
       drawerShortcuts,
+      themeColor,
     ] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
@@ -327,6 +328,7 @@ class StorageManager {
       this.getPreviewFunctionName(),
       this.getApiConfig(),
       this.getDrawerShortcuts(),
+      this.getThemeColor(),
     ])
     const exportConfig = await this.getExportConfig()
     return {
@@ -355,6 +357,7 @@ class StorageManager {
       previewFunctionName,
       apiConfig,
       drawerShortcuts,
+      themeColor,
     }
   }
 
