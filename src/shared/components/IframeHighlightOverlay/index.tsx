@@ -4,8 +4,28 @@ import type {
   IframeHighlightAllResponsePayload,
 } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
-import React, { useCallback, useEffect, useState } from 'react'
-import { HighlightBox, HighlightLabel, IframeTooltip, RecordingLabel } from './styles'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  HighlightBox,
+  HighlightLabel,
+  IframeTooltip,
+  RecordingLabel,
+  TooltipContent,
+} from './styles'
+
+/** 检查 tooltip 内容是否变化 */
+function isContentChanged(
+  prev: IframeElementHoverPayload | null,
+  next: IframeElementHoverPayload
+): boolean {
+  if (!prev) return true
+  if (prev.isValid !== next.isValid) return true
+  if (prev.isRecordingMode !== next.isRecordingMode) return true
+  if (prev.rect.left !== next.rect.left || prev.rect.top !== next.rect.top) return true
+  if (prev.rect.width !== next.rect.width || prev.rect.height !== next.rect.height) return true
+  if (prev.attrs.params.length !== next.attrs.params.length) return true
+  return prev.attrs.params.some((param, index) => param !== next.attrs.params[index])
+}
 
 interface IframeHighlightOverlayProps {
   /** 录制模式高亮颜色 */
@@ -19,8 +39,10 @@ interface IframeHighlightOverlayProps {
 export const IframeHighlightOverlay: React.FC<IframeHighlightOverlayProps> = (props) => {
   const { recordingModeColor = '#FF4D4F' } = props
 
-  // 当前悬停元素状态
+  // 当前悬停元素状态（只在内容变化时更新）
   const [hoverState, setHoverState] = useState<IframeElementHoverPayload | null>(null)
+  // tooltip DOM 引用，用于直接更新位置
+  const tooltipRef = useRef<HTMLDivElement>(null)
   // 高亮颜色
   const [highlightColor, setHighlightColor] = useState('#39C5BB')
   // 高亮所有元素列表
@@ -33,11 +55,41 @@ export const IframeHighlightOverlay: React.FC<IframeHighlightOverlayProps> = (pr
     storage.getHighlightColor().then(setHighlightColor)
   }, [])
 
+  // 计算 tooltip 位置字符串
+  const calcTooltipTransform = useCallback((mousePos: { x: number; y: number }) => {
+    const offset = 15
+    let x = mousePos.x + offset
+    let y = mousePos.y + offset
+
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const tooltipWidth = 300
+    const tooltipHeight = 100
+
+    if (x + tooltipWidth > viewportWidth) {
+      x = mousePos.x - tooltipWidth - offset
+    }
+    if (y + tooltipHeight > viewportHeight) {
+      y = mousePos.y - tooltipHeight - offset
+    }
+
+    return `translate(${x}px, ${y}px)`
+  }, [])
+
   // 监听 iframe 元素悬停事件
   useEffect(() => {
     const handleHover = (event: Event) => {
       const customEvent = event as CustomEvent<IframeElementHoverPayload>
-      setHoverState(customEvent.detail)
+      const payload = customEvent.detail
+
+      // 检查内容是否变化
+      if (isContentChanged(hoverState, payload)) {
+        // 内容变化，更新 state 触发重新渲染
+        setHoverState(payload)
+      } else if (tooltipRef.current) {
+        // 内容相同，只更新位置（直接操作 DOM，不触发重新渲染）
+        tooltipRef.current.style.transform = calcTooltipTransform(payload.mousePosition)
+      }
     }
 
     const handleClearHighlight = () => {
@@ -51,7 +103,7 @@ export const IframeHighlightOverlay: React.FC<IframeHighlightOverlayProps> = (pr
       window.removeEventListener('schema-editor:iframe-element-hover', handleHover)
       window.removeEventListener('schema-editor:iframe-clear-highlight', handleClearHighlight)
     }
-  }, [])
+  }, [hoverState, calcTooltipTransform])
 
   // 监听 iframe 高亮所有元素响应
   useEffect(() => {
@@ -91,46 +143,32 @@ export const IframeHighlightOverlay: React.FC<IframeHighlightOverlayProps> = (pr
     }
   }, [])
 
-  // 计算 tooltip 位置
-  const getTooltipStyle = useCallback((mousePos: { x: number; y: number }) => {
-    const offset = 15
-    let left = mousePos.x + offset
-    let top = mousePos.y + offset
-
-    // 确保不超出视口
-    const viewportWidth = window.innerWidth
-    const viewportHeight = window.innerHeight
-    const tooltipWidth = 300 // 估算最大宽度
-    const tooltipHeight = 100 // 估算高度
-
-    if (left + tooltipWidth > viewportWidth) {
-      left = mousePos.x - tooltipWidth - offset
-    }
-    if (top + tooltipHeight > viewportHeight) {
-      top = mousePos.y - tooltipHeight - offset
-    }
-
-    return { left, top }
-  }, [])
-
   // 当前使用的高亮颜色
   const currentColor = hoverState?.isRecordingMode ? recordingModeColor : highlightColor
 
+  // 判断是否有有效的高亮框（rect 不为空）
+  const hasValidRect = hoverState && (hoverState.rect.width > 0 || hoverState.rect.height > 0)
+
   return (
     <>
-      {/* 单元素悬停高亮框 */}
+      {/* 单元素悬停高亮框 - 只有 rect 有效时才显示 */}
+      {hasValidRect && (
+        <HighlightBox
+          $color={currentColor}
+          $isRecording={hoverState.isRecordingMode}
+          style={getHighlightBoxStyle(hoverState.rect)}
+        />
+      )}
+
+      {/* Tooltip - 始终显示（包括"非法目标"） */}
       {hoverState && (
-        <>
-          <HighlightBox
-            $color={currentColor}
-            $isRecording={hoverState.isRecordingMode}
-            style={getHighlightBoxStyle(hoverState.rect)}
-          />
-          <IframeTooltip
-            $isValid={hoverState.isValid}
-            style={getTooltipStyle(hoverState.mousePosition)}
-          >
-            {hoverState.isRecordingMode && <RecordingLabel>🔴 录制模式</RecordingLabel>}
+        <IframeTooltip
+          ref={tooltipRef}
+          $isValid={hoverState.isValid}
+          style={{ transform: calcTooltipTransform(hoverState.mousePosition) }}
+        >
+          {hoverState.isRecordingMode && <RecordingLabel>🔴 录制模式</RecordingLabel>}
+          <TooltipContent>
             {hoverState.isValid
               ? hoverState.attrs.params.map((param, index) => (
                   <div key={index}>
@@ -138,8 +176,8 @@ export const IframeHighlightOverlay: React.FC<IframeHighlightOverlayProps> = (pr
                   </div>
                 ))
               : '非法目标'}
-          </IframeTooltip>
-        </>
+          </TooltipContent>
+        </IframeTooltip>
       )}
 
       {/* 高亮所有元素 */}
