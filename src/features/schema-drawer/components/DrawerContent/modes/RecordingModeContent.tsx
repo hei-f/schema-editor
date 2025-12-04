@@ -25,6 +25,27 @@ export const RecordingModeContent: React.FC<RecordingModeContentProps> = (props)
     onEnterDiffMode,
   } = props
 
+  const toolbarElement = (
+    <DrawerToolbar
+      attributes={attributes}
+      contentType={contentType}
+      canParse={canParse}
+      toolbarButtons={toolbarButtons}
+      previewEnabled={previewEnabled}
+      isRecording={isRecording}
+      onFormat={toolbarActions.onFormat}
+      onEscape={toolbarActions.onEscape}
+      onUnescape={toolbarActions.onUnescape}
+      onCompact={toolbarActions.onCompact}
+      onParse={toolbarActions.onParse}
+      onSegmentChange={toolbarActions.onSegmentChange}
+      onRenderPreview={toolbarActions.onRenderPreview}
+      onLocateError={toolbarActions.onLocateError}
+      onRepairJson={toolbarActions.onRepairJson}
+      onCopyParam={toolbarActions.onCopyParam}
+    />
+  )
+
   return (
     <RecordingPanel
       isRecording={isRecording}
@@ -33,24 +54,8 @@ export const RecordingModeContent: React.FC<RecordingModeContentProps> = (props)
       onStopRecording={onStopRecording}
       onSelectSnapshot={onSelectSnapshot}
       onEnterDiffMode={onEnterDiffMode}
+      toolbar={toolbarElement}
     >
-      <DrawerToolbar
-        attributes={attributes}
-        contentType={contentType}
-        canParse={canParse}
-        toolbarButtons={toolbarButtons}
-        previewEnabled={previewEnabled}
-        isRecording={isRecording}
-        onFormat={toolbarActions.onFormat}
-        onEscape={toolbarActions.onEscape}
-        onUnescape={toolbarActions.onUnescape}
-        onCompact={toolbarActions.onCompact}
-        onParse={toolbarActions.onParse}
-        onSegmentChange={toolbarActions.onSegmentChange}
-        onRenderPreview={toolbarActions.onRenderPreview}
-        onLocateError={toolbarActions.onLocateError}
-        onRepairJson={toolbarActions.onRepairJson}
-      />
       <EditorSection editorProps={editorProps} notificationProps={notificationProps} />
     </RecordingPanel>
   )

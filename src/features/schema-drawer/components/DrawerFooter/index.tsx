@@ -1,7 +1,6 @@
 import type { ToolbarButtonsConfig } from '@/shared/types'
-import { Button, Space } from 'antd'
 import React from 'react'
-import { DrawerFooterContainer } from './styles'
+import { DrawerFooterContainer, FooterButton } from './styles'
 
 interface DrawerFooterProps {
   /** 工具栏按钮配置 */
@@ -38,25 +37,11 @@ export const DrawerFooter: React.FC<DrawerFooterProps> = (props) => {
 
   return (
     <DrawerFooterContainer>
-      <Space>
-        {toolbarButtons.draft && (
-          <Button onClick={onSaveDraft} size="small">
-            保存草稿
-          </Button>
-        )}
-        <Button onClick={onClose} size="small">
-          关闭
-        </Button>
-        <Button
-          type="primary"
-          size="small"
-          onClick={handleSave}
-          loading={isSaving}
-          disabled={!isModified}
-        >
-          {isSaving ? '保存中...' : '保存'}
-        </Button>
-      </Space>
+      {toolbarButtons.draft && <FooterButton onClick={onSaveDraft}>保存草稿</FooterButton>}
+      <FooterButton onClick={onClose}>关闭</FooterButton>
+      <FooterButton type="primary" onClick={handleSave} loading={isSaving} disabled={!isModified}>
+        {isSaving ? '保存中...' : '保存'}
+      </FooterButton>
     </DrawerFooterContainer>
   )
 }

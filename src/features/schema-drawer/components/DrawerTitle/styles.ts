@@ -1,3 +1,4 @@
+import { Button } from 'antd'
 import styled, { keyframes } from 'styled-components'
 
 /**
@@ -81,4 +82,30 @@ export const DraftAutoSaveSuccess = styled.span`
   color: #52c41a;
   opacity: 0.8;
   animation: ${fadeInOut} 2s ease-in-out;
+`
+
+/**
+ * 抽屉标题工具栏按钮
+ */
+export const DrawerTitleButton = styled(Button)`
+  border-radius: 6px;
+  color: rgba(102, 111, 141, 1);
+
+  &:hover:not(:disabled) {
+    color: rgba(53, 62, 92, 1);
+  }
+
+  &.ant-btn-primary {
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      color: #fff;
+    }
+  }
+
+  .ant-btn-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 `

@@ -1,18 +1,15 @@
 import { EDITOR_THEME_OPTIONS } from '@/shared/constants/editor-themes'
+import { ExportIcon } from '@/shared/icons/drawer/title/ExportIcon'
+import { FolderIcon } from '@/shared/icons/drawer/title/FolderIcon'
+import { ImportIcon } from '@/shared/icons/drawer/title/ImportIcon'
+import { PreviewOffIcon } from '@/shared/icons/drawer/title/PreviewOffIcon'
+import { PreviewOnIcon } from '@/shared/icons/drawer/title/PreviewOnIcon'
+import { StarIcon } from '@/shared/icons/drawer/title/StarIcon'
+import { ThemeIcon } from '@/shared/icons/drawer/title/ThemeIcon'
 import type { EditorTheme, HistoryEntry, ToolbarButtonsConfig } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
-import {
-  BgColorsOutlined,
-  DeleteOutlined,
-  DownloadOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  FileTextOutlined,
-  FolderOpenOutlined,
-  StarOutlined,
-  UploadOutlined,
-} from '@ant-design/icons'
-import { Button, Dropdown, Space, Tooltip, Upload } from 'antd'
+import { DeleteOutlined, FileTextOutlined } from '@ant-design/icons'
+import { Dropdown, Space, Tooltip, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import React from 'react'
 import { HistoryDropdown } from '../toolbar/HistoryDropdown'
@@ -20,6 +17,7 @@ import {
   DraftAutoSaveSuccess,
   DraftNotification,
   DrawerTitleActions,
+  DrawerTitleButton,
   DrawerTitleContainer,
   DrawerTitleLeft,
 } from './styles'
@@ -116,12 +114,12 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
             <>
               <Upload accept=".json" showUploadList={false} beforeUpload={onImport} maxCount={1}>
                 <Tooltip title="导入">
-                  <Button icon={<UploadOutlined />} size="small" type="text" />
+                  <DrawerTitleButton icon={<ImportIcon />} size="small" type="text" />
                 </Tooltip>
               </Upload>
               <Tooltip title="导出">
-                <Button
-                  icon={<DownloadOutlined />}
+                <DrawerTitleButton
+                  icon={<ExportIcon />}
                   size="small"
                   type="text"
                   onClick={onExport}
@@ -152,10 +150,10 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
                     : '开启预览'
               }
             >
-              <Button
+              <DrawerTitleButton
                 size="small"
                 type={previewEnabled ? 'primary' : 'text'}
-                icon={previewEnabled ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                icon={previewEnabled ? <PreviewOnIcon /> : <PreviewOffIcon />}
                 onClick={onTogglePreview}
                 disabled={!hasPreviewFunction}
               />
@@ -165,7 +163,7 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
           {toolbarButtons.draft && hasDraft && (
             <>
               <Tooltip title="加载草稿">
-                <Button
+                <DrawerTitleButton
                   size="small"
                   type="text"
                   icon={<FileTextOutlined />}
@@ -173,7 +171,7 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
                 />
               </Tooltip>
               <Tooltip title="删除草稿">
-                <Button
+                <DrawerTitleButton
                   size="small"
                   type="text"
                   danger
@@ -186,20 +184,22 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
 
           {toolbarButtons.favorites && (
             <>
-              <Tooltip title="添加收藏">
-                <Button
+              <Tooltip title={previewEnabled ? '预览模式下不可用' : '添加收藏'}>
+                <DrawerTitleButton
                   size="small"
                   type="text"
-                  icon={<StarOutlined />}
+                  icon={<StarIcon />}
                   onClick={onOpenAddFavorite}
+                  disabled={previewEnabled}
                 />
               </Tooltip>
-              <Tooltip title="浏览收藏">
-                <Button
+              <Tooltip title={previewEnabled ? '预览模式下不可用' : '浏览收藏'}>
+                <DrawerTitleButton
                   size="small"
                   type="text"
-                  icon={<FolderOpenOutlined />}
+                  icon={<FolderIcon />}
                   onClick={onOpenFavorites}
+                  disabled={previewEnabled}
                 />
               </Tooltip>
             </>
@@ -221,7 +221,7 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
             getPopupContainer={(node) => node.parentNode as HTMLElement}
           >
             <Tooltip title="切换主题">
-              <Button size="small" type="text" icon={<BgColorsOutlined />} />
+              <DrawerTitleButton size="small" type="text" icon={<ThemeIcon />} />
             </Tooltip>
           </Dropdown>
         </Space>

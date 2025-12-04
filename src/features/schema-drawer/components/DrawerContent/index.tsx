@@ -18,6 +18,7 @@ export const DrawerContent: React.FC<DrawerContentProps> = (props) => {
     isDiffMode,
     isInRecordingMode,
     previewEnabled,
+    isClosingPreview,
     editorThemeVars,
     diffModeProps,
     recordingModeProps,
@@ -28,6 +29,7 @@ export const DrawerContent: React.FC<DrawerContentProps> = (props) => {
 
   /**
    * 根据模式渲染对应的内容组件
+   * 预览关闭过渡期间仍渲染 PreviewModeContent，保持布局结构
    */
   const renderContent = () => {
     if (isDiffMode) {
@@ -38,7 +40,8 @@ export const DrawerContent: React.FC<DrawerContentProps> = (props) => {
       return <RecordingModeContent {...baseProps} {...recordingModeProps} />
     }
 
-    if (previewEnabled) {
+    // 预览模式或预览关闭过渡期间，都渲染 PreviewModeContent
+    if (previewEnabled || isClosingPreview) {
       return <PreviewModeContent {...baseProps} {...previewModeProps} />
     }
 

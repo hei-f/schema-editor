@@ -31,6 +31,7 @@ export interface ToolbarActions {
   onRepairJson?: () => void
   onEnterDiffMode?: () => void
   onExitDiffMode?: () => void
+  onCopyParam?: (value: string, index: number) => void
 }
 
 /**
@@ -104,6 +105,12 @@ export interface PreviewModeContentProps extends BaseContentProps {
   previewContainerRef: React.RefObject<HTMLDivElement | null>
   previewPlaceholderRef: React.RefObject<HTMLDivElement | null>
   onResizeStart: (e: React.MouseEvent) => void
+  /** 预览关闭过渡状态：保持布局结构，隐藏预览内容 */
+  isClosingTransition: boolean
+  /** 预览打开初始状态：预览区域宽度为 0，用于触发 CSS transition */
+  isOpeningInitial: boolean
+  /** 预览打开过渡中：整个动画期间，用于控制拖动条隐藏 */
+  isOpeningTransition: boolean
 }
 
 /**
@@ -121,6 +128,8 @@ export interface DrawerContentProps {
   isDiffMode: boolean
   isInRecordingMode: boolean
   previewEnabled: boolean
+  /** 预览关闭过渡状态 */
+  isClosingPreview: boolean
   /** 主题变量 */
   editorThemeVars: EditorThemeVars
   /** Diff 模式相关 */

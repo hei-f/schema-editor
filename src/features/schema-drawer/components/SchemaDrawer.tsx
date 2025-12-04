@@ -3,7 +3,7 @@ import {
   previewContainerManager,
 } from '@/core/content/core/preview-container'
 import { shadowDomContainerManager } from '@/core/content/core/shadow-dom'
-import { DEFAULT_VALUES } from '@/shared/constants/defaults'
+import { DEFAULT_VALUES, RECORDING_PANEL_WIDTH } from '@/shared/constants/defaults'
 import { FULL_SCREEN_MODE, type FullScreenMode } from '@/shared/constants/ui-modes'
 import { FavoritesManager } from '@/features/favorites/components/FavoritesManager'
 import type {
@@ -40,6 +40,7 @@ import type { ExportMetadata } from '../types/export'
 import { schemaTransformer } from '../services/schema-transformer'
 import { getEditorThemeVars } from '../styles/editor/editor-theme-vars'
 import type { CodeMirrorEditorHandle } from './editor/CodeMirrorEditor'
+import { CloseIcon } from '@/shared/icons/drawer/title/CloseIcon'
 import { DrawerContent } from './DrawerContent'
 import { DrawerFooter } from './DrawerFooter'
 import { DrawerTitle } from './DrawerTitle'
@@ -80,7 +81,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
 
   // 从 config 解构配置
   const {
-    width,
     apiConfig,
     toolbarButtons,
     autoSaveDraft,
@@ -91,6 +91,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     editorTheme: initialEditorTheme,
     recordingModeConfig: recordingConfig,
     autoParseString: autoParseEnabled,
+    themeColor,
   } = config
 
   /** 通信模式 */
@@ -114,12 +115,39 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     isPreview: previewEnabled,
     isDiff: isDiffMode,
     isFullScreenTransition,
+    isClosingPreview,
+    isOpeningPreview,
+    isOpeningTransition,
+    closePreviewWithTransition,
+    openPreviewWithTransition,
   } = useFullScreenMode()
 
   const [previewWidth, setPreviewWidth] = useState(previewConfig.previewWidth)
 
+  /**
+   * 抽屉宽度（数值类型，用于 resizable）
+   * 从默认值解析初始宽度
+   */
+  const [drawerSize, setDrawerSize] = useState<number>(() => {
+    const defaultWidth = DEFAULT_VALUES.drawerWidth
+    return parseInt(defaultWidth, 10) || 800
+  })
+
   // 录制模式相关状态
-  const [isInRecordingMode, setIsInRecordingMode] = useState(false)
+  const [isInRecordingMode, setIsInRecordingMode] = useState(initialRecordingMode)
+
+  /**
+   * 同步外部传入的录制模式状态
+   * 当抽屉打开时立即设置，避免等待 afterOpenChange 动画完成后才切换
+   */
+  useEffect(() => {
+    if (open) {
+      setIsInRecordingMode(initialRecordingMode)
+      if (initialRecordingMode) {
+        resetFullScreenMode()
+      }
+    }
+  }, [open, initialRecordingMode, resetFullScreenMode])
 
   const paramsKey = attributes.params.join(',')
   const isFirstLoadRef = useRef(true)
@@ -415,15 +443,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         isFirstLoadRef.current = true
         checkDraft()
 
-        // 如果是录制模式打开，设置录制状态并自动开始录制
+        // 如果是录制模式打开，自动开始录制（录制模式状态已在 useEffect 中同步设置）
         if (initialRecordingMode && recordingConfig && schemaData !== undefined) {
-          setIsInRecordingMode(true)
-          resetFullScreenMode()
-
-          // 延迟自动开始录制
-          setTimeout(() => {
-            startRecording()
-          }, 200)
+          startRecording()
         }
       } else {
         // 关闭时的清理逻辑（动画完成后）
@@ -444,6 +466,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       startRecording,
       stopRecording,
       clearSnapshots,
+      resetFullScreenMode,
     ]
   )
 
@@ -467,6 +490,32 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     },
     [isInRecordingMode, autoParseEnabled, message]
   )
+
+  /**
+   * 从 storage 加载用户保存的抽屉宽度
+   */
+  useEffect(() => {
+    storage.getDrawerWidth().then((savedWidth) => {
+      const parsed = parseInt(savedWidth, 10)
+      if (!isNaN(parsed) && parsed > 0) {
+        setDrawerSize(parsed)
+      }
+    })
+  }, [])
+
+  /**
+   * 处理抽屉拖拽中宽度变化
+   */
+  const handleDrawerResize = (newSize: number) => {
+    setDrawerSize(newSize)
+  }
+
+  /**
+   * 处理抽屉拖拽结束，持久化宽度
+   */
+  const handleDrawerResizeEnd = () => {
+    storage.setDrawerWidth(`${drawerSize}px`)
+  }
 
   /**
    * 当schemaData变化时，更新编辑器内容
@@ -595,25 +644,38 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   /**
    * 切换全屏模式
    * 自动处理模式切换时的清理逻辑和 z-index 调整
+   * 退出预览模式时使用过渡动画，保持布局结构直到 Drawer 动画完成
    */
   const switchFullScreenMode = useCallback(
     (newMode: FullScreenMode) => {
-      setFullScreenMode((prevMode) => {
-        // 退出预览模式时清理预览容器并恢复 z-index
-        if (prevMode === FULL_SCREEN_MODE.PREVIEW && newMode !== FULL_SCREEN_MODE.PREVIEW) {
+      // 退出预览模式时：使用过渡动画，保持布局结构
+      if (previewEnabled && newMode !== FULL_SCREEN_MODE.PREVIEW) {
+        closePreviewWithTransition(() => {
+          // 立即清理预览容器内容和恢复 z-index
           cleanupPreviewContainer()
           shadowDomContainerManager.resetZIndex()
-        }
+        })
+        return
+      }
 
-        // 进入预览模式时降低 z-index，使预览容器能显示
-        if (newMode === FULL_SCREEN_MODE.PREVIEW && prevMode !== FULL_SCREEN_MODE.PREVIEW) {
-          shadowDomContainerManager.setZIndex(previewConfig.zIndex.preview - 1)
-        }
+      // 进入预览模式时：使用打开过渡动画，预览区域从 0 扩展到目标宽度
+      if (newMode === FULL_SCREEN_MODE.PREVIEW && !previewEnabled) {
+        shadowDomContainerManager.setZIndex(previewConfig.zIndex.preview - 1)
+        openPreviewWithTransition()
+        return
+      }
 
-        return newMode
-      })
+      // 其他模式切换：直接设置
+      setFullScreenMode(newMode)
     },
-    [cleanupPreviewContainer, previewConfig.zIndex.preview]
+    [
+      previewEnabled,
+      closePreviewWithTransition,
+      openPreviewWithTransition,
+      cleanupPreviewContainer,
+      previewConfig.zIndex.preview,
+      setFullScreenMode,
+    ]
   )
 
   /** JSON 修复操作 */
@@ -682,6 +744,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           message.error('数据转换失败：' + result.error)
           return
         }
+
+        // 使用 requestAnimationFrame 确保布局稳定后再计算位置
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 
         // 计算预览区域位置
         const rect = previewPlaceholderRef.current?.getBoundingClientRect()
@@ -764,12 +829,56 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
 
   /**
    * 当预览开启时，自动渲染第一次
-   * 延迟 300ms 等待 Drawer 宽度动画完成
+   * 延迟 350ms 等待 Drawer 宽度动画和预览区域动画完成（两者都是 300ms）
    */
   useDeferredEffect(() => handleRenderPreviewRef.current(), [previewEnabled], {
-    delay: 300,
+    delay: 350,
     enabled: previewEnabled && hasPreviewFunction,
   })
+
+  // TODO: resize 逻辑有问题，暂时注释掉
+  // /**
+  //  * 监听窗口大小变化，更新预览容器位置
+  //  * 使用 requestAnimationFrame 确保布局重排完成后再计算位置
+  //  */
+  // useEffect(() => {
+  //   if (!previewEnabled || !hasPreviewFunction) return
+
+  //   let resizeTimer: ReturnType<typeof setTimeout> | null = null
+
+  //   const handleWindowResize = () => {
+  //     // 清除之前的定时器，防止频繁触发
+  //     if (resizeTimer) {
+  //       clearTimeout(resizeTimer)
+  //     }
+
+  //     // 延迟 50ms + requestAnimationFrame 确保布局稳定
+  //     resizeTimer = setTimeout(() => {
+  //       requestAnimationFrame(() => {
+  //         if (!previewPlaceholderRef.current) return
+
+  //         const rect = previewPlaceholderRef.current.getBoundingClientRect()
+  //         const position = {
+  //           left: rect.left,
+  //           top: rect.top,
+  //           width: rect.width,
+  //           height: rect.height,
+  //         }
+
+  //         previewContainerManager.updatePosition(position)
+  //       })
+  //     }, 50)
+  //   }
+
+  //   window.addEventListener('resize', handleWindowResize)
+
+  //   return () => {
+  //     window.removeEventListener('resize', handleWindowResize)
+  //     if (resizeTimer) {
+  //       clearTimeout(resizeTimer)
+  //     }
+  //   }
+  // }, [previewEnabled, hasPreviewFunction])
 
   /**
    * 自动更新预览（当开启自动更新时）
@@ -823,9 +932,34 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
   })
 
   /**
-   * 计算抽屉宽度
+   * 是否为全屏模式（预览或 Diff 模式）
+   * 全屏模式下禁用拖拽，使用 100vw 宽度
    */
-  const drawerWidth = previewEnabled || isDiffMode ? '100vw' : isInRecordingMode ? '1000px' : width
+  const isFullScreenMode = (previewEnabled && !isClosingPreview) || isDiffMode
+
+  /**
+   * 计算抽屉宽度
+   * - 全屏模式：100vw
+   * - 录制模式：用户宽度 + 录制面板宽度
+   * - 普通模式：用户宽度（数值类型，支持 resizable）
+   */
+  const drawerWidth = isFullScreenMode
+    ? '100vw'
+    : isInRecordingMode
+      ? drawerSize + RECORDING_PANEL_WIDTH
+      : drawerSize
+
+  /**
+   * resizable 配置
+   * - 全屏模式下禁用拖拽（不传 resizable）
+   * - 非全屏模式下启用拖拽，拖拽结束时持久化
+   */
+  const resizableConfig = isFullScreenMode
+    ? undefined
+    : {
+        onResize: handleDrawerResize,
+        onResizeEnd: handleDrawerResizeEnd,
+      }
 
   /**
    * 处理停止录制
@@ -880,18 +1014,24 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         }
         placement="right"
         width={drawerWidth}
+        resizable={resizableConfig}
         mask={!previewEnabled}
         onClose={handleClose}
         open={open}
         afterOpenChange={handleAfterOpenChange}
-        destroyOnClose={false}
+        destroyOnHidden={false}
         closable={true}
-        closeIcon={true}
+        closeIcon={<CloseIcon />}
         push={false}
         getContainer={getPortalContainer}
         styles={{
-          body: { padding: 0 },
-          header: { position: 'relative' },
+          section: {
+            borderRadius: isFullScreenMode ? '0px' : '12px 0px 0px 12px',
+            transition: 'border-radius 0.3s ease',
+          },
+          body: { padding: 0, '--drawer-theme-color': themeColor } as React.CSSProperties,
+          header: { position: 'relative', borderBottom: 'none' },
+          footer: { borderTop: 'none', padding: '16px 24px' },
         }}
         footer={
           <DrawerFooter
@@ -909,6 +1049,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           isDiffMode={isDiffMode}
           isInRecordingMode={isInRecordingMode}
           previewEnabled={previewEnabled}
+          isClosingPreview={isClosingPreview}
           editorThemeVars={editorThemeVars}
           baseProps={{
             attributes,
@@ -927,6 +1068,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               onRepairJson: handleRepairJson,
               onEnterDiffMode: handleEnterDiffMode,
               onExitDiffMode: handleBackToEditor,
+              onCopyParam: () => showLightNotification('复制成功'),
             },
             editorProps: {
               editorRef,
@@ -968,6 +1110,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             previewContainerRef,
             previewPlaceholderRef,
             onResizeStart: handleResizeStart,
+            isClosingTransition: isClosingPreview,
+            isOpeningInitial: isOpeningPreview,
+            isOpeningTransition,
           }}
           normalModeProps={{
             previewEnabled,

@@ -37,6 +37,7 @@ export const NormalModeContent: React.FC<NormalModeContentProps> = (props) => {
         onEnterDiffMode={toolbarActions.onEnterDiffMode}
         onLocateError={toolbarActions.onLocateError}
         onRepairJson={toolbarActions.onRepairJson}
+        onCopyParam={toolbarActions.onCopyParam}
       />
       <EditorSection editorProps={editorProps} notificationProps={notificationProps} />
     </>

@@ -1,3 +1,4 @@
+import { Button } from 'antd'
 import styled from 'styled-components'
 
 /**
@@ -7,4 +8,12 @@ export const DrawerFooterContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+`
+
+/**
+ * 底部操作按钮（圆角 + 内边距）
+ */
+export const FooterButton = styled(Button)`
+  border-radius: 16px;
+  padding: 4px 12px;
 `
