@@ -87,8 +87,10 @@ vi.mock('../../../styles/recording/recording.styles', () => ({
   VersionInfo: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="version-info">{children}</div>
   ),
-  VersionNumber: ({ children }: { children: React.ReactNode }) => (
-    <span data-testid="version-number">{children}</span>
+  VersionNumber: ({ children, $isActive }: { children: React.ReactNode; $isActive?: boolean }) => (
+    <span data-testid="version-number" data-is-active={$isActive}>
+      {children}
+    </span>
   ),
   VersionTimestamp: ({ children }: { children: React.ReactNode }) => (
     <span data-testid="version-timestamp">{children}</span>
@@ -121,6 +123,7 @@ describe('RecordingPanel', () => {
     onStopRecording: vi.fn(),
     onSelectSnapshot: vi.fn(),
     onEnterDiffMode: vi.fn(),
+    toolbar: <div data-testid="toolbar-content">工具栏内容</div>,
     children: <div data-testid="editor-content">编辑器内容</div>,
   }
 
@@ -142,6 +145,12 @@ describe('RecordingPanel', () => {
       render(<RecordingPanel {...defaultProps} />)
 
       expect(screen.getByTestId('editor-content')).toBeInTheDocument()
+    })
+
+    it('应该渲染工具栏内容', () => {
+      render(<RecordingPanel {...defaultProps} />)
+
+      expect(screen.getByTestId('toolbar-content')).toBeInTheDocument()
     })
 
     it('应该显示版本计数', () => {

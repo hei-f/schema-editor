@@ -35,6 +35,8 @@ interface RecordingPanelProps {
   onSelectSnapshot: (id: number) => void
   /** 进入Diff模式回调 */
   onEnterDiffMode: () => void
+  /** 工具栏内容 */
+  toolbar: React.ReactNode
   /** 编辑器内容（children） */
   children: React.ReactNode
 }
@@ -52,7 +54,7 @@ function formatTimestamp(ms: number): string {
 
 /**
  * 录制面板组件
- * 包含：状态栏、版本列表、编辑器区域
+ * 包含：状态栏、工具栏、版本列表、编辑器区域
  */
 export const RecordingPanel: React.FC<RecordingPanelProps> = (props) => {
   const {
@@ -62,6 +64,7 @@ export const RecordingPanel: React.FC<RecordingPanelProps> = (props) => {
     onStopRecording,
     onSelectSnapshot,
     onEnterDiffMode,
+    toolbar,
     children,
   } = props
 
@@ -95,6 +98,9 @@ export const RecordingPanel: React.FC<RecordingPanelProps> = (props) => {
         </div>
       </RecordingStatusBar>
 
+      {/* 工具栏 - 全宽 */}
+      {toolbar}
+
       {/* 内容区域：左侧面板 + 右侧编辑器 */}
       <RecordingContentArea>
         {/* 左侧录制面板 */}
@@ -112,7 +118,9 @@ export const RecordingPanel: React.FC<RecordingPanelProps> = (props) => {
                   onClick={() => onSelectSnapshot(snapshot.id)}
                 >
                   <VersionInfo>
-                    <VersionNumber>版本 {index + 1}</VersionNumber>
+                    <VersionNumber $isActive={snapshot.id === selectedSnapshotId}>
+                      版本 {index + 1}
+                    </VersionNumber>
                     <VersionTimestamp>{formatTimestamp(snapshot.timestamp)}</VersionTimestamp>
                   </VersionInfo>
                 </VersionItem>
