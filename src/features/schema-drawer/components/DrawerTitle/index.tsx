@@ -142,13 +142,7 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
 
           {toolbarButtons.preview && (
             <Tooltip
-              title={
-                !hasPreviewFunction
-                  ? '页面未提供预览函数'
-                  : previewEnabled
-                    ? '关闭预览'
-                    : '开启预览'
-              }
+              title={!hasPreviewFunction ? '页面未提供预览函数' : previewEnabled ? '' : '开启预览'}
             >
               <DrawerTitleButton
                 size="small"
