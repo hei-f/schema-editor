@@ -86,17 +86,8 @@ describe('RecordingPanel', () => {
       expect(screen.getByTestId('editor-content')).toBeInTheDocument()
     })
 
-    it('应该渲染工具栏内容', () => {
-      render(<RecordingPanel {...defaultProps} />)
-
-      expect(screen.getByTestId('toolbar-content')).toBeInTheDocument()
-    })
-
-    it('应该显示版本计数', () => {
-      render(<RecordingPanel {...defaultProps} />)
-
-      expect(screen.getByTestId('version-count')).toHaveTextContent('已记录 0 个版本')
-    })
+    // 注意：工具栏和状态栏（含版本计数）已提升到 DrawerContent 层级统一管理
+    // 相关测试已移至 RecordingStatusBar.test.tsx
   })
 
   // 注意：录制状态栏测试已移至 RecordingStatusBar.test.tsx

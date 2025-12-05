@@ -526,12 +526,15 @@ describe('DrawerToolbar组件测试', () => {
           toolbarButtons={defaultToolbarButtons}
           isDiffMode={true}
           diffDisplayMode="raw"
+          showDiffButton={true}
           {...diffModeHandlers}
         />
       )
 
-      // Diff模式下应该显示退出按钮
-      expect(screen.getByText('对比')).toBeInTheDocument()
+      // Diff模式下应该显示退出按钮，不显示格式化等按钮
+      expect(screen.getByText('Diff')).toBeInTheDocument()
+      expect(screen.queryByText('格式化')).not.toBeInTheDocument()
+      expect(screen.queryByText(/压\s*缩/)).not.toBeInTheDocument()
     })
 
     it('有待确认修复时应该显示应用和取消按钮', () => {
@@ -635,11 +638,12 @@ describe('DrawerToolbar组件测试', () => {
           toolbarButtons={defaultToolbarButtons}
           isDiffMode={true}
           diffDisplayMode="raw"
+          showDiffButton={true}
           {...diffModeHandlers}
         />
       )
 
-      await user.click(screen.getByText('对比'))
+      await user.click(screen.getByText('Diff'))
       expect(diffModeHandlers.onExitDiffMode).toHaveBeenCalled()
     })
   })

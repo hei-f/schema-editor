@@ -97,7 +97,7 @@ describe('shadowDomTheme', () => {
     describe('层级系统', () => {
       it('应该包含 z-index 配置', () => {
         expect(shadowDomTheme.token?.zIndexBase).toBe(0)
-        expect(shadowDomTheme.token?.zIndexPopupBase).toBe(1000)
+        expect(shadowDomTheme.token?.zIndexPopupBase).toBe(1050)
       })
     })
   })
