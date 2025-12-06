@@ -1,6 +1,8 @@
+import { FORM_PATHS } from '@/shared/constants/form-paths'
+import { LogoIcon } from '@/shared/icons/optionsPage/Logo'
 import type { CommunicationMode } from '@/shared/types'
 import { RightOutlined } from '@ant-design/icons'
-import { theme } from 'antd'
+import { Form, theme } from 'antd'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   getIntegrationChildren,
@@ -19,6 +21,7 @@ import {
   MenuItemIcon,
   MenuItemText,
   MenuList,
+  MenuLogoWrapper,
   MenuTitle,
   SubMenuContainer,
   SubMenuItem,
@@ -32,12 +35,12 @@ interface SideMenuProps {
   onCollapsedChange: (collapsed: boolean) => void
   /** 当前激活的 Section */
   activeSection?: string
-  /** 当前通信模式（用于动态切换集成配置子项） */
-  communicationMode: CommunicationMode
   /** 点击菜单项回调 */
   onMenuClick?: (sectionId: string) => void
   /** 点击子菜单项回调 */
   onSubMenuClick?: (anchorId: string) => void
+  /** 是否为发布构建（控制调试菜单显示） */
+  isReleaseBuild?: boolean
 }
 
 /**
@@ -49,10 +52,13 @@ export const SideMenu: React.FC<SideMenuProps> = (props) => {
     collapsed,
     onCollapsedChange,
     activeSection,
-    communicationMode,
     onMenuClick,
     onSubMenuClick,
+    isReleaseBuild = false,
   } = props
+
+  /** 通过 Form.useWatch 获取通信模式 */
+  const communicationMode = Form.useWatch<CommunicationMode>(FORM_PATHS.apiConfig.communicationMode)
 
   /** 展开的菜单项 */
   const [expandedKeys, setExpandedKeys] = useState<string[]>([])
@@ -65,7 +71,7 @@ export const SideMenu: React.FC<SideMenuProps> = (props) => {
   const menuConfig = useMemo(() => {
     return MENU_CONFIG.filter((item) => {
       /** 发布模式下隐藏调试菜单 */
-      if (__IS_RELEASE_BUILD__ && item.key === 'debug') {
+      if (isReleaseBuild && item.key === 'debug') {
         return false
       }
       return true
@@ -73,12 +79,12 @@ export const SideMenu: React.FC<SideMenuProps> = (props) => {
       if (item.key === 'integration-config') {
         return {
           ...item,
-          children: getIntegrationChildren(communicationMode),
+          children: getIntegrationChildren(communicationMode ?? 'postMessage'),
         }
       }
       return item
     })
-  }, [communicationMode])
+  }, [communicationMode, isReleaseBuild])
 
   /**
    * 响应式处理：窗口宽度小于断点时自动折叠
@@ -125,26 +131,21 @@ export const SideMenu: React.FC<SideMenuProps> = (props) => {
     (item: MenuItemConfig) => {
       if (collapsed) {
         onCollapsedChange(false)
-        setTimeout(() => {
-          onMenuClick?.(item.sectionId)
-        }, 300)
-      } else {
-        toggleExpand(item.key)
-        onMenuClick?.(item.sectionId)
       }
+      toggleExpand(item.key)
+      onMenuClick?.(item.sectionId)
     },
     [collapsed, onCollapsedChange, onMenuClick, toggleExpand]
   )
 
   /**
    * 处理子菜单项点击
+   * 先展开 Section，然后滚动到锚点（锚点滚动内部会处理等待逻辑）
    */
   const handleSubMenuItemClick = useCallback(
     (anchorId: string, sectionId: string) => {
       onMenuClick?.(sectionId)
-      setTimeout(() => {
-        onSubMenuClick?.(anchorId)
-      }, 100)
+      onSubMenuClick?.(anchorId)
     },
     [onMenuClick, onSubMenuClick]
   )
@@ -160,8 +161,16 @@ export const SideMenu: React.FC<SideMenuProps> = (props) => {
       <MenuContent>
         {/* 头部 */}
         <MenuHeader $collapsed={collapsed}>
-          <MenuTitle $collapsed={collapsed}>配置导航</MenuTitle>
-          <CollapseButton $collapsed={collapsed} onClick={() => onCollapsedChange(!collapsed)}>
+          <MenuLogoWrapper $collapsed={collapsed}>
+            <LogoIcon style={{ fontSize: 24 }} />
+            <MenuTitle $collapsed={collapsed}>Schema Editor</MenuTitle>
+          </MenuLogoWrapper>
+          <CollapseButton
+            $collapsed={collapsed}
+            onClick={() => onCollapsedChange(!collapsed)}
+            type="fill"
+            style={{ border: 'none' }}
+          >
             <RightOutlined />
           </CollapseButton>
         </MenuHeader>

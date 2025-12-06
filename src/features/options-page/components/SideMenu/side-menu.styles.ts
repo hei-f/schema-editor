@@ -1,3 +1,4 @@
+import { Button } from 'antd'
 import { MENU_COLLAPSED_WIDTH, MENU_EXPANDED_WIDTH } from '../../config/menu-config'
 import styled, { css, keyframes } from 'styled-components'
 
@@ -276,44 +277,53 @@ export const MenuHeader = styled.div<{ $collapsed: boolean }>`
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 `
 
-/** 菜单标题 */
-export const MenuTitle = styled.span<{ $collapsed: boolean }>`
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a2e;
-  white-space: nowrap;
-  overflow: hidden;
+/** Logo 和标题包装器 */
+export const MenuLogoWrapper = styled.div<{ $collapsed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
   opacity: ${(props) => (props.$collapsed ? 0 : 1)};
   width: ${(props) => (props.$collapsed ? 0 : 'auto')};
+  overflow: hidden;
   transition:
     opacity 0.2s ease,
     width 0.2s ease;
 `
 
+/** 菜单标题 */
+export const MenuTitle = styled.span<{ $collapsed: boolean }>`
+  font-size: 16px;
+  font-weight: 600;
+  color: #353e5c;
+  white-space: nowrap;
+  overflow: hidden;
+`
+
 /** 折叠按钮 */
-export const CollapseButton = styled.button<{ $collapsed: boolean }>`
+export const CollapseButton = styled(Button)<{ $collapsed: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
   border: none;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.6);
   color: #666;
-  cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--menu-theme-color);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: var(--menu-theme-color) !important;
+    /* transform: scale(1.05); */
   }
 
-  &:active {
+  /* &:active {
     transform: scale(0.95);
-  }
+  } */
 
   svg {
     transition: transform 0.3s ease;
@@ -434,9 +444,9 @@ export const MenuItemIcon = styled.span<{ $active?: boolean }>`
 /** 菜单项文字 */
 export const MenuItemText = styled.span<{ $collapsed: boolean; $active?: boolean }>`
   margin-left: ${(props) => (props.$collapsed ? 0 : '12px')};
-  font-size: 13px;
+  font-size: 14px;
   font-weight: ${(props) => (props.$active ? 500 : 400)};
-  color: ${(props) => (props.$active ? 'var(--menu-theme-color)' : '#333')};
+  color: ${(props) => (props.$active ? 'var(--menu-theme-color)' : '#353E5C')};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -483,7 +493,7 @@ export const SubMenuItem = styled.div<{ $active?: boolean }>`
   border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
-  color: ${(props) => (props.$active ? 'var(--menu-theme-color)' : '#666')};
+  color: ${(props) => (props.$active ? 'var(--menu-theme-color)' : '#666F8D')};
   background: ${(props) =>
     props.$active ? 'rgba(var(--menu-theme-color-rgb), 0.08)' : 'transparent'};
   transition: all 0.2s ease;

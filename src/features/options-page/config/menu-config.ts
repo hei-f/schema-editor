@@ -44,16 +44,16 @@ export interface MenuChildConfig {
  */
 const INTEGRATION_CHILDREN: Record<CommunicationMode, MenuChildConfig[]> = {
   postMessage: [
-    { key: 'communication-mode', label: '通信模式', anchorId: 'field-communication-mode' },
-    { key: 'attribute-name', label: '属性名称', anchorId: 'field-attribute-name' },
-    { key: 'request-timeout', label: '请求超时', anchorId: 'field-request-timeout' },
-    { key: 'source-config', label: '消息标识', anchorId: 'field-source-config' },
-    { key: 'message-types', label: '消息类型', anchorId: 'field-message-types' },
+    { key: 'communication-mode', label: '通信方式', anchorId: 'field-communication-mode' },
+    { key: 'attribute-name', label: '元素标记配置', anchorId: 'field-attribute-name' },
+    { key: 'request-timeout', label: 'postMessage 配置', anchorId: 'field-request-timeout' },
+    { key: 'source-config', label: '消息标识配置', anchorId: 'field-source-config' },
+    { key: 'message-types', label: '消息类型配置', anchorId: 'field-message-types' },
   ],
   windowFunction: [
-    { key: 'communication-mode', label: '通信模式', anchorId: 'field-communication-mode' },
-    { key: 'attribute-name', label: '属性名称', anchorId: 'field-attribute-name' },
-    { key: 'window-functions', label: '函数配置', anchorId: 'field-window-functions' },
+    { key: 'communication-mode', label: '通信方式', anchorId: 'field-communication-mode' },
+    { key: 'attribute-name', label: '元素标记配置', anchorId: 'field-attribute-name' },
+    { key: 'window-functions', label: '核心 API', anchorId: 'field-window-functions' },
   ],
 }
 
@@ -82,10 +82,8 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     icon: SearchOutlined,
     sectionId: 'section-element-detection',
     children: [
-      { key: 'throttle-interval', label: '节流间隔', anchorId: 'field-throttle-interval' },
-      { key: 'search-depth', label: '搜索深度', anchorId: 'field-search-depth' },
-      { key: 'highlight-color', label: '高亮颜色', anchorId: 'field-highlight-color' },
-      { key: 'highlight-all', label: '快捷键高亮', anchorId: 'field-highlight-all' },
+      { key: 'basic-mode', label: '基础模式', anchorId: 'field-basic-mode' },
+      { key: 'search-mode', label: '搜索模式', anchorId: 'field-search-mode' },
       { key: 'recording-mode', label: '录制模式', anchorId: 'field-recording-mode' },
       { key: 'iframe-config', label: 'iframe 支持', anchorId: 'field-iframe-config' },
     ],
@@ -96,9 +94,8 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     icon: DesktopOutlined,
     sectionId: 'section-editor-config',
     children: [
-      { key: 'drawer-width', label: '抽屉宽度', anchorId: 'field-drawer-width' },
-      { key: 'auto-parse', label: '字符串解析', anchorId: 'field-auto-parse' },
-      { key: 'ast-hints', label: 'AST提示', anchorId: 'field-ast-hints' },
+      { key: 'editor-features', label: '编辑器功能', anchorId: 'field-editor-features' },
+      { key: 'appearance', label: '外观设置', anchorId: 'field-appearance' },
     ],
   },
   {
@@ -117,9 +114,7 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     icon: EyeOutlined,
     sectionId: 'section-preview-config',
     children: [
-      { key: 'auto-update', label: '自动更新', anchorId: 'field-auto-update' },
-      { key: 'update-delay', label: '更新防抖', anchorId: 'field-update-delay' },
-      { key: 'preview-width', label: '预览宽度', anchorId: 'field-preview-width' },
+      { key: 'preview-behavior', label: '预览行为', anchorId: 'field-preview-behavior' },
       { key: 'z-index', label: '层级配置', anchorId: 'field-z-index' },
     ],
   },
@@ -141,9 +136,7 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     icon: KeyOutlined,
     sectionId: 'section-keyboard-shortcuts',
     children: [
-      { key: 'shortcut-save', label: '保存', anchorId: 'field-shortcut-save' },
-      { key: 'shortcut-format', label: '格式化', anchorId: 'field-shortcut-format' },
-      { key: 'shortcut-preview', label: '切换预览', anchorId: 'field-shortcut-preview' },
+      { key: 'editor-shortcuts', label: '编辑器快捷键', anchorId: 'field-editor-shortcuts' },
     ],
   },
   {
@@ -151,7 +144,7 @@ export const MENU_CONFIG: MenuItemConfig[] = [
     label: '开发调试',
     icon: BulbOutlined,
     sectionId: 'section-debug',
-    children: [{ key: 'debug-log', label: '调试日志', anchorId: 'field-debug-log' }],
+    children: [{ key: 'log-settings', label: '日志设置', anchorId: 'field-log-settings' }],
   },
   {
     key: 'usage-guide',
@@ -166,7 +159,7 @@ export const MENU_CONFIG: MenuItemConfig[] = [
 ]
 
 /** 菜单展开宽度 */
-export const MENU_EXPANDED_WIDTH = 200
+export const MENU_EXPANDED_WIDTH = 230
 
 /** 菜单折叠宽度 */
 export const MENU_COLLAPSED_WIDTH = 56
