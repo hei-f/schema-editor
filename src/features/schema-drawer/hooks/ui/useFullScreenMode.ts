@@ -98,8 +98,8 @@ export function useFullScreenMode(initialMode: FullScreenMode = FULL_SCREEN_MODE
 
   /**
    * 关闭预览模式（带过渡动画）
-   * - 如果目标是 NONE：等待动画完成后再切换
-   * - 如果目标是其他模式（如 DIFF）：立即切换模式，预览收缩只是视觉效果
+   * - 如果目标是 NONE：等待动画完成后再切换模式（抽屉需要从全屏变窄）
+   * - 如果目标是其他全屏模式（如 DIFF）：直接切换模式（抽屉宽度不变）
    * @param onBeforeClose 关闭前的回调（用于清理预览容器等）
    * @param targetMode 关闭后要切换到的目标模式，默认为 NONE
    */
@@ -113,20 +113,20 @@ export function useFullScreenMode(initialMode: FullScreenMode = FULL_SCREEN_MODE
       // 立即执行清理回调
       onBeforeClose?.()
 
-      // 如果目标是其他模式（非 NONE），立即切换以获得更流畅的体验
+      // 如果目标是其他全屏模式（如 DIFF），直接切换模式
+      // 因为抽屉宽度保持不变（都是 100vw），不需要过渡动画
       if (targetMode !== FULL_SCREEN_MODE.NONE) {
         setMode((prev) => {
           setPrevMode(prev)
           return targetMode
         })
-        // 不需要过渡动画，直接完成
         return
       }
 
-      // 目标是 NONE 时，使用过渡动画
+      // 目标是 NONE 时，使用过渡动画（抽屉从全屏变窄）
       setIsClosingPreview(true)
 
-      // 延迟切换模式，等待 Drawer 动画完成
+      // 延迟切换模式，等待抽屉收缩动画完成
       closingTimerRef.current = setTimeout(() => {
         setMode((prev) => {
           setPrevMode(prev)
