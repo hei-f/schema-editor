@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 /**
  * 编辑器工具栏
+ * 单行布局，不换行
  */
 export const EditorToolbar = styled.div`
   display: flex;
@@ -13,21 +14,25 @@ export const EditorToolbar = styled.div`
   background: #f7f8fa;
   margin: 12px 0;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
 `
 
 /**
  * 参数容器外层包装器
  * 用于实现动态渐变遮罩效果，透明度根据滚动偏移量平滑变化
+ * 支持通过 $hidden 属性控制隐藏
  */
 export const ParamsContainerWrapper = styled.div<{
   $leftMaskOpacity: number
   $rightMaskOpacity: number
+  $hidden?: boolean
 }>`
   position: relative;
-  flex: 1;
+  flex-shrink: 1;
   min-width: 0;
-  max-width: calc(100% - 500px);
+  max-width: 50%;
+  display: ${(props) => (props.$hidden ? 'none' : 'block')};
 
   /* 左侧渐变遮罩 */
   &::before {
@@ -115,7 +120,7 @@ export const AttributeTagWrapper = styled.span`
 `
 
 /**
- * 按钮组
+ * 按钮组（保留用于兼容）
  */
 export const ButtonGroup = styled.div`
   display: flex;
@@ -124,6 +129,110 @@ export const ButtonGroup = styled.div`
   flex-shrink: 0;
   justify-content: flex-end;
   align-items: center;
+`
+
+/**
+ * 响应式按钮组容器
+ * flex 布局，确保固定按钮始终在右侧
+ */
+export const ResponsiveButtonGroupContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+`
+
+/**
+ * 响应式按钮组可滚动区域
+ * 包含普通按钮，overflow: hidden 裁剪超出部分
+ */
+export const ResponsiveButtonGroupScrollable = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+`
+
+/**
+ * 响应式按钮组固定区域
+ * 包含更多按钮和固定按钮，始终显示
+ */
+export const ResponsiveButtonGroupFixed = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+`
+
+/**
+ * 更多按钮
+ */
+export const MoreButton = styled(Button)`
+  &.ant-btn {
+    border-radius: 16px;
+    padding: 2px 8px;
+    font-size: 12px;
+    height: 24px;
+    line-height: 1.5;
+    border: 1px solid #e6ecf4;
+    color: #666f8d;
+    background: #ffffff;
+
+    &:hover {
+      border-color: #c9d1e0;
+      color: #4a5168;
+      background: #f5f7fa;
+    }
+
+    &:active {
+      border-color: #b8c2d4;
+      color: #3d4459;
+      background: #eef1f6;
+    }
+
+    &:focus {
+      border-color: #e6ecf4;
+      box-shadow: none;
+    }
+  }
+`
+
+/**
+ * 更多菜单容器
+ */
+export const MoreMenuContainer = styled.div`
+  min-width: 100px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow:
+    0 6px 16px 0 rgba(0, 0, 0, 0.08),
+    0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  padding: 4px;
+`
+
+/**
+ * 更多菜单项
+ */
+export const MoreMenuItem = styled.div<{ $disabled?: boolean }>`
+  padding: 8px 12px;
+  font-size: 12px;
+  color: ${(props) => (props.$disabled ? '#bfbfbf' : '#666f8d')};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
+  border-radius: 6px;
+  transition: background 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${(props) => (props.$disabled ? 'transparent' : '#f5f7fa')};
+  }
 `
 
 /**

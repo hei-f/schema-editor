@@ -1,18 +1,19 @@
 import type { ElementAttributes, ToolbarButtonsConfig } from '@/shared/types'
 import { ContentType } from '@/shared/types'
-import { Tooltip } from 'antd'
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ButtonGroup,
   EditorToolbar as StyledEditorToolbar,
-  ToolbarButton,
   ToolbarSegmented,
 } from '../../styles/toolbar/toolbar.styles'
 import { DIFF_DISPLAY_MODE_OPTIONS, type DiffDisplayMode } from '../editor/SchemaDiffView'
+import { ResponsiveButtonGroup, type ToolbarButtonConfig } from './ResponsiveButtonGroup'
 import { ScrollableParams } from './ScrollableParams'
 
 /** 工具栏模式类型 */
 export type ToolbarMode = 'diff' | 'recording' | 'preview' | 'normal'
+
+/** 参数区域隐藏的容器最小宽度阈值（px） */
+const PARAMS_HIDE_THRESHOLD = 300
 
 interface DrawerToolbarProps {
   /** 工具栏模式，用于控制按钮显示 */
@@ -60,7 +61,7 @@ interface DrawerToolbarProps {
 /**
  * 抽屉工具栏组件
  * 工具栏始终保持在 DOM 中，按钮根据模式条件原子化渲染
- * 无论 Diff 模式还是默认模式，工具栏结构保持一致，避免切换动画
+ * 支持响应式布局，在空间不足时将按钮收入"更多"菜单
  */
 export const DrawerToolbar: React.FC<DrawerToolbarProps> = (props) => {
   const {
@@ -92,62 +93,67 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = (props) => {
     onCopyParam,
   } = props
 
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const [hideParams, setHideParams] = useState(false)
+
+  /** 获取 tooltip/dropdown 的挂载容器（工具栏的父元素，避免被 overflow: hidden 裁剪） */
+  const getPopupContainer = useCallback(() => {
+    return toolbarRef.current?.parentElement || document.body
+  }, [])
+
   /** 判断是否为 Diff 模式（支持 mode prop 和 isDiffMode prop） */
   const isInDiffMode = mode === 'diff' || isDiffMode
 
   /** Diff 按钮点击处理：根据当前模式决定进入或退出 */
-  const handleDiffButtonClick = () => {
+  const handleDiffButtonClick = useCallback(() => {
     if (isInDiffMode) {
       onExitDiffMode?.()
     } else {
       onEnterDiffMode?.()
     }
-  }
+  }, [isInDiffMode, onExitDiffMode, onEnterDiffMode])
 
-  return (
-    <StyledEditorToolbar>
-      {/* 参数区域：仅非 Diff 模式显示，Diff 模式使用等高占位保持按钮位置一致 */}
-      {!isInDiffMode ? (
-        <ScrollableParams params={attributes.params || []} onCopyParam={onCopyParam} />
-      ) : (
-        <div style={{ flex: 1, minHeight: 32 }} />
-      )}
+  /** 监听容器宽度，决定是否隐藏参数区域 */
+  useEffect(() => {
+    const toolbar = toolbarRef.current
+    if (!toolbar) return
 
-      <ButtonGroup>
-        {/* 更新预览按钮：仅预览模式且非 Diff 时显示 */}
-        {!isInDiffMode && previewEnabled && onRenderPreview && (
-          <ToolbarButton size="small" type="primary" onClick={onRenderPreview}>
-            更新预览
-          </ToolbarButton>
-        )}
+    const checkWidth = () => {
+      const width = toolbar.offsetWidth
+      setHideParams(width < PARAMS_HIDE_THRESHOLD)
+    }
 
-        {/* 修复确认按钮：仅 Diff 模式且有待确认的修复时显示 */}
-        {isInDiffMode && hasPendingRepair && onApplyRepair && onCancelRepair && (
-          <>
-            <Tooltip title="应用修复后的内容">
-              <ToolbarButton size="small" type="primary" onClick={onApplyRepair}>
-                应用修复
-              </ToolbarButton>
-            </Tooltip>
-            <Tooltip title="取消修复，恢复原内容">
-              <ToolbarButton size="small" onClick={onCancelRepair}>
-                取消
-              </ToolbarButton>
-            </Tooltip>
-          </>
-        )}
+    checkWidth()
 
-        {/* AST/RawString 切换：仅非 Diff 模式显示 */}
-        {!isInDiffMode && toolbarButtons.astRawStringToggle && (
-          <Tooltip
-            title={
-              isRecording
-                ? '录制中不可切换'
-                : contentType === ContentType.Other
-                  ? '当前数据类型错误'
-                  : ''
-            }
-          >
+    const resizeObserver = new ResizeObserver(checkWidth)
+    resizeObserver.observe(toolbar)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  /** 构建按钮配置列表 */
+  const buildButtonConfigs = useCallback((): ToolbarButtonConfig[] => {
+    const configs: ToolbarButtonConfig[] = []
+
+    // 非 Diff 模式下的按钮
+    if (!isInDiffMode) {
+      // 更新预览按钮
+      if (previewEnabled && onRenderPreview) {
+        configs.push({
+          key: 'render-preview',
+          label: '更新预览',
+          onClick: onRenderPreview,
+          type: 'primary',
+        })
+      }
+
+      // AST/RawString 切换（原始组件，不包装 ToolbarButton）
+      if (toolbarButtons.astRawStringToggle) {
+        configs.push({
+          key: 'ast-rawstring-toggle',
+          label: (
             <ToolbarSegmented
               options={[
                 { label: 'AST', value: ContentType.Ast },
@@ -157,93 +163,164 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = (props) => {
               onChange={onSegmentChange}
               disabled={contentType === ContentType.Other || isRecording}
             />
-          </Tooltip>
-        )}
+          ),
+          isRawComponent: true,
+          // Segmented 不在更多菜单中显示，因为它需要特殊交互
+        })
+      }
 
-        {/* 转义/去转义按钮：仅非 Diff 模式显示 */}
-        {!isInDiffMode && toolbarButtons.escape && (
-          <>
-            <Tooltip title="将内容包装成字符串值，添加引号和转义">
-              <ToolbarButton size="small" onClick={onEscape}>
-                转义
-              </ToolbarButton>
-            </Tooltip>
-            <Tooltip title="将字符串值还原，移除外层引号和转义">
-              <ToolbarButton size="small" onClick={onUnescape}>
-                去转义
-              </ToolbarButton>
-            </Tooltip>
-          </>
-        )}
+      // 转义按钮
+      if (toolbarButtons.escape) {
+        configs.push({
+          key: 'escape',
+          label: '转义',
+          onClick: onEscape,
+          tooltip: '将内容包装成字符串值，添加引号和转义',
+        })
 
-        {/* 压缩按钮：仅非 Diff 模式显示 */}
-        {!isInDiffMode && toolbarButtons.serialize && (
-          <Tooltip title="将 JSON 压缩成一行">
-            <ToolbarButton size="small" onClick={onCompact}>
-              压缩
-            </ToolbarButton>
-          </Tooltip>
-        )}
+        configs.push({
+          key: 'unescape',
+          label: '去转义',
+          onClick: onUnescape,
+          tooltip: '将字符串值还原，移除外层引号和转义',
+        })
+      }
 
-        {/* 解析按钮：仅非 Diff 模式显示 */}
-        {!isInDiffMode && toolbarButtons.deserialize && (
-          <Tooltip title={!canParse ? '当前内容不是有效的 JSON 格式' : '解析多层嵌套/转义的 JSON'}>
-            <ToolbarButton size="small" onClick={onParse} disabled={!canParse}>
-              解析
-            </ToolbarButton>
-          </Tooltip>
-        )}
+      // 压缩按钮
+      if (toolbarButtons.serialize) {
+        configs.push({
+          key: 'compact',
+          label: '压缩',
+          onClick: onCompact,
+          tooltip: '将 JSON 压缩成一行',
+        })
+      }
 
-        {/* 格式化按钮：仅非 Diff 模式显示 */}
-        {!isInDiffMode && toolbarButtons.format && (
-          <Tooltip title={!canParse ? '当前内容不是有效的 JSON 格式' : ''}>
-            <ToolbarButton size="small" onClick={onFormat} disabled={!canParse}>
-              格式化
-            </ToolbarButton>
-          </Tooltip>
-        )}
+      // 解析按钮
+      if (toolbarButtons.deserialize) {
+        configs.push({
+          key: 'parse',
+          label: '解析',
+          onClick: onParse,
+          disabled: !canParse,
+          tooltip: !canParse ? '当前内容不是有效的 JSON 格式' : '解析多层嵌套/转义的 JSON',
+        })
+      }
 
-        {/* 定位错误按钮：仅非 Diff 模式显示 */}
-        {!isInDiffMode && onLocateError && (
-          <Tooltip title="定位 JSON 语法错误位置（支持检测字符串内部的 JSON）">
-            <ToolbarButton size="small" onClick={onLocateError}>
-              定位错误
-            </ToolbarButton>
-          </Tooltip>
-        )}
+      // 格式化按钮
+      if (toolbarButtons.format) {
+        configs.push({
+          key: 'format',
+          label: '格式化',
+          onClick: onFormat,
+          disabled: !canParse,
+          tooltip: !canParse ? '当前内容不是有效的 JSON 格式' : undefined,
+        })
+      }
 
-        {/* 修复JSON按钮：仅非 Diff 模式显示 */}
-        {!isInDiffMode && onRepairJson && (
-          <Tooltip title="尝试自动修复 JSON 语法错误（支持修复字符串内部的 JSON）">
-            <ToolbarButton size="small" onClick={onRepairJson}>
-              修复JSON
-            </ToolbarButton>
-          </Tooltip>
-        )}
+      // 定位错误按钮
+      if (onLocateError) {
+        configs.push({
+          key: 'locate-error',
+          label: '定位错误',
+          onClick: onLocateError,
+          tooltip: '定位 JSON 语法错误位置（支持检测字符串内部的 JSON）',
+        })
+      }
 
-        {/* 对比显示模式选择器：仅 Diff 模式显示 */}
-        {isInDiffMode && (
-          <Tooltip title="选择数据展示格式进行对比">
-            <ToolbarSegmented
-              size="small"
-              value={diffDisplayMode}
-              onChange={(value) => onDiffDisplayModeChange?.(value as DiffDisplayMode)}
-              options={DIFF_DISPLAY_MODE_OPTIONS}
-            />
-          </Tooltip>
-        )}
+      // 修复JSON按钮
+      if (onRepairJson) {
+        configs.push({
+          key: 'repair-json',
+          label: '修复JSON',
+          onClick: onRepairJson,
+          tooltip: '尝试自动修复 JSON 语法错误（支持修复字符串内部的 JSON）',
+        })
+      }
+    }
 
-        {/* Diff 按钮：始终显示，根据模式决定样式和行为 */}
-        {showDiffButton && (
-          <ToolbarButton
-            size="small"
-            type={isInDiffMode ? 'primary' : 'default'}
-            onClick={handleDiffButtonClick}
-          >
-            Diff
-          </ToolbarButton>
-        )}
-      </ButtonGroup>
+    // Diff 模式下的按钮
+    if (isInDiffMode) {
+      // 修复确认按钮
+      if (hasPendingRepair && onApplyRepair && onCancelRepair) {
+        configs.push({
+          key: 'apply-repair',
+          label: '应用修复',
+          onClick: onApplyRepair,
+          type: 'primary',
+          tooltip: '应用修复后的内容',
+        })
+
+        configs.push({
+          key: 'cancel-repair',
+          label: '取消',
+          onClick: onCancelRepair,
+          tooltip: '取消修复，恢复原内容',
+        })
+      }
+
+      // 对比显示模式选择器（原始组件）
+      configs.push({
+        key: 'diff-display-mode',
+        label: (
+          <ToolbarSegmented
+            value={diffDisplayMode}
+            onChange={(value) => onDiffDisplayModeChange?.(value as DiffDisplayMode)}
+            options={DIFF_DISPLAY_MODE_OPTIONS}
+          />
+        ),
+        isRawComponent: true,
+      })
+    }
+
+    // Diff 按钮（固定显示）
+    if (showDiffButton) {
+      configs.push({
+        key: 'diff',
+        label: 'Diff',
+        onClick: handleDiffButtonClick,
+        type: isInDiffMode ? 'primary' : 'default',
+        fixed: true, // 固定按钮，不会被收入更多菜单
+      })
+    }
+
+    return configs
+  }, [
+    isInDiffMode,
+    previewEnabled,
+    onRenderPreview,
+    toolbarButtons,
+    contentType,
+    onSegmentChange,
+    isRecording,
+    onEscape,
+    onUnescape,
+    onCompact,
+    onParse,
+    canParse,
+    onFormat,
+    onLocateError,
+    onRepairJson,
+    hasPendingRepair,
+    onApplyRepair,
+    onCancelRepair,
+    diffDisplayMode,
+    onDiffDisplayModeChange,
+    showDiffButton,
+    handleDiffButtonClick,
+  ])
+
+  const buttonConfigs = buildButtonConfigs()
+
+  return (
+    <StyledEditorToolbar ref={toolbarRef}>
+      {/* 参数区域：仅非 Diff 模式且空间足够时显示 */}
+      {!isInDiffMode && !hideParams && (
+        <ScrollableParams params={attributes.params || []} onCopyParam={onCopyParam} />
+      )}
+
+      {/* 响应式按钮组 */}
+      <ResponsiveButtonGroup buttons={buttonConfigs} getPopupContainer={getPopupContainer} />
     </StyledEditorToolbar>
   )
 }
