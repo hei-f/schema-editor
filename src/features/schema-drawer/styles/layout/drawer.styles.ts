@@ -322,16 +322,15 @@ export const PreviewEditorContainer = styled.div`
 `
 
 /**
- * 模式切换淡入动画
+ * 模式切换进入动画
+ * 使用 translateY 而非 opacity，避免从透明开始导致的"闪白"
  */
 const modeEnter = keyframes`
   from {
-    opacity: 0;
-    transform: scale(0.98);
+    transform: translateY(8px);
   }
   to {
-    opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
 `
 
