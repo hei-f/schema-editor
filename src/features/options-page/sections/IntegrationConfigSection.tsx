@@ -1,242 +1,312 @@
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import { FORM_PATHS } from '@/shared/constants/form-paths'
 import type { ApiConfig, CommunicationMode } from '@/shared/types'
-import { Alert, Form, Input, Radio, Space, Typography } from 'antd'
+import { ApiOutlined } from '@ant-design/icons'
+import { Alert, Form, Input, Radio, Space, Tooltip, Typography } from 'antd'
 import React from 'react'
 import { SectionCard } from '../components/SectionCard'
+import { FormSectionLabelWithVariant } from '../components/FormSectionLabelWithVariant'
 import {
   CodeBlock,
   ExampleLabel,
   ExampleSection,
   FixedWidthInputNumber,
-  FormSectionLabel,
+  FormContent,
+  FormSection,
+  HelpTooltipIcon,
 } from '../styles/layout.styles'
+import type { SectionProps } from '../types'
 
 const { Text } = Typography
-
-interface IntegrationConfigSectionProps {
-  /** 当前通信模式 */
-  communicationMode: CommunicationMode
-  /** 当前属性名 */
-  attributeName: string
-  /** 当前获取函数名（windowFunction 模式） */
-  getFunctionName: string
-  /** 当前更新函数名（windowFunction 模式） */
-  updateFunctionName: string
-  /** 当前预览函数名（windowFunction 模式） */
-  previewFunctionName: string
-  /** 当前 API 配置 */
-  apiConfig: ApiConfig | null
-  /** 是否展开 */
-  isActive?: boolean
-  /** 展开状态变化回调 */
-  onActiveChange?: (active: boolean) => void
-  /** 恢复默认回调 */
-  onResetDefault?: () => void
-}
 
 /**
  * 集成配置区块
  * 整合通信模式、属性配置和 API 配置
  */
-export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> = (props) => {
-  const {
-    communicationMode,
-    attributeName,
-    getFunctionName,
-    updateFunctionName,
-    previewFunctionName,
-    apiConfig,
-    isActive,
-    onActiveChange,
-    onResetDefault,
-  } = props
+export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
+  const { sectionId, isActive, onActiveChange, onResetDefault } = props
+
+  /** 通过 Form.useWatch 获取表单值 */
+  const communicationMode = Form.useWatch<CommunicationMode>(FORM_PATHS.apiConfig.communicationMode)
+  const attributeName = Form.useWatch<string>(FORM_PATHS.attributeName)
+  const getFunctionName = Form.useWatch<string>(FORM_PATHS.getFunctionName)
+  const updateFunctionName = Form.useWatch<string>(FORM_PATHS.updateFunctionName)
+  const previewFunctionName = Form.useWatch<string>(FORM_PATHS.previewFunctionName)
+  const apiConfig = Form.useWatch<ApiConfig>(['apiConfig'])
 
   return (
     <SectionCard
       title="集成配置"
       subtitle="配置插件与宿主页面的通信方式和接口"
+      icon={ApiOutlined}
       panelKey="integration-config"
+      sectionId={sectionId}
       isActive={isActive}
       onActiveChange={onActiveChange}
       onResetDefault={onResetDefault}
     >
       {/* 通信模式选择 */}
-      <Form.Item
-        label="通信模式"
-        name={FORM_PATHS.apiConfig.communicationMode}
-        extra="选择扩展与页面的通信方式"
-        id="field-communication-mode"
-      >
-        <Radio.Group>
-          <Space orientation="vertical">
-            <Radio value="postMessage">
-              <Text strong>postMessage 模式</Text>
-              <Text type="secondary" style={{ marginLeft: 8 }}>
-                不污染 window，方法不会暴露
-              </Text>
-            </Radio>
-            <Radio value="windowFunction">
-              <Text strong>Window 函数模式</Text>
-              <Text type="secondary" style={{ marginLeft: 8 }}>
-                接入简单，宿主只需暴露方法
-              </Text>
-            </Radio>
-          </Space>
-        </Radio.Group>
-      </Form.Item>
+      <FormSection>
+        <FormSectionLabelWithVariant id="field-communication-mode">
+          通信方式
+        </FormSectionLabelWithVariant>
+        <FormContent>
+          <Form.Item
+            label={
+              <Space>
+                通信模式
+                <Tooltip title="选择扩展与页面的通信方式">
+                  <HelpTooltipIcon />
+                </Tooltip>
+              </Space>
+            }
+            name={FORM_PATHS.apiConfig.communicationMode}
+          >
+            <Radio.Group>
+              <Space orientation="vertical">
+                <Radio value="postMessage">
+                  <Text strong>postMessage 模式</Text>
+                  <Text type="secondary" style={{ marginLeft: 8 }}>
+                    不污染 window，方法不会暴露
+                  </Text>
+                </Radio>
+                <Radio value="windowFunction">
+                  <Text strong>Window 函数模式</Text>
+                  <Text type="secondary" style={{ marginLeft: 8 }}>
+                    接入简单，宿主只需暴露方法
+                  </Text>
+                </Radio>
+              </Space>
+            </Radio.Group>
+          </Form.Item>
+        </FormContent>
+      </FormSection>
 
       {/* 通用配置：属性名 */}
-      <FormSectionLabel id="field-attribute-name">元素标记配置</FormSectionLabel>
-
-      <Form.Item
-        label="属性名称"
-        name={FORM_PATHS.attributeName}
-        rules={[
-          { required: true, message: '请输入属性名称' },
-          {
-            pattern: /^[a-z][a-z0-9-]*$/,
-            message: '属性名只能包含小写字母、数字和连字符，且必须以小写字母开头',
-          },
-        ]}
-        extra={`此属性名将用于从页面元素中提取参数，默认值为 ${DEFAULT_VALUES.attributeName}`}
-      >
-        <Input placeholder={`例如: ${DEFAULT_VALUES.attributeName}`} style={{ maxWidth: 300 }} />
-      </Form.Item>
+      <FormSection>
+        <FormSectionLabelWithVariant id="field-attribute-name">
+          元素标记配置
+        </FormSectionLabelWithVariant>
+        <FormContent>
+          <Form.Item
+            label={
+              <Space>
+                属性名称
+                <Tooltip
+                  title={`此属性名将用于从页面元素中提取参数，默认值为 ${DEFAULT_VALUES.attributeName}`}
+                >
+                  <HelpTooltipIcon />
+                </Tooltip>
+              </Space>
+            }
+            name={FORM_PATHS.attributeName}
+            rules={[
+              { required: true, message: '请输入属性名称' },
+              {
+                pattern: /^[a-z][a-z0-9-]*$/,
+                message: '属性名只能包含小写字母、数字和连字符，且必须以小写字母开头',
+              },
+            ]}
+          >
+            <Input
+              placeholder={`例如: ${DEFAULT_VALUES.attributeName}`}
+              style={{ maxWidth: 300 }}
+            />
+          </Form.Item>
+        </FormContent>
+      </FormSection>
 
       {/* postMessage 模式配置 */}
       {communicationMode === 'postMessage' && (
         <>
-          <FormSectionLabel id="field-request-timeout">postMessage 配置</FormSectionLabel>
+          <FormSection>
+            <FormSectionLabelWithVariant id="field-request-timeout">
+              postMessage 配置
+            </FormSectionLabelWithVariant>
+            <FormContent>
+              <Form.Item
+                label={
+                  <Space>
+                    请求超时时间
+                    <Tooltip title="发送请求后等待响应的最长时间">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.requestTimeout}
+                rules={[
+                  { required: true, message: '请输入超时时间' },
+                  { type: 'number', min: 1, max: 30, message: '超时时间必须在 1-30 秒之间' },
+                ]}
+              >
+                <FixedWidthInputNumber min={1} max={30} $width={120} suffix="秒" />
+              </Form.Item>
+            </FormContent>
+          </FormSection>
 
-          <Form.Item
-            label="请求超时时间"
-            name={FORM_PATHS.apiConfig.requestTimeout}
-            rules={[
-              { required: true, message: '请输入超时时间' },
-              { type: 'number', min: 1, max: 30, message: '超时时间必须在 1-30 秒之间' },
-            ]}
-            extra="发送请求后等待响应的最长时间"
-          >
-            <FixedWidthInputNumber min={1} max={30} $width={120} suffix="秒" />
-          </Form.Item>
+          <FormSection>
+            <FormSectionLabelWithVariant id="field-source-config">
+              消息标识配置
+            </FormSectionLabelWithVariant>
+            <FormContent>
+              <Form.Item
+                label={
+                  <Space>
+                    插件端 source
+                    <Tooltip title="插件发送消息时使用的 source 标识">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.sourceConfig.contentSource}
+                rules={[
+                  { required: true, message: '请输入插件端 source 标识' },
+                  {
+                    pattern: /^[a-zA-Z][a-zA-Z0-9-_]*$/,
+                    message: '只能包含字母、数字、连字符和下划线，且必须以字母开头',
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={DEFAULT_VALUES.apiConfig.sourceConfig.contentSource}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <Space>
+                    宿主端 source
+                    <Tooltip title="宿主响应消息时使用的 source 标识">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.sourceConfig.hostSource}
+                rules={[
+                  { required: true, message: '请输入宿主端 source 标识' },
+                  {
+                    pattern: /^[a-zA-Z][a-zA-Z0-9-_]*$/,
+                    message: '只能包含字母、数字、连字符和下划线，且必须以字母开头',
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={DEFAULT_VALUES.apiConfig.sourceConfig.hostSource}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+            </FormContent>
+          </FormSection>
 
-          <FormSectionLabel id="field-source-config">消息标识配置</FormSectionLabel>
+          <FormSection>
+            <FormSectionLabelWithVariant id="field-message-types">
+              消息类型配置
+            </FormSectionLabelWithVariant>
+            <FormContent>
+              <Form.Item
+                label={
+                  <Space>
+                    获取 Schema
+                    <Tooltip title="获取 Schema 数据的消息类型">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.messageTypes.getSchema}
+                rules={[
+                  { required: true, message: '请输入消息类型' },
+                  { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
+                ]}
+              >
+                <Input
+                  placeholder={DEFAULT_VALUES.apiConfig.messageTypes.getSchema}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <Space>
+                    更新 Schema
+                    <Tooltip title="更新 Schema 数据的消息类型">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.messageTypes.updateSchema}
+                rules={[
+                  { required: true, message: '请输入消息类型' },
+                  { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
+                ]}
+              >
+                <Input
+                  placeholder={DEFAULT_VALUES.apiConfig.messageTypes.updateSchema}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <Space>
+                    检查预览
+                    <Tooltip title="检查预览函数是否存在的消息类型">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.messageTypes.checkPreview}
+                rules={[
+                  { required: true, message: '请输入消息类型' },
+                  { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
+                ]}
+              >
+                <Input
+                  placeholder={DEFAULT_VALUES.apiConfig.messageTypes.checkPreview}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <Space>
+                    渲染预览
+                    <Tooltip title="渲染预览内容的消息类型">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.messageTypes.renderPreview}
+                rules={[
+                  { required: true, message: '请输入消息类型' },
+                  { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
+                ]}
+              >
+                <Input
+                  placeholder={DEFAULT_VALUES.apiConfig.messageTypes.renderPreview}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <Space>
+                    清理预览
+                    <Tooltip title="清理预览内容的消息类型">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.apiConfig.messageTypes.cleanupPreview}
+                rules={[
+                  { required: true, message: '请输入消息类型' },
+                  { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
+                ]}
+              >
+                <Input
+                  placeholder={DEFAULT_VALUES.apiConfig.messageTypes.cleanupPreview}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+            </FormContent>
+          </FormSection>
 
-          <Form.Item
-            label="插件端 source"
-            name={FORM_PATHS.apiConfig.sourceConfig.contentSource}
-            rules={[
-              { required: true, message: '请输入插件端 source 标识' },
-              {
-                pattern: /^[a-zA-Z][a-zA-Z0-9-_]*$/,
-                message: '只能包含字母、数字、连字符和下划线，且必须以字母开头',
-              },
-            ]}
-            extra="插件发送消息时使用的 source 标识"
-          >
-            <Input
-              placeholder={DEFAULT_VALUES.apiConfig.sourceConfig.contentSource}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="宿主端 source"
-            name={FORM_PATHS.apiConfig.sourceConfig.hostSource}
-            rules={[
-              { required: true, message: '请输入宿主端 source 标识' },
-              {
-                pattern: /^[a-zA-Z][a-zA-Z0-9-_]*$/,
-                message: '只能包含字母、数字、连字符和下划线，且必须以字母开头',
-              },
-            ]}
-            extra="宿主响应消息时使用的 source 标识"
-          >
-            <Input
-              placeholder={DEFAULT_VALUES.apiConfig.sourceConfig.hostSource}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <FormSectionLabel id="field-message-types">消息类型配置</FormSectionLabel>
-
-          <Form.Item
-            label="获取 Schema"
-            name={FORM_PATHS.apiConfig.messageTypes.getSchema}
-            rules={[
-              { required: true, message: '请输入消息类型' },
-              { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
-            ]}
-            extra="获取 Schema 数据的消息类型"
-          >
-            <Input
-              placeholder={DEFAULT_VALUES.apiConfig.messageTypes.getSchema}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="更新 Schema"
-            name={FORM_PATHS.apiConfig.messageTypes.updateSchema}
-            rules={[
-              { required: true, message: '请输入消息类型' },
-              { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
-            ]}
-            extra="更新 Schema 数据的消息类型"
-          >
-            <Input
-              placeholder={DEFAULT_VALUES.apiConfig.messageTypes.updateSchema}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="检查预览"
-            name={FORM_PATHS.apiConfig.messageTypes.checkPreview}
-            rules={[
-              { required: true, message: '请输入消息类型' },
-              { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
-            ]}
-            extra="检查预览函数是否存在的消息类型"
-          >
-            <Input
-              placeholder={DEFAULT_VALUES.apiConfig.messageTypes.checkPreview}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="渲染预览"
-            name={FORM_PATHS.apiConfig.messageTypes.renderPreview}
-            rules={[
-              { required: true, message: '请输入消息类型' },
-              { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
-            ]}
-            extra="渲染预览内容的消息类型"
-          >
-            <Input
-              placeholder={DEFAULT_VALUES.apiConfig.messageTypes.renderPreview}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="清理预览"
-            name={FORM_PATHS.apiConfig.messageTypes.cleanupPreview}
-            rules={[
-              { required: true, message: '请输入消息类型' },
-              { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
-            ]}
-            extra="清理预览内容的消息类型"
-          >
-            <Input
-              placeholder={DEFAULT_VALUES.apiConfig.messageTypes.cleanupPreview}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <ExampleSection>
+          <ExampleSection vertical gap={8}>
             <ExampleLabel strong>postMessage 模式 - 宿主页面示例：</ExampleLabel>
             <CodeBlock>
               <span className="comment">{'// 监听扩展请求'}</span>
@@ -370,57 +440,88 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
             style={{ marginBottom: 16 }}
           />
 
-          <FormSectionLabel id="field-window-functions">核心 API（必需）</FormSectionLabel>
+          <FormSection>
+            <FormSectionLabelWithVariant id="field-window-functions">
+              核心 API（必需）
+            </FormSectionLabelWithVariant>
+            <FormContent>
+              <Form.Item
+                label={
+                  <Space>
+                    获取Schema函数名
+                    <Tooltip title="页面需要提供的获取Schema数据的全局函数名">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.getFunctionName}
+                rules={[
+                  { required: true, message: '请输入函数名' },
+                  {
+                    pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/,
+                    message: '必须是有效的JavaScript函数名',
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={`例如: ${DEFAULT_VALUES.getFunctionName}`}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <Space>
+                    更新Schema函数名
+                    <Tooltip title="页面需要提供的更新Schema数据的全局函数名">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.updateFunctionName}
+                rules={[
+                  { required: true, message: '请输入函数名' },
+                  {
+                    pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/,
+                    message: '必须是有效的JavaScript函数名',
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={`例如: ${DEFAULT_VALUES.updateFunctionName}`}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+            </FormContent>
+          </FormSection>
 
-          <Form.Item
-            label="获取Schema函数名"
-            name={FORM_PATHS.getFunctionName}
-            id="field-get-function"
-            rules={[
-              { required: true, message: '请输入函数名' },
-              { pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/, message: '必须是有效的JavaScript函数名' },
-            ]}
-            extra="页面需要提供的获取Schema数据的全局函数名"
-          >
-            <Input
-              placeholder={`例如: ${DEFAULT_VALUES.getFunctionName}`}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="更新Schema函数名"
-            name={FORM_PATHS.updateFunctionName}
-            id="field-update-function"
-            rules={[
-              { required: true, message: '请输入函数名' },
-              { pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/, message: '必须是有效的JavaScript函数名' },
-            ]}
-            extra="页面需要提供的更新Schema数据的全局函数名"
-          >
-            <Input
-              placeholder={`例如: ${DEFAULT_VALUES.updateFunctionName}`}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
-
-          <FormSectionLabel>扩展 API（可选）</FormSectionLabel>
-
-          <Form.Item
-            label="预览函数名"
-            name={FORM_PATHS.previewFunctionName}
-            id="field-preview-function"
-            rules={[
-              { required: true, message: '请输入函数名' },
-              { pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/, message: '必须是有效的JavaScript函数名' },
-            ]}
-            extra="返回 React 组件用于实时预览，若页面未提供则预览功能不可用"
-          >
-            <Input
-              placeholder={`例如: ${DEFAULT_VALUES.previewFunctionName}`}
-              style={{ maxWidth: 300 }}
-            />
-          </Form.Item>
+          <FormSection>
+            <FormSectionLabelWithVariant>扩展 API（可选）</FormSectionLabelWithVariant>
+            <FormContent>
+              <Form.Item
+                label={
+                  <Space>
+                    预览函数名
+                    <Tooltip title="返回 React 组件用于实时预览，若页面未提供则预览功能不可用">
+                      <HelpTooltipIcon />
+                    </Tooltip>
+                  </Space>
+                }
+                name={FORM_PATHS.previewFunctionName}
+                rules={[
+                  { required: true, message: '请输入函数名' },
+                  {
+                    pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/,
+                    message: '必须是有效的JavaScript函数名',
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={`例如: ${DEFAULT_VALUES.previewFunctionName}`}
+                  style={{ maxWidth: 300 }}
+                />
+              </Form.Item>
+            </FormContent>
+          </FormSection>
 
           <ExampleSection>
             <ExampleLabel strong>Window 函数模式 - 宿主页面示例（已废弃）：</ExampleLabel>
@@ -428,8 +529,10 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
               <span className="comment">&lt;!-- HTML元素属性 --&gt;</span>
               {'\n'}
               <span className="tag">&lt;div</span>{' '}
-              <span className="attr-name">data-{attributeName}</span>=
-              <span className="attr-value">"param1,param2"</span>
+              <span className="attr-name">
+                data-{attributeName ?? DEFAULT_VALUES.attributeName}
+              </span>
+              =<span className="attr-value">"param1,param2"</span>
               <span className="tag">&gt;</span>
               {'\n'}
               {'  '}点击此元素{'\n'}
@@ -438,7 +541,8 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
               <span className="comment">{'// 核心 API（必需）'}</span>
               {'\n'}
               <span className="keyword">window</span>.
-              <span className="function">{getFunctionName}</span> = (params) =&gt; {'{'}
+              <span className="function">{getFunctionName ?? DEFAULT_VALUES.getFunctionName}</span>{' '}
+              = (params) =&gt; {'{'}
               {'\n'}
               {'  '}
               <span className="comment">{"// params: 'param1' 或 'param1,param2'"}</span>
@@ -447,7 +551,10 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
               <span className="keyword">return</span> getSchema(params);{'\n'}
               {'}'};{'\n\n'}
               <span className="keyword">window</span>.
-              <span className="function">{updateFunctionName}</span> = (schema, params) =&gt; {'{'}
+              <span className="function">
+                {updateFunctionName ?? DEFAULT_VALUES.updateFunctionName}
+              </span>{' '}
+              = (schema, params) =&gt; {'{'}
               {'\n'}
               {'  '}saveSchema(schema, params);{'\n'}
               {'  '}
@@ -459,8 +566,10 @@ export const IntegrationConfigSection: React.FC<IntegrationConfigSectionProps> =
               <span className="keyword">let</span> previewRoot ={' '}
               <span className="attr-value">null</span>;{'\n'}
               <span className="keyword">window</span>.
-              <span className="function">{previewFunctionName}</span> = (data, container) =&gt;{' '}
-              {'{'}
+              <span className="function">
+                {previewFunctionName ?? DEFAULT_VALUES.previewFunctionName}
+              </span>{' '}
+              = (data, container) =&gt; {'{'}
               {'\n'}
               {'  '}
               <span className="keyword">if</span> (!previewRoot) {'{'}
