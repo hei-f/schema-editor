@@ -140,10 +140,33 @@ export const ToolbarButton = styled(Button)`
     line-height: 1.5;
   }
 
-  /* 非 primary 按钮使用固定样式 */
+  /* 非 primary 按钮使用固定样式，覆盖 antd 默认的主题色效果 */
   &.ant-btn-default {
     border: 1px solid #e6ecf4;
     color: #666f8d;
+    background: #ffffff;
+
+    &:hover {
+      border-color: #c9d1e0;
+      color: #4a5168;
+      background: #f5f7fa;
+    }
+
+    &:active {
+      border-color: #b8c2d4;
+      color: #3d4459;
+      background: #eef1f6;
+    }
+
+    /* 去掉点击后的光环效果 */
+    &:focus {
+      border-color: #e6ecf4;
+      box-shadow: none;
+    }
+
+    &:focus:hover {
+      border-color: #c9d1e0;
+    }
   }
 
   /* primary 按钮使用主题色（仅非禁用状态） */
