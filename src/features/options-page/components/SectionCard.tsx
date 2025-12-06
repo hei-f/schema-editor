@@ -1,6 +1,7 @@
 import { Collapse, theme, Tooltip, Flex } from 'antd'
 import React from 'react'
 import {
+  NativePanelActionButton,
   PanelActionButton,
   PanelActions,
   PanelHeader,
@@ -102,16 +103,13 @@ export const SectionCard: React.FC<SectionCardProps> = (props) => {
       {hasActions && (
         <PanelActions align="center" gap={8}>
           {extraActions?.map((action, index) => (
-            <PanelActionButton
+            <NativePanelActionButton
               key={index}
               $variant={action.variant}
-              $colorPrimary={token.colorPrimary}
-              $colorPrimaryHover={token.colorPrimaryHover}
-              $colorPrimaryActive={token.colorPrimaryActive}
               onClick={(e) => handleActionClick(e, action.onClick)}
             >
               {action.label}
-            </PanelActionButton>
+            </NativePanelActionButton>
           ))}
           {onResetDefault && (
             <PanelActionButton

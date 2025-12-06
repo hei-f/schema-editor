@@ -621,7 +621,7 @@ export const PanelTitleHelpIcon = styled(QuestionCircleOutlined)`
 /** SectionCard 操作按钮组 */
 export const PanelActions = styled(Flex)``
 
-/** SectionCard 操作按钮 */
+/** SectionCard 操作按钮（antd Button 版本，用于恢复默认等） */
 interface PanelActionButtonProps {
   $variant?: 'default' | 'primary'
   $colorPrimary?: string
@@ -639,6 +639,36 @@ export const PanelActionButton = styled(Button)<PanelActionButtonProps>`
   font-weight: 500;
   border-radius: 16px;
   transition: all 0.2s ease;
+  background: #ffffff;
+  color: #666f8d;
+  border: 1px solid #e6ecf4;
+
+  &:hover {
+    color: ${(props) => props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'} !important;
+    border-color: ${(props) =>
+      props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'} !important;
+    background: #ffffff !important;
+  }
+
+  &:active {
+    color: ${(props) => props.$colorPrimaryActive || '#2ba89f'} !important;
+    border-color: ${(props) => props.$colorPrimaryActive || '#2ba89f'} !important;
+  }
+`
+
+/** SectionCard 操作按钮（原生 button 版本，用于一键精简等特殊按钮） */
+export const NativePanelActionButton = styled.button<{ $variant?: 'default' | 'primary' }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  height: auto;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  outline: none;
 
   ${(props) =>
     props.$variant === 'primary'
@@ -649,8 +679,6 @@ export const PanelActionButton = styled(Button)<PanelActionButtonProps>`
     box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
     
     &:hover {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      color: #fff !important;
       box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
       transform: translateY(-1px);
     }
@@ -666,16 +694,16 @@ export const PanelActionButton = styled(Button)<PanelActionButtonProps>`
     border: 1px solid #e6ecf4;
     
     &:hover {
-      color: ${props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'};
-      border-color: ${props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'};
-    }
-    
-    &:active {
-      color: ${props.$colorPrimaryActive || '#2ba89f'};
-      border-color: ${props.$colorPrimaryActive || '#2ba89f'};
+      color: var(--theme-color, #39c5bb);
+      border-color: var(--theme-color, #39c5bb);
     }
   `}
 `
+
+/** Surprise me 按钮样式（复用 NativePanelActionButton 的 primary 样式） */
+export const SurpriseButton = styled(NativePanelActionButton).attrs({
+  $variant: 'primary' as const,
+})``
 
 export const AutoSaveHint = styled(Flex)`
   padding: 12px 16px;
