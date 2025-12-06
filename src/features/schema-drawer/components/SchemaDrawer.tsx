@@ -1007,6 +1007,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             hasHistory={hasHistory}
             hasPreviewFunction={hasPreviewFunction}
             previewEnabled={previewEnabled}
+            isPreviewTransitioning={isClosingPreview || isOpeningTransition}
             onTogglePreview={handleTogglePreview}
             hasDraft={hasDraft}
             onLoadDraft={handleLoadDraft}
