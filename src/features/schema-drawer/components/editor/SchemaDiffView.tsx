@@ -253,13 +253,31 @@ function convertToRightDiffLines(rows: DiffRow[]): DiffLineInfo[] {
 export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
   const { snapshots, displayMode, theme = DEFAULT_EDITOR_THEME } = props
 
-  // 版本选择状态
-  const [leftVersionId, setLeftVersionId] = useState<number | null>(
-    snapshots.length > 0 ? snapshots[0].id : null
-  )
-  const [rightVersionId, setRightVersionId] = useState<number | null>(
-    snapshots.length > 1 ? snapshots[snapshots.length - 1].id : null
-  )
+  /**
+   * 用户主动选择的版本 ID
+   * null 表示用户尚未主动选择，使用默认值
+   */
+  const [userSelectedLeftId, setUserSelectedLeftId] = useState<number | null>(null)
+  const [userSelectedRightId, setUserSelectedRightId] = useState<number | null>(null)
+
+  /**
+   * 有效的版本 ID（派生状态）
+   * 优先使用用户选择（如果仍有效），否则使用默认值
+   * 解决进入 Diff 模式时版本选择不自动初始化的问题
+   */
+  const leftVersionId = useMemo(() => {
+    if (userSelectedLeftId !== null && snapshots.find((s) => s.id === userSelectedLeftId)) {
+      return userSelectedLeftId
+    }
+    return snapshots.length > 0 ? snapshots[0].id : null
+  }, [snapshots, userSelectedLeftId])
+
+  const rightVersionId = useMemo(() => {
+    if (userSelectedRightId !== null && snapshots.find((s) => s.id === userSelectedRightId)) {
+      return userSelectedRightId
+    }
+    return snapshots.length > 1 ? snapshots[snapshots.length - 1].id : null
+  }, [snapshots, userSelectedRightId])
 
   // 编辑器引用
   const leftEditorRef = useRef<DiffEditorHandle>(null)
@@ -387,7 +405,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
             <VersionSelectorLabel>左侧版本:</VersionSelectorLabel>
             <Select
               value={leftVersionId}
-              onChange={setLeftVersionId}
+              onChange={setUserSelectedLeftId}
               options={versionOptions}
               style={{ width: 180 }}
               size="small"
@@ -400,7 +418,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
             <VersionSelectorLabel>右侧版本:</VersionSelectorLabel>
             <Select
               value={rightVersionId}
-              onChange={setRightVersionId}
+              onChange={setUserSelectedRightId}
               options={versionOptions}
               style={{ width: 180 }}
               size="small"
