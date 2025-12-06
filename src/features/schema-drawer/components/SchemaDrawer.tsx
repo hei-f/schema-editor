@@ -756,7 +756,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         // 计算预览区域位置
         const rect = previewPlaceholderRef.current?.getBoundingClientRect()
         if (!rect) {
-          message.error('无法获取预览区域位置')
+          // 预览区域尚未渲染或正在关闭过渡中，静默返回
           return
         }
 
