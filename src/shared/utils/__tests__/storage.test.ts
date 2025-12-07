@@ -144,6 +144,7 @@ describe('Storage工具测试', () => {
             default: 2147483646,
             preview: 999,
           },
+          enableBuiltinPreview: true,
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -248,6 +249,7 @@ describe('Storage工具测试', () => {
             default: 2147483646,
             preview: 999,
           },
+          enableBuiltinPreview: true,
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -342,6 +344,7 @@ describe('Storage工具测试', () => {
             default: 2147483646,
             preview: 999,
           },
+          enableBuiltinPreview: true,
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -616,6 +619,7 @@ describe('Storage工具测试', () => {
             default: 2147483646,
             preview: 999,
           },
+          enableBuiltinPreview: true,
         },
         maxHistoryCount: 50,
         highlightAllConfig: {
@@ -1842,6 +1846,7 @@ describe('Storage工具测试', () => {
           default: 2147483646,
           preview: 999,
         },
+        enableBuiltinPreview: true,
       }
       await storage.setPreviewConfig(config)
 

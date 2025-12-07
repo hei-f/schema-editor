@@ -101,8 +101,8 @@ describe('OptionsApp组件测试', () => {
     previewConfig: {
       autoUpdate: false,
       previewWidth: 40,
-      rememberState: false,
       updateDelay: 500,
+      enableBuiltinPreview: true,
       zIndex: {
         default: 2147483646,
         preview: 999,

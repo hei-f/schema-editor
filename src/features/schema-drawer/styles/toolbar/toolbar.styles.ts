@@ -12,7 +12,6 @@ export const EditorToolbar = styled.div`
   padding: 12px 16px;
   border-radius: 12px;
   background: #f7f8fa;
-  margin: 12px 0;
   gap: 12px;
   flex-wrap: nowrap;
   overflow: hidden;
@@ -74,7 +73,7 @@ export const ParamsContainer = styled.div`
   align-items: center;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 4px 0;
+  padding: 0;
   scroll-behavior: smooth;
 
   /* 隐藏滚动条 */
@@ -114,7 +113,7 @@ export const AttributeTagWrapper = styled.span`
     #ffffff;
   border-radius: 8px;
   font-size: 12px;
-  line-height: 16px;
+  /* line-height: 16px; */
   color: #666f8d;
   cursor: pointer;
 `
