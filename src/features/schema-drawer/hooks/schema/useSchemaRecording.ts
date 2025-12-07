@@ -1,25 +1,23 @@
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
-import { getCommunicationMode } from '@/shared/utils/communication-mode'
+import { RECORDING_DATA_FETCH_MODE } from '@/shared/constants/recording'
 import type {
   ApiConfig,
   ElementAttributes,
-  SchemaResponsePayload,
+  RecordingDataFetchMode,
   SchemaSnapshot,
 } from '@/shared/types'
-import { MessageType } from '@/shared/types'
 import {
-  listenPageMessages,
-  postMessageToPage,
+  listenHostPush,
   sendRequestToHost,
+  type HostPushPayload,
 } from '@/shared/utils/browser/message'
+import { logger } from '@/shared/utils/logger'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLatest } from '@/shared/hooks/useLatest'
 
 interface UseSchemaRecordingOptions {
   /** 元素属性（用于获取schema的params） */
   attributes: ElementAttributes
-  /** 轮询间隔（毫秒） */
-  pollingInterval: number
   /** 当获取到新schema时的回调 */
   onSchemaChange?: (content: string) => void
   /** API 配置 */
@@ -28,6 +26,10 @@ interface UseSchemaRecordingOptions {
   autoStopTimeout?: number | null
   /** 自动停止时的回调 */
   onAutoStop?: () => void
+  /** 轮询间隔（毫秒），仅在轮询模式下生效 */
+  pollingInterval?: number
+  /** 数据获取模式 */
+  dataFetchMode?: RecordingDataFetchMode
 }
 
 interface UseSchemaRecordingReturn {
@@ -49,15 +51,44 @@ interface UseSchemaRecordingReturn {
 
 /**
  * Schema录制Hook
- * 用于轮询获取schema并记录变更
+ * 支持两种模式：
+ * 1. 事件驱动模式：宿主通过 SCHEMA_PUSH 主动推送数据（需要宿主接入 SDK 并调用 pushSchema）
+ * 2. 轮询模式（默认）：插件定期调用 GET_SCHEMA 获取数据
  */
 export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaRecordingReturn {
-  const { attributes, pollingInterval, onSchemaChange, apiConfig, autoStopTimeout, onAutoStop } =
-    props
+  const { attributes, onSchemaChange, apiConfig, autoStopTimeout, onAutoStop } = props
 
-  // 使用 useLatest 稳定回调引用，避免外部传入的函数引用变化导致内部回调重建
+  // 录制模式配置
+  const recordingDefaults = DEFAULT_VALUES.recordingModeConfig
+  const pollingInterval = props.pollingInterval ?? recordingDefaults.pollingInterval
+  const dataFetchMode = props.dataFetchMode ?? recordingDefaults.dataFetchMode
+  const isEventDrivenMode = dataFetchMode === RECORDING_DATA_FETCH_MODE.EVENT_DRIVEN
+
+  // 使用 useLatest 稳定回调引用
   const onSchemaChangeRef = useLatest(onSchemaChange)
   const onAutoStopRef = useLatest(onAutoStop)
+
+  // 消息类型配置（提前计算）
+  const getSchemaType =
+    apiConfig?.messageTypes?.getSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.getSchema
+  const schemaPushType =
+    apiConfig?.messageTypes?.schemaPush ?? DEFAULT_VALUES.apiConfig.messageTypes.schemaPush
+  const startRecordingType =
+    apiConfig?.messageTypes?.startRecording ?? DEFAULT_VALUES.apiConfig.messageTypes.startRecording
+  const stopRecordingType =
+    apiConfig?.messageTypes?.stopRecording ?? DEFAULT_VALUES.apiConfig.messageTypes.stopRecording
+  const requestTimeout = apiConfig?.requestTimeout ?? DEFAULT_VALUES.apiConfig.requestTimeout
+  const sourceConfig = apiConfig?.sourceConfig
+
+  /** 当前 params */
+  const params = attributes.params.join(',')
+
+  // 用于卸载清理的 refs（保持最新值）
+  const stopRecordingTypeRef = useLatest(stopRecordingType)
+  const paramsRef = useLatest(params)
+  const requestTimeoutRef = useLatest(requestTimeout)
+  const sourceConfigRef = useLatest(sourceConfig)
+  const isEventDrivenModeRef = useLatest(isEventDrivenMode)
 
   const [isRecording, setIsRecording] = useState(false)
   const [snapshots, setSnapshots] = useState<SchemaSnapshot[]>([])
@@ -69,152 +100,134 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
   const lastContentRef = useRef<string>('')
   /** 快照ID计数器 */
   const snapshotIdRef = useRef<number>(0)
-  /** 轮询定时器 */
-  const pollingTimerRef = useRef<number | null>(null)
-  /** 消息监听清理函数 */
-  const messageCleanupRef = useRef<(() => void) | null>(null)
+  /** 宿主推送监听清理函数 */
+  const pushListenerCleanupRef = useRef<(() => void) | null>(null)
   /** 录制状态ref（避免闭包问题） */
   const isRecordingRef = useRef(false)
   /** 上次数据变化时间（用于自动停止） */
   const lastChangeTimeRef = useRef<number>(0)
   /** 自动停止定时器 */
   const autoStopTimerRef = useRef<number | null>(null)
-
-  /** 通信模式 */
-  const { isPostMessageMode } = getCommunicationMode(apiConfig ?? undefined)
-
-  /**
-   * 处理schema响应
-   */
-  const handleSchemaResponse = useCallback(
-    (payload: { success: boolean; data?: any; error?: string }) => {
-      // 只在录制中时处理响应
-      if (!isRecordingRef.current) {
-        return
-      }
-
-      if (!payload.success || payload.data === undefined) {
-        return
-      }
-
-      // 将数据转换为可显示的字符串
-      // 字符串保留原始格式（保留换行以便逐行diff）
-      // 对象/数组使用 stringify 格式化
-      let content: string
-      if (typeof payload.data === 'string') {
-        // 字符串：直接使用，保留换行符
-        content = payload.data
-      } else {
-        // 对象/数组/其他：stringify 格式化
-        try {
-          content = JSON.stringify(payload.data, null, 2)
-        } catch {
-          content = String(payload.data)
-        }
-      }
-
-      // 去重：与上一次内容相同则跳过
-      if (content === lastContentRef.current) {
-        return
-      }
-
-      lastContentRef.current = content
-      // 记录数据变化时间（用于自动停止检测）
-      lastChangeTimeRef.current = Date.now()
-
-      // 计算相对时间
-      const timestamp = Date.now() - recordingStartTimeRef.current
-
-      // 创建新快照
-      const newSnapshot: SchemaSnapshot = {
-        id: snapshotIdRef.current++,
-        content,
-        timestamp,
-      }
-
-      setSnapshots((prev) => [...prev, newSnapshot])
-      setSelectedSnapshotId(newSnapshot.id)
-
-      // 通知外部schema变化
-      onSchemaChangeRef.current?.(content)
-    },
-    [onSchemaChangeRef]
-  )
+  /** 轮询定时器（仅在轮询模式下使用） */
+  const pollingTimerRef = useRef<number | null>(null)
 
   /**
-   * 发送获取schema请求（postMessage 直连模式）
+   * 处理宿主推送的 schema 数据
    */
-  const requestSchemaPostMessage = useCallback(async () => {
-    const params = attributes.params.join(',')
-    try {
-      const messageType =
-        apiConfig?.messageTypes?.getSchema ?? DEFAULT_VALUES.apiConfig.messageTypes.getSchema
-      const response = await sendRequestToHost<SchemaResponsePayload>(
-        messageType,
-        { params },
-        apiConfig?.requestTimeout ?? DEFAULT_VALUES.apiConfig.requestTimeout,
-        apiConfig?.sourceConfig
-      )
-      handleSchemaResponse({
-        success: response.success !== false,
-        data: response.data,
-        error: response.error,
-      })
-    } catch {
-      // 忽略单次请求失败
+  const handleSchemaPush = (payload: HostPushPayload) => {
+    // 只在录制中时处理响应
+    if (!isRecordingRef.current) {
+      return
     }
-  }, [attributes.params, apiConfig, handleSchemaResponse])
+
+    if (!payload.success || payload.data === undefined) {
+      return
+    }
+
+    // 将数据转换为可显示的字符串
+    let content: string
+    if (typeof payload.data === 'string') {
+      content = payload.data
+    } else {
+      try {
+        content = JSON.stringify(payload.data, null, 2)
+      } catch {
+        content = String(payload.data)
+      }
+    }
+
+    // 去重：与上一次内容相同则跳过
+    if (content === lastContentRef.current) {
+      return
+    }
+
+    lastContentRef.current = content
+    lastChangeTimeRef.current = Date.now()
+
+    // 计算相对时间
+    const timestamp = Date.now() - recordingStartTimeRef.current
+
+    // 创建新快照
+    const newSnapshot: SchemaSnapshot = {
+      id: snapshotIdRef.current++,
+      content,
+      timestamp,
+    }
+
+    setSnapshots((prev) => [...prev, newSnapshot])
+    setSelectedSnapshotId(newSnapshot.id)
+
+    // 通知外部schema变化
+    onSchemaChangeRef.current?.(content)
+  }
 
   /**
-   * 发送获取schema请求（windowFunction 模式）
+   * 内部停止录制函数
    */
-  const requestSchemaWindowFunction = useCallback(() => {
-    const params = attributes.params.join(',')
-    postMessageToPage({
-      type: MessageType.GET_SCHEMA,
-      payload: { params },
-    })
-  }, [attributes.params])
+  const stopRecordingInternal = async (isAutoStop: boolean = false) => {
+    // 清理自动停止定时器
+    if (autoStopTimerRef.current !== null) {
+      clearInterval(autoStopTimerRef.current)
+      autoStopTimerRef.current = null
+    }
+
+    // 清理轮询定时器
+    if (pollingTimerRef.current !== null) {
+      clearInterval(pollingTimerRef.current)
+      pollingTimerRef.current = null
+    }
+
+    // 清理宿主推送监听
+    if (pushListenerCleanupRef.current) {
+      pushListenerCleanupRef.current()
+      pushListenerCleanupRef.current = null
+    }
+
+    // 发送停止录制指令给宿主（仅在事件驱动模式下）
+    if (isRecordingRef.current && isEventDrivenMode) {
+      try {
+        await sendRequestToHost(stopRecordingType, { params }, requestTimeout, sourceConfig)
+      } catch (error) {
+        logger.error('[Recording] 发送停止录制指令失败:', error)
+      }
+    }
+
+    isRecordingRef.current = false
+    setIsRecording(false)
+
+    // 如果是自动停止，触发回调
+    if (isAutoStop) {
+      onAutoStopRef.current?.()
+    }
+  }
 
   /**
-   * 内部停止录制函数（供自动停止使用）
+   * 轮询获取 schema 数据
    */
-  const stopRecordingInternal = useCallback(
-    (isAutoStop: boolean = false) => {
-      // 清理定时器（无论状态如何都执行清理）
-      if (pollingTimerRef.current !== null) {
-        clearInterval(pollingTimerRef.current)
-        pollingTimerRef.current = null
+  const pollSchema = async () => {
+    if (!isRecordingRef.current) return
+
+    try {
+      const response = await sendRequestToHost(
+        getSchemaType,
+        { params },
+        requestTimeout,
+        sourceConfig
+      )
+
+      if (response.success && response.data !== undefined) {
+        handleSchemaPush({ success: true, data: response.data })
       }
+    } catch (error) {
+      // 轮询中的单次失败可以忽略
+      logger.warn('[Recording] 轮询获取数据失败:', error)
+    }
+  }
 
-      // 清理自动停止定时器
-      if (autoStopTimerRef.current !== null) {
-        clearInterval(autoStopTimerRef.current)
-        autoStopTimerRef.current = null
-      }
-
-      // 清理消息监听
-      if (messageCleanupRef.current) {
-        messageCleanupRef.current()
-        messageCleanupRef.current = null
-      }
-
-      isRecordingRef.current = false
-      setIsRecording(false)
-
-      // 如果是自动停止，触发回调
-      if (isAutoStop) {
-        onAutoStopRef.current?.()
-      }
-    },
-    [onAutoStopRef]
-  )
-
-  //TODO-youling:CR check point
   /**
    * 开始录制
    */
-  const startRecording = useCallback(() => {
+  const startRecording = async () => {
     // 使用ref判断避免闭包问题
     if (isRecordingRef.current) return
 
@@ -226,32 +239,54 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
     recordingStartTimeRef.current = Date.now()
     lastChangeTimeRef.current = Date.now()
 
-    if (isPostMessageMode) {
-      // postMessage 直连模式：直接轮询
-      requestSchemaPostMessage()
+    if (isEventDrivenMode) {
+      // 事件驱动模式：先设置监听，再发送开始指令
+      logger.log('[Recording] 使用事件驱动模式')
+      pushListenerCleanupRef.current = listenHostPush(
+        schemaPushType,
+        handleSchemaPush,
+        sourceConfig
+      )
 
-      pollingTimerRef.current = window.setInterval(() => {
-        requestSchemaPostMessage()
-      }, pollingInterval)
-    } else {
-      // windowFunction 模式：通过 injected.js
-      messageCleanupRef.current = listenPageMessages((msg) => {
-        if (msg.type === MessageType.SCHEMA_RESPONSE) {
-          handleSchemaResponse(msg.payload)
+      // 发送开始录制指令给宿主
+      try {
+        const response = await sendRequestToHost(
+          startRecordingType,
+          { params },
+          requestTimeout,
+          sourceConfig
+        )
+
+        if (!response.success) {
+          logger.error('[Recording] 开始录制失败:', response.error)
+          // 清理监听
+          if (pushListenerCleanupRef.current) {
+            pushListenerCleanupRef.current()
+            pushListenerCleanupRef.current = null
+          }
+          return
         }
-      })
-
-      requestSchemaWindowFunction()
-
-      pollingTimerRef.current = window.setInterval(() => {
-        requestSchemaWindowFunction()
-      }, pollingInterval)
+      } catch (error) {
+        logger.error('[Recording] 发送开始录制指令失败:', error)
+        // 清理监听
+        if (pushListenerCleanupRef.current) {
+          pushListenerCleanupRef.current()
+          pushListenerCleanupRef.current = null
+        }
+        return
+      }
+    } else {
+      // 轮询模式：定期调用 GET_SCHEMA
+      logger.log('[Recording] 使用轮询模式')
+      // 立即执行一次
+      pollSchema()
+      // 启动定时轮询
+      pollingTimerRef.current = window.setInterval(pollSchema, pollingInterval)
     }
 
     // 启动自动停止检测（如果配置了超时时间）
     if (autoStopTimeout != null && autoStopTimeout > 0) {
       const timeoutMs = autoStopTimeout * 1000
-      // 每秒检测一次是否超时
       autoStopTimerRef.current = window.setInterval(() => {
         const timeSinceLastChange = Date.now() - lastChangeTimeRef.current
         if (timeSinceLastChange >= timeoutMs) {
@@ -262,61 +297,78 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
 
     isRecordingRef.current = true
     setIsRecording(true)
-  }, [
-    pollingInterval,
-    isPostMessageMode,
-    requestSchemaPostMessage,
-    requestSchemaWindowFunction,
-    handleSchemaResponse,
-    autoStopTimeout,
-    stopRecordingInternal,
-  ])
+  }
 
   /**
    * 停止录制（手动停止）
    */
-  const stopRecording = useCallback(() => {
+  const stopRecording = () => {
     stopRecordingInternal(false)
-  }, [stopRecordingInternal])
+  }
 
   /**
    * 选择快照
    */
-  const selectSnapshot = useCallback(
-    (id: number) => {
-      const snapshot = snapshots.find((s) => s.id === id)
-      if (snapshot) {
-        setSelectedSnapshotId(id)
-        onSchemaChangeRef.current?.(snapshot.content)
-      }
-    },
-    [snapshots, onSchemaChangeRef]
-  )
+  const selectSnapshot = (id: number) => {
+    const snapshot = snapshots.find((s) => s.id === id)
+    if (snapshot) {
+      setSelectedSnapshotId(id)
+      onSchemaChangeRef.current?.(snapshot.content)
+    }
+  }
 
   /**
    * 清空快照
    */
-  const clearSnapshots = useCallback(() => {
+  const clearSnapshotsImpl = () => {
     setSnapshots([])
     setSelectedSnapshotId(null)
     lastContentRef.current = ''
     snapshotIdRef.current = 0
     isRecordingRef.current = false
-  }, [])
+  }
+
+  // 保存内部函数的最新引用
+  const startRecordingRef = useLatest(startRecording)
+  const stopRecordingRef = useLatest(stopRecording)
+  const selectSnapshotRef = useLatest(selectSnapshot)
+  const clearSnapshotsRef = useLatest(clearSnapshotsImpl)
+
+  // 返回稳定的包装函数（refs 来自 useLatest 是稳定的，所以函数引用也稳定）
+  const stableStartRecording = useCallback(() => startRecordingRef.current(), [startRecordingRef])
+  const stableStopRecording = useCallback(() => stopRecordingRef.current(), [stopRecordingRef])
+  const stableSelectSnapshot = useCallback(
+    (id: number) => selectSnapshotRef.current(id),
+    [selectSnapshotRef]
+  )
+  const stableClearSnapshots = useCallback(() => clearSnapshotsRef.current(), [clearSnapshotsRef])
 
   /**
-   * 组件卸载时清理
+   * 组件卸载时清理（包括通知宿主停止录制）
    */
   useEffect(() => {
     return () => {
-      if (pollingTimerRef.current !== null) {
-        clearInterval(pollingTimerRef.current)
+      // 如果正在录制且使用事件驱动模式，通知宿主停止
+      if (isRecordingRef.current && isEventDrivenModeRef.current) {
+        // 异步发送停止消息（fire and forget，不等待响应）
+        // 通过 ref 获取最新值，避免闭包捕获旧值
+        sendRequestToHost(
+          stopRecordingTypeRef.current,
+          { params: paramsRef.current },
+          requestTimeoutRef.current,
+          sourceConfigRef.current
+        ).catch((error) => logger.error('[Recording] 卸载时发送停止录制指令失败:', error))
       }
+
+      // 清理定时器和监听器
       if (autoStopTimerRef.current !== null) {
         clearInterval(autoStopTimerRef.current)
       }
-      if (messageCleanupRef.current) {
-        messageCleanupRef.current()
+      if (pollingTimerRef.current !== null) {
+        clearInterval(pollingTimerRef.current)
+      }
+      if (pushListenerCleanupRef.current) {
+        pushListenerCleanupRef.current()
       }
     }
   }, [])
@@ -325,9 +377,9 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
     isRecording,
     snapshots,
     selectedSnapshotId,
-    startRecording,
-    stopRecording,
-    selectSnapshot,
-    clearSnapshots,
+    startRecording: stableStartRecording,
+    stopRecording: stableStopRecording,
+    selectSnapshot: stableSelectSnapshot,
+    clearSnapshots: stableClearSnapshots,
   }
 }

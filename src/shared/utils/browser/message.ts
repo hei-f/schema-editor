@@ -195,3 +195,48 @@ export function initHostMessageListener(sourceConfig?: PostMessageSourceConfig):
     pendingRequests.clear()
   }
 }
+
+/**
+ * 宿主推送消息的载荷结构
+ */
+export interface HostPushPayload {
+  success: boolean
+  data?: any
+  error?: string
+}
+
+/**
+ * 监听宿主主动推送的消息（用于录制模式事件驱动）
+ * @param messageType 要监听的消息类型（如 'SCHEMA_PUSH'）
+ * @param handler 收到推送时的回调函数
+ * @param sourceConfig 可选的 source 配置
+ * @returns 清理函数
+ */
+export function listenHostPush(
+  messageType: string,
+  handler: (payload: HostPushPayload) => void,
+  sourceConfig?: PostMessageSourceConfig
+): () => void {
+  const hostSource = sourceConfig?.hostSource ?? MESSAGE_SOURCE.FROM_HOST
+
+  const listener = (event: MessageEvent) => {
+    // 只处理来自当前窗口的消息
+    if (event.source !== window) return
+
+    // 只处理来自宿主的消息
+    if (!event.data || event.data.source !== hostSource) return
+
+    // 只处理指定类型的推送消息
+    if (event.data.type !== messageType) return
+
+    // 调用处理函数
+    handler(event.data.payload ?? event.data)
+  }
+
+  window.addEventListener('message', listener)
+
+  // 返回清理函数
+  return () => {
+    window.removeEventListener('message', listener)
+  }
+}

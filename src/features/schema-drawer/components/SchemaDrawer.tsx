@@ -200,7 +200,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     [detectContentType, updateContentType]
   )
 
-  //TODO-youling:CR check point
   /** Schema录制Hook */
   const {
     isRecording,
@@ -212,7 +211,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     clearSnapshots,
   } = useSchemaRecording({
     attributes,
-    pollingInterval: recordingConfig?.pollingInterval || 100,
     // 录制模式下跳过内容类型检测以提升性能，录制结束后再统一检测
     onSchemaChange: (content) => updateEditorContent(content, { detectType: false }),
     apiConfig,
@@ -220,6 +218,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     onAutoStop: () => {
       message.info('数据无变化，录制已自动停止')
     },
+    pollingInterval: recordingConfig?.pollingInterval,
+    dataFetchMode: recordingConfig?.dataFetchMode,
   })
 
   /** 轻量提示 */
