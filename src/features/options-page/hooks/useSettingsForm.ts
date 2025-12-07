@@ -1,18 +1,14 @@
 import { useCallback, useRef } from 'react'
 import type { FormInstance } from 'antd'
-import type { ApiConfig, CommunicationMode } from '@/shared/types'
-import { storage } from '@/shared/utils/browser/storage'
-import { getChangedFieldPath, getValueByPath, pathToString } from '@/shared/utils/form-path'
-import { FIELD_PATH_STORAGE_MAP, findFieldGroup, KNOWN_FIELD_PATHS } from '../config/field-config'
+import { getChangedFieldPath, pathToString } from '@/shared/utils/form-path'
+import { KNOWN_FIELD_PATHS } from '../config/field-config'
+import type { SettingsStorage } from '../types'
 
 interface UseSettingsFormProps {
   form: FormInstance
-  onAttributeNameChange: (value: string) => void
-  onGetFunctionNameChange: (value: string) => void
-  onUpdateFunctionNameChange: (value: string) => void
-  onPreviewFunctionNameChange: (value: string) => void
-  onCommunicationModeChange: (value: CommunicationMode) => void
-  onApiConfigChange: (value: ApiConfig) => void
+  storage: SettingsStorage
+  /** 主题色变化回调（需要在 Form 外部使用，所以需要单独通知） */
+  onThemeColorChange?: (color: string) => void
   showSuccess: (msg: string) => void
   showError: (msg: string) => void
 }
@@ -32,17 +28,7 @@ interface UseSettingsFormReturn {
  * 处理配置的加载、保存、防抖等逻辑
  */
 export const useSettingsForm = (props: UseSettingsFormProps): UseSettingsFormReturn => {
-  const {
-    form,
-    onAttributeNameChange,
-    onGetFunctionNameChange,
-    onUpdateFunctionNameChange,
-    onPreviewFunctionNameChange,
-    onCommunicationModeChange,
-    onApiConfigChange,
-    showSuccess,
-    showError,
-  } = props
+  const { form, storage, onThemeColorChange, showSuccess, showError } = props
 
   const timeoutMapRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
@@ -51,76 +37,19 @@ export const useSettingsForm = (props: UseSettingsFormProps): UseSettingsFormRet
    */
   const loadSettings = useCallback(async () => {
     try {
-      const attributeName = await storage.getAttributeName()
-      const searchConfig = await storage.getSearchConfig()
-      const getFunctionName = await storage.getGetFunctionName()
-      const updateFunctionName = await storage.getUpdateFunctionName()
-      const autoParseString = await storage.getAutoParseString()
-      const enableDebugLog = await storage.getEnableDebugLog()
-      const toolbarButtons = await storage.getToolbarButtons()
-      const drawerWidth = await storage.getDrawerWidth()
-      const highlightColor = await storage.getHighlightColor()
-      const maxFavoritesCount = await storage.getMaxFavoritesCount()
-      const autoSaveDraft = await storage.getAutoSaveDraft()
-      const previewConfig = await storage.getPreviewConfig()
-      const maxHistoryCount = await storage.getMaxHistoryCount()
-      const highlightAllConfig = await storage.getHighlightAllConfig()
-      const recordingModeConfig = await storage.getRecordingModeConfig()
-      const iframeConfig = await storage.getIframeConfig()
-      const enableAstTypeHints = await storage.getEnableAstTypeHints()
-      const exportConfig = await storage.getExportConfig()
-      const editorTheme = await storage.getEditorTheme()
-      const previewFunctionName = await storage.getPreviewFunctionName()
-      const apiConfig = await storage.getApiConfig()
-      const drawerShortcuts = await storage.getDrawerShortcuts()
-      const themeColor = await storage.getThemeColor()
+      const settings = await storage.loadAllSettings()
+      form.setFieldsValue(settings.formValues)
 
-      onAttributeNameChange(attributeName)
-      onGetFunctionNameChange(getFunctionName)
-      onUpdateFunctionNameChange(updateFunctionName)
-      onPreviewFunctionNameChange(previewFunctionName)
-      onCommunicationModeChange(apiConfig.communicationMode)
-      onApiConfigChange(apiConfig)
-
-      form.setFieldsValue({
-        attributeName,
-        drawerWidth,
-        searchConfig,
-        getFunctionName,
-        updateFunctionName,
-        autoParseString,
-        enableDebugLog,
-        toolbarButtons,
-        highlightColor,
-        maxFavoritesCount,
-        autoSaveDraft,
-        previewConfig,
-        maxHistoryCount,
-        highlightAllConfig,
-        recordingModeConfig,
-        iframeConfig,
-        enableAstTypeHints,
-        exportConfig,
-        editorTheme,
-        previewFunctionName,
-        apiConfig,
-        drawerShortcuts,
-        themeColor,
-      })
+      // 通知主题色变化（用于 ConfigProvider）
+      const themeColor = settings.formValues.themeColor as string | undefined
+      if (themeColor && onThemeColorChange) {
+        onThemeColorChange(themeColor)
+      }
     } catch (error) {
       console.error('加载配置失败:', error)
       showError('加载配置失败')
     }
-  }, [
-    form,
-    onAttributeNameChange,
-    onGetFunctionNameChange,
-    onUpdateFunctionNameChange,
-    onPreviewFunctionNameChange,
-    onCommunicationModeChange,
-    onApiConfigChange,
-    showError,
-  ])
+  }, [form, storage, onThemeColorChange, showError])
 
   /**
    * 保存单个字段
@@ -128,59 +57,14 @@ export const useSettingsForm = (props: UseSettingsFormProps): UseSettingsFormRet
   const saveField = useCallback(
     async (fieldPath: string[], allValues: Record<string, unknown>) => {
       try {
-        const fieldGroup = findFieldGroup(fieldPath)
-
-        if (fieldGroup) {
-          await fieldGroup.save(allValues)
-
-          if (fieldPath[0] === 'getFunctionName' || fieldPath[0] === 'updateFunctionName') {
-            onGetFunctionNameChange(allValues.getFunctionName as string)
-            onUpdateFunctionNameChange(allValues.updateFunctionName as string)
-          }
-
-          if (fieldPath[0] === 'previewFunctionName') {
-            onPreviewFunctionNameChange(allValues.previewFunctionName as string)
-          }
-
-          if (fieldPath[0] === 'apiConfig') {
-            const apiConfig = allValues.apiConfig as ApiConfig
-            onCommunicationModeChange(apiConfig.communicationMode)
-            onApiConfigChange(apiConfig)
-          }
-
-          showSuccess('已保存')
-          return
-        }
-
-        const pathKey = pathToString(fieldPath)
-        const storageMethod = FIELD_PATH_STORAGE_MAP[pathKey]
-        const storageAny = storage as unknown as Record<string, (value: unknown) => Promise<void>>
-
-        if (storageMethod && storageAny[storageMethod]) {
-          const fieldValue = getValueByPath(allValues, fieldPath)
-          await storageAny[storageMethod](fieldValue)
-
-          if (pathKey === 'attributeName') {
-            onAttributeNameChange(fieldValue as string)
-          }
-
-          showSuccess('已保存')
-        }
+        await storage.saveField(fieldPath, allValues)
+        showSuccess('已保存')
       } catch (error) {
         console.error('保存配置失败:', error)
         showError('保存失败')
       }
     },
-    [
-      onAttributeNameChange,
-      onGetFunctionNameChange,
-      onUpdateFunctionNameChange,
-      onPreviewFunctionNameChange,
-      onCommunicationModeChange,
-      onApiConfigChange,
-      showSuccess,
-      showError,
-    ]
+    [storage, showSuccess, showError]
   )
 
   /**
@@ -207,7 +91,9 @@ export const useSettingsForm = (props: UseSettingsFormProps): UseSettingsFormRet
       (fieldPath[0] === 'highlightAllConfig' &&
         ['keyBinding', 'maxHighlightCount'].includes(fieldPath[1])) ||
       (fieldPath[0] === 'recordingModeConfig' &&
-        ['keyBinding', 'pollingInterval', 'highlightColor'].includes(fieldPath[1])) ||
+        ['keyBinding', 'pollingInterval', 'highlightColor', 'autoStopTimeout'].includes(
+          fieldPath[1]
+        )) ||
       (fieldPath[0] === 'apiConfig' && apiConfigDebounceFields.includes(fieldPath[1]))
     )
   }, [])
@@ -245,13 +131,18 @@ export const useSettingsForm = (props: UseSettingsFormProps): UseSettingsFormRet
     (changedValues: Record<string, unknown>, allValues: Record<string, unknown>) => {
       const fieldPath = getChangedFieldPath(changedValues, [], KNOWN_FIELD_PATHS)
 
+      // 主题色变化时通知（用于 ConfigProvider）
+      if (fieldPath[0] === 'themeColor' && onThemeColorChange) {
+        onThemeColorChange(allValues.themeColor as string)
+      }
+
       if (isDebounceField(fieldPath)) {
         debouncedSave(fieldPath, allValues)
       } else {
         saveField(fieldPath, allValues)
       }
     },
-    [isDebounceField, debouncedSave, saveField]
+    [isDebounceField, debouncedSave, saveField, onThemeColorChange]
   )
 
   return {

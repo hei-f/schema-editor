@@ -5,14 +5,22 @@ import { MENU_COLLAPSED_WIDTH, MENU_EXPANDED_WIDTH } from '../config/menu-config
 
 const { Text, Title, Paragraph } = Typography
 
-/** 主题色常量 */
-const THEME_COLORS = {
-  primary: '#39C5BB',
-  skyBlue: '#7EC8E3',
-  lavender: '#B8A9F3',
-  coral: '#F78DA7',
-  mint: '#7FDBCA',
+/**
+ * 光晕颜色配置
+ * 珊瑚粉 #F78DA7、薰衣草紫 #B8A9F3、青绿 #39C5BB
+ * 浓度：20%（full）/ 10%（half）
+ */
+const GLOW_COLORS = {
+  pink: (intensity: 'full' | 'half' = 'full') =>
+    intensity === 'full' ? 'rgba(247, 141, 167, 0.2)' : 'rgba(247, 141, 167, 0.1)',
+  purple: (intensity: 'full' | 'half' = 'full') =>
+    intensity === 'full' ? 'rgba(184, 169, 243, 0.2)' : 'rgba(184, 169, 243, 0.1)',
+  green: (intensity: 'full' | 'half' = 'full') =>
+    intensity === 'full' ? 'rgba(57, 197, 187, 0.2)' : 'rgba(57, 197, 187, 0.1)',
 } as const
+
+/** 动画速度倍率 */
+const GLOW_SPEED = 3
 
 /** 背景渐变流动动画 */
 const bgGradientFlow = keyframes`
@@ -105,36 +113,36 @@ const bgGlowPulse = keyframes`
 
 /** 页面根容器 - 带动态渐变背景和超大光晕 */
 export const PageRoot = styled.div`
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(
     -45deg,
-    rgba(57, 197, 187, 0.1),
-    rgba(126, 200, 227, 0.08),
-    rgba(184, 169, 243, 0.06),
-    rgba(247, 141, 167, 0.05),
     rgba(57, 197, 187, 0.08),
-    rgba(126, 200, 227, 0.06)
+    rgba(184, 169, 243, 0.06),
+    rgba(236, 72, 153, 0.05),
+    rgba(57, 197, 187, 0.06),
+    rgba(184, 169, 243, 0.08)
   );
   background-size: 400% 400%;
   animation: ${bgGradientFlow} 30s ease infinite;
   position: relative;
   overflow: hidden;
+  display: flex;
 
   --glow-delay-1: 0s;
   --glow-delay-2: 0s;
 
-  /* 超大背景光晕1 - 左上角 */
+  /* 左上角 - 绿色 */
   &::before {
     content: '';
     position: fixed;
     width: 900px;
     height: 900px;
-    top: -10%;
-    left: 5%;
+    top: -8%;
+    left: -5%;
     background: radial-gradient(
       circle,
-      ${THEME_COLORS.primary}50 0%,
-      ${THEME_COLORS.primary}25 45%,
+      ${GLOW_COLORS.green('full')} 0%,
+      ${GLOW_COLORS.green('half')} 45%,
       transparent 70%
     );
     border-radius: 50%;
@@ -142,37 +150,41 @@ export const PageRoot = styled.div`
     z-index: 0;
     filter: blur(35px);
     animation:
-      ${bgGlowPulse} 6.4s ease-in-out infinite,
-      ${bgGlowDrift1} 28s ease-in-out infinite;
+      ${bgGlowPulse} calc(6.4s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift1} calc(28s / ${GLOW_SPEED}) ease-in-out infinite;
     animation-delay: var(--glow-delay-1), var(--glow-delay-1);
   }
 
-  /* 超大背景光晕2 - 右侧 */
+  /* 右上角 - 紫色 */
   &::after {
     content: '';
     position: fixed;
-    width: 1100px;
-    height: 1100px;
-    top: 10%;
+    width: 900px;
+    height: 900px;
+    top: -8%;
     right: -5%;
     background: radial-gradient(
       circle,
-      ${THEME_COLORS.skyBlue}50 0%,
-      ${THEME_COLORS.skyBlue}25 45%,
+      ${GLOW_COLORS.purple('full')} 0%,
+      ${GLOW_COLORS.purple('half')} 45%,
       transparent 70%
     );
     border-radius: 50%;
     pointer-events: none;
     z-index: 0;
-    filter: blur(40px);
+    filter: blur(35px);
     animation:
-      ${bgGlowPulse} 8s ease-in-out infinite,
-      ${bgGlowDrift2} 32s ease-in-out infinite;
+      ${bgGlowPulse} calc(8s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift2} calc(32s / ${GLOW_SPEED}) ease-in-out infinite;
     animation-delay: var(--glow-delay-2), var(--glow-delay-2);
+  }
+
+  .ant-form-item {
+    margin-bottom: 0;
   }
 `
 
-/** 背景光晕层1 - 主要光晕 */
+/** 背景光晕层1 - 中间行光晕 */
 export const BackgroundGlowLayer = styled.div`
   position: fixed;
   inset: 0;
@@ -182,174 +194,203 @@ export const BackgroundGlowLayer = styled.div`
   --glow-delay-1: 0s;
   --glow-delay-2: 0s;
 
-  /* 粉色光晕 - 中央偏右 */
+  /* 左中 - 粉色 */
   &::before {
     content: '';
     position: absolute;
-    width: 900px;
-    height: 900px;
-    top: 25%;
-    right: 20%;
+    width: 850px;
+    height: 850px;
+    top: 35%;
+    left: -8%;
     background: radial-gradient(
       circle,
-      ${THEME_COLORS.coral}55 0%,
-      ${THEME_COLORS.coral}28 45%,
+      ${GLOW_COLORS.pink('full')} 0%,
+      ${GLOW_COLORS.pink('half')} 45%,
       transparent 70%
     );
     border-radius: 50%;
     filter: blur(30px);
     animation:
-      ${bgGlowPulse} 7.2s ease-in-out infinite,
-      ${bgGlowDrift3} 26s ease-in-out infinite;
+      ${bgGlowPulse} calc(7.2s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift3} calc(26s / ${GLOW_SPEED}) ease-in-out infinite;
     animation-delay: var(--glow-delay-1), var(--glow-delay-1);
   }
 
-  /* 淡紫色光晕 - 底部偏左 */
+  /* 右中 - 粉色 */
   &::after {
     content: '';
     position: absolute;
     width: 850px;
     height: 850px;
-    bottom: -5%;
-    left: 20%;
+    top: 35%;
+    right: -8%;
     background: radial-gradient(
       circle,
-      ${THEME_COLORS.lavender}50 0%,
-      ${THEME_COLORS.lavender}25 45%,
-      transparent 70%
-    );
-    border-radius: 50%;
-    filter: blur(28px);
-    animation:
-      ${bgGlowPulse} 9s ease-in-out infinite,
-      ${bgGlowDrift4} 30s ease-in-out infinite;
-    animation-delay: var(--glow-delay-2), var(--glow-delay-2);
-  }
-`
-
-/** 背景光晕层2 - 边缘光晕 */
-export const EdgeGlowLayer = styled.div`
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: visible;
-  --glow-delay-1: 0s;
-  --glow-delay-2: 0s;
-
-  /* 青色光晕 - 左下角 */
-  &::before {
-    content: '';
-    position: absolute;
-    width: 700px;
-    height: 700px;
-    bottom: 10%;
-    left: -5%;
-    background: radial-gradient(
-      circle,
-      ${THEME_COLORS.primary}45 0%,
-      ${THEME_COLORS.primary}22 45%,
-      transparent 70%
-    );
-    border-radius: 50%;
-    filter: blur(25px);
-    animation:
-      ${bgGlowPulse} 5.6s ease-in-out infinite,
-      ${bgGlowDrift1} 22s ease-in-out infinite;
-    animation-delay: var(--glow-delay-1), var(--glow-delay-1);
-  }
-
-  /* 蓝色光晕 - 右边缘中间 */
-  &::after {
-    content: '';
-    position: absolute;
-    width: 900px;
-    height: 900px;
-    top: 20%;
-    right: -10%;
-    background: radial-gradient(
-      circle,
-      ${THEME_COLORS.skyBlue}52 0%,
-      ${THEME_COLORS.skyBlue}28 45%,
-      transparent 70%
-    );
-    border-radius: 50%;
-    filter: blur(32px);
-    animation:
-      ${bgGlowPulse} 6.4s ease-in-out infinite,
-      ${bgGlowDrift2} 24s ease-in-out infinite;
-    animation-delay: var(--glow-delay-2), var(--glow-delay-2);
-  }
-`
-
-/** 背景光晕层3 - 右侧光晕 */
-export const RightGlowLayer = styled.div`
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: visible;
-  --glow-delay-1: 0s;
-  --glow-delay-2: 0s;
-
-  /* 淡蓝光晕 - 右下角 */
-  &::before {
-    content: '';
-    position: absolute;
-    width: 800px;
-    height: 800px;
-    bottom: 5%;
-    right: -5%;
-    background: radial-gradient(
-      circle,
-      ${THEME_COLORS.skyBlue}45 0%,
-      ${THEME_COLORS.skyBlue}22 45%,
+      ${GLOW_COLORS.pink('full')} 0%,
+      ${GLOW_COLORS.pink('half')} 45%,
       transparent 70%
     );
     border-radius: 50%;
     filter: blur(30px);
     animation:
-      ${bgGlowPulse} 7.2s ease-in-out infinite,
-      ${bgGlowDrift3} 27s ease-in-out infinite;
-    animation-delay: var(--glow-delay-1), var(--glow-delay-1);
-  }
-
-  /* 淡紫色光晕 - 右侧中部 */
-  &::after {
-    content: '';
-    position: absolute;
-    width: 700px;
-    height: 700px;
-    top: 40%;
-    right: 8%;
-    background: radial-gradient(
-      circle,
-      ${THEME_COLORS.lavender}40 0%,
-      ${THEME_COLORS.lavender}20 45%,
-      transparent 70%
-    );
-    border-radius: 50%;
-    filter: blur(28px);
-    animation:
-      ${bgGlowPulse} 8s ease-in-out infinite,
-      ${bgGlowDrift4} 29s ease-in-out infinite;
+      ${bgGlowPulse} calc(9s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift4} calc(30s / ${GLOW_SPEED}) ease-in-out infinite;
     animation-delay: var(--glow-delay-2), var(--glow-delay-2);
   }
 `
 
+/** 背景光晕层2 - 底部行光晕 */
+export const EdgeGlowLayer = styled.div<{ $visible?: boolean }>`
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+  --glow-delay-1: 0s;
+  --glow-delay-2: 0s;
+  display: ${(props) => (props.$visible === false ? 'none' : 'block')};
+
+  /* 左下角 - 紫色 */
+  &::before {
+    content: '';
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    bottom: -8%;
+    left: -5%;
+    background: radial-gradient(
+      circle,
+      ${GLOW_COLORS.purple('full')} 0%,
+      ${GLOW_COLORS.purple('half')} 45%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    filter: blur(35px);
+    animation:
+      ${bgGlowPulse} calc(5.6s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift1} calc(22s / ${GLOW_SPEED}) ease-in-out infinite;
+    animation-delay: var(--glow-delay-1), var(--glow-delay-1);
+  }
+
+  /* 右下角 - 绿色 */
+  &::after {
+    content: '';
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    bottom: -8%;
+    right: -5%;
+    background: radial-gradient(
+      circle,
+      ${GLOW_COLORS.green('full')} 0%,
+      ${GLOW_COLORS.green('half')} 45%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    filter: blur(35px);
+    animation:
+      ${bgGlowPulse} calc(6.4s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift2} calc(24s / ${GLOW_SPEED}) ease-in-out infinite;
+    animation-delay: var(--glow-delay-2), var(--glow-delay-2);
+  }
+`
+
+/** 背景光晕层3 - 额外光晕 (6个光晕时隐藏，8个时显示) */
+export const RightGlowLayer = styled.div<{ $visible?: boolean }>`
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+  --glow-delay-1: 0s;
+  --glow-delay-2: 0s;
+  display: ${(props) => (props.$visible === false ? 'none' : 'block')};
+
+  /* 中上 - 绿色 (补充中央区域) */
+  &::before {
+    content: '';
+    position: absolute;
+    width: 750px;
+    height: 750px;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(
+      circle,
+      ${GLOW_COLORS.green('full')} 0%,
+      ${GLOW_COLORS.green('half')} 45%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    filter: blur(30px);
+    animation:
+      ${bgGlowPulse} calc(7.2s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift3} calc(27s / ${GLOW_SPEED}) ease-in-out infinite;
+    animation-delay: var(--glow-delay-1), var(--glow-delay-1);
+  }
+
+  /* 中下 - 紫色 (补充中央区域) */
+  &::after {
+    content: '';
+    position: absolute;
+    width: 750px;
+    height: 750px;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(
+      circle,
+      ${GLOW_COLORS.purple('full')} 0%,
+      ${GLOW_COLORS.purple('half')} 45%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    filter: blur(30px);
+    animation:
+      ${bgGlowPulse} calc(8s / ${GLOW_SPEED}) ease-in-out infinite,
+      ${bgGlowDrift4} calc(29s / ${GLOW_SPEED}) ease-in-out infinite;
+    animation-delay: var(--glow-delay-2), var(--glow-delay-2);
+  }
+`
+
+/** 滚动区域包装器 - 占据侧边栏右侧的所有空间 */
+export const ScrollWrapper = styled.div<{ $menuCollapsed?: boolean }>`
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-left: ${(props) => (props.$menuCollapsed ? MENU_COLLAPSED_WIDTH : MENU_EXPANDED_WIDTH)}px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 滚动条样式 */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
+`
+
 /** 内容容器 - 轻透明毛玻璃效果 */
-export const Container = styled.div<{ $menuCollapsed?: boolean }>`
+export const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   max-width: 1000px;
-  margin: 20px auto 20px;
-  padding: 24px 28px 40px;
+  margin: 20px auto 20px 20px;
+  padding: 20px;
   background: rgba(255, 255, 255, 0);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
-  min-height: calc(100vh - 40px);
-  margin-left: ${(props) =>
-    (props.$menuCollapsed ? MENU_COLLAPSED_WIDTH : MENU_EXPANDED_WIDTH) + 20}px;
-  margin-right: 20px;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
   border-radius: 24px;
@@ -415,8 +456,6 @@ export const CodeBlock = styled.pre`
 `
 
 export const HeaderSection = styled(Flex)`
-  margin-bottom: 24px;
-
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
@@ -434,7 +473,9 @@ export const HeaderActions = styled(Flex)`
 export const VersionTag = styled.span`
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
+  justify-content: center;
+  height: 24px;
+  padding: 0 8px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   border-radius: 16px;
@@ -444,21 +485,146 @@ export const VersionTag = styled.span`
   box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
 `
 
+/** 顶部操作栏容器 */
+export const HeaderToolbar = styled(Flex)`
+  gap: 8px;
+`
+
+/** 版本信息容器（版本号 + 分隔线 + 检查更新按钮） */
+export const VersionContainer = styled.div`
+  display: flex;
+  align-items: center;
+  height: 30px;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  padding: 0 2px 0 12px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(var(--theme-color-rgb, 57, 197, 187), 0.06);
+`
+
+/** 版本号文字 */
+export const VersionText = styled.span`
+  color: #666f8d;
+  font-size: 12px;
+  font-weight: 600;
+`
+
+/** 版本容器内的竖直分隔线 */
+export const VersionDivider = styled.div`
+  width: 1px;
+  height: 12px;
+  background: #d9d9d9;
+`
+
+/** 检查更新按钮 */
+export const CheckUpdateButton = styled(Button)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  height: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #666f8d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+`
+
+/** 提示信息容器（圆点 + 提示文字 + 恢复默认按钮） */
+export const HintContainer = styled(VersionContainer)`
+  gap: 16px;
+  padding: 0 12px;
+`
+
+/** 提示内容（圆点 + 文字） */
+export const HintContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`
+
+/** 提示圆点 */
+export const HintDot = styled.div`
+  width: 4px;
+  height: 4px;
+  background: #666f8d;
+  border-radius: 50%;
+`
+
+/** 提示文字 */
+export const HintText = styled.span`
+  font-size: 12px;
+  color: #666f8d;
+`
+
+/** 恢复默认按钮 */
+export const ResetDefaultButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  /* padding: 0; */
+  height: auto;
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  color: var(--theme-color, #1890ff);
+  transition: opacity 0.2s ease;
+  box-shadow: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+    color: var(--theme-color, #1890ff) !important;
+    background: transparent !important;
+    border: none !important;
+  }
+`
+
 /** SectionCard 面板标题容器 */
 export const PanelHeader = styled(Flex)`
   width: 100%;
 `
 
+/** SectionCard 面板图标 */
+export const PanelIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #353e5c;
+`
+
 /** SectionCard 面板标题文本 */
 export const PanelTitle = styled(Typography.Text)`
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 16px;
+  color: #353e5c;
+`
+
+/** SectionCard 标题容器（包含标题和帮助图标） */
+export const PanelTitleWrapper = styled(Flex)``
+
+/** SectionCard 标题帮助图标 */
+export const PanelTitleHelpIcon = styled(QuestionCircleOutlined)`
   font-size: 14px;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: help;
+  transition: color 0.2s;
+
+  &:hover {
+    color: rgba(0, 0, 0, 0.65);
+  }
 `
 
 /** SectionCard 操作按钮组 */
 export const PanelActions = styled(Flex)``
 
-/** SectionCard 操作按钮 */
+/** SectionCard 操作按钮（antd Button 版本，用于恢复默认等） */
 interface PanelActionButtonProps {
   $variant?: 'default' | 'primary'
   $colorPrimary?: string
@@ -466,16 +632,46 @@ interface PanelActionButtonProps {
   $colorPrimaryActive?: string
 }
 
-export const PanelActionButton = styled.button<PanelActionButtonProps>`
+export const PanelActionButton = styled(Button)<PanelActionButtonProps>`
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 4px 12px;
+  height: auto;
   font-size: 12px;
   font-weight: 500;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 16px;
   transition: all 0.2s ease;
+  background: #ffffff;
+  color: #666f8d;
+  border: 1px solid #e6ecf4;
+
+  &:hover {
+    color: ${(props) => props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'} !important;
+    border-color: ${(props) =>
+      props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'} !important;
+    background: #ffffff !important;
+  }
+
+  &:active {
+    color: ${(props) => props.$colorPrimaryActive || '#2ba89f'} !important;
+    border-color: ${(props) => props.$colorPrimaryActive || '#2ba89f'} !important;
+  }
+`
+
+/** SectionCard 操作按钮（原生 button 版本，用于一键精简等特殊按钮） */
+export const NativePanelActionButton = styled.button<{ $variant?: 'default' | 'primary' }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  height: auto;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  outline: none;
 
   ${(props) =>
     props.$variant === 'primary'
@@ -496,21 +692,21 @@ export const PanelActionButton = styled.button<PanelActionButtonProps>`
     }
   `
       : `
-    background: #fff;
-    color: #666;
-    border: 1px solid #d9d9d9;
+    background: #ffffff;
+    color: #666f8d;
+    border: 1px solid #e6ecf4;
     
     &:hover {
-      color: ${props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'};
-      border-color: ${props.$colorPrimaryHover || props.$colorPrimary || '#39c5bb'};
-    }
-    
-    &:active {
-      color: ${props.$colorPrimaryActive || '#2ba89f'};
-      border-color: ${props.$colorPrimaryActive || '#2ba89f'};
+      color: var(--theme-color, #39c5bb);
+      border-color: var(--theme-color, #39c5bb);
     }
   `}
 `
+
+/** Surprise me 按钮样式（复用 NativePanelActionButton 的 primary 样式） */
+export const SurpriseButton = styled(NativePanelActionButton).attrs({
+  $variant: 'primary' as const,
+})``
 
 export const AutoSaveHint = styled(Flex)`
   padding: 12px 16px;
@@ -545,7 +741,7 @@ export const AutoSaveHintLinkButton = styled(Button)`
 
 export const PageTitle = styled(Title)`
   &.ant-typography {
-    margin-bottom: 8px;
+    margin: 0;
   }
 `
 
@@ -571,9 +767,6 @@ export const SectionSubTitle = styled(Title)`
 
 /** 基础折叠面板样式 */
 const baseCollapseStyles = `
-  margin-top: 24px;
-  margin-bottom: 24px;
-
   /* 折叠面板头部样式 */
   .ant-collapse-header {
     /* 防止标题被选中 */
@@ -604,7 +797,7 @@ const baseCollapseStyles = `
  * Section 折叠面板样式
  * 设计理念：简洁现代，强调排版和留白，底部边框作为视觉锚点
  */
-export const StyledCollapseModern = styled(Collapse)`
+export const StyledCollapseModern = styled(Collapse)<{ id?: string }>`
   ${baseCollapseStyles}
 
   border: none;
@@ -664,7 +857,10 @@ export const StyledCollapseModern = styled(Collapse)`
   }
 
   .ant-collapse-content-box {
-    padding: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
   }
 
   /* 悬停效果 */
@@ -703,20 +899,11 @@ export const HelpIcon = styled(InfoCircleOutlined)`
   cursor: help;
 `
 
-export const ExampleSection = styled.div`
-  margin-top: 24px;
-`
+export const ExampleSection = styled(Flex)``
 
 export const ExampleLabel = styled(Text)`
   &.ant-typography {
     display: block;
-    margin-bottom: 12px;
-  }
-`
-
-export const SchemaNote = styled(Paragraph)`
-  &.ant-typography {
-    margin-top: 12px;
   }
 `
 
@@ -750,14 +937,71 @@ export const SectionDivider = styled.div`
 `
 
 /**
- * 表单区块子标题
- * 用于表单内部分组的标签，加粗样式
+ * 表单区块容器
+ * 用于包装子标题和它下面的内容，内部使用 flex + gap: 8px
  */
-export const FormSectionLabel = styled.div<{ $noMarginTop?: boolean }>`
-  font-size: 13px;
+/** 表单分组容器：子标题 + FormContent */
+export const FormSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+/** 表单内容容器：包裹 Form.Item，控制表单项之间的间距 */
+export const FormContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`
+
+/**
+ * 表单区块子标题
+ * 用于表单内部分组的标签
+ * 配合 FormSection 容器使用，通过 gap 控制与内容的间距
+ * 样式：浅色背景容器 + 左侧装饰线
+ */
+export const FormSectionLabel = styled.div`
+  font-size: 14px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.88);
-  margin: ${(props) => (props.$noMarginTop ? '0' : '24px')} 0 16px;
+  color: #353e5c;
+  position: relative;
+  padding: 8px 12px 8px 14px;
+  background: rgba(var(--theme-color-rgb, 57, 197, 187), 0.06);
+  border-radius: 8px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: linear-gradient(
+      180deg,
+      var(--theme-color, #39c5bb),
+      color-mix(in srgb, var(--theme-color, #39c5bb) 60%, white)
+    );
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* 锚点高亮动画 - 使用 box-shadow 避免与背景色冲突 */
+  &.anchor-highlight {
+    animation: anchorHighlight 2s ease;
+  }
+
+  @keyframes anchorHighlight {
+    0% {
+      box-shadow:
+        0 0 0 2px rgba(var(--theme-color-rgb, 57, 197, 187), 0.4),
+        0 0 12px rgba(var(--theme-color-rgb, 57, 197, 187), 0.3);
+    }
+    100% {
+      box-shadow:
+        0 0 0 0 transparent,
+        0 0 0 transparent;
+    }
+  }
 `
 
 /**
@@ -802,11 +1046,12 @@ export const ZeroMarginFormItem = styled(Form.Item)`
  * 用于表单项旁的帮助说明，带悬停效果
  */
 export const HelpTooltipIcon = styled(QuestionCircleOutlined)`
-  color: #999;
-  cursor: pointer;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: help;
+  font-size: 14px;
 
   &:hover {
-    color: #666;
+    color: rgba(0, 0, 0, 0.65);
   }
 `
 

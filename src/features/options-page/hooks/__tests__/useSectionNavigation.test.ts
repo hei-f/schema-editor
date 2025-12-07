@@ -85,6 +85,17 @@ describe('useSectionNavigation', () => {
     it('应该滚动到锚点并添加高亮效果', () => {
       const { result } = renderHook(() => useSectionNavigation())
 
+      // 创建滚动容器
+      const scrollContainer = document.createElement('div')
+      scrollContainer.setAttribute('data-scroll-container', '')
+      scrollContainer.getBoundingClientRect = vi.fn().mockReturnValue({
+        top: 0,
+        height: 500,
+      })
+      scrollContainer.scrollTop = 0
+      scrollContainer.scrollTo = vi.fn()
+      document.body.appendChild(scrollContainer)
+
       // 创建模拟元素
       const mockElement = document.createElement('div')
       mockElement.id = 'anchor-test'
@@ -92,23 +103,53 @@ describe('useSectionNavigation', () => {
         top: 200,
         height: 50,
       })
-      document.body.appendChild(mockElement)
+      scrollContainer.appendChild(mockElement)
+
+      // Mock IntersectionObserver
+      const observeCallback = vi.fn()
+      const mockObserver = {
+        observe: vi.fn().mockImplementation(() => {
+          // 立即触发 intersection callback
+          setTimeout(() => {
+            observeCallback([{ isIntersecting: true }], mockObserver)
+          }, 0)
+        }),
+        disconnect: vi.fn(),
+        unobserve: vi.fn(),
+      }
+      const IntersectionObserverMock = vi.fn().mockImplementation((callback) => {
+        observeCallback.mockImplementation(callback)
+        return mockObserver
+      })
+      vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
+
+      // Mock requestAnimationFrame
+      vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+        setTimeout(() => cb(0), 0)
+        return 0
+      })
 
       act(() => {
         result.current.scrollToAnchor('anchor-test')
       })
 
-      // 验证高亮效果被添加
-      expect(mockElement.style.backgroundColor).toBe('rgba(57, 197, 187, 0.1)')
+      // 等待 IntersectionObserver 回调和 requestAnimationFrame
+      act(() => {
+        vi.advanceTimersByTime(10)
+      })
+
+      // 验证高亮类被添加（使用 CSS 类而非内联样式）
+      expect(mockElement.classList.contains('anchor-highlight')).toBe(true)
 
       // 快进时间，验证高亮效果被移除
       act(() => {
-        vi.advanceTimersByTime(1500)
+        vi.advanceTimersByTime(2500)
       })
-      expect(mockElement.style.backgroundColor).toBe('')
+      expect(mockElement.classList.contains('anchor-highlight')).toBe(false)
 
       // 清理
-      document.body.removeChild(mockElement)
+      document.body.removeChild(scrollContainer)
+      vi.unstubAllGlobals()
     })
 
     it('元素不存在时不应该报错', () => {

@@ -1,5 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { MENU_CONFIG } from '../config/menu-config'
+
+/** 高亮状态，用于追踪和清理 */
+interface HighlightState {
+  timerId: ReturnType<typeof setTimeout> | null
+  observer: IntersectionObserver | null
+}
 
 interface UseSectionNavigationReturn {
   /** 当前激活的 Section */
@@ -22,25 +28,8 @@ export const useSectionNavigation = (): UseSectionNavigationReturn => {
   const [activeSection, setActiveSection] = useState<string>(MENU_CONFIG[0]?.sectionId ?? '')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
 
-  /**
-   * 快速平滑滚动到目标位置
-   */
-  const smoothScrollTo = useCallback((targetY: number, duration = 150) => {
-    const startY = window.scrollY
-    const diff = targetY - startY
-    const startTime = performance.now()
-
-    const step = (currentTime: number) => {
-      const elapsed = currentTime - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      const easeProgress = 1 - Math.pow(1 - progress, 3)
-      window.scrollTo(0, startY + diff * easeProgress)
-      if (progress < 1) {
-        requestAnimationFrame(step)
-      }
-    }
-    requestAnimationFrame(step)
-  }, [])
+  /** 高亮状态 ref，用于清理之前的定时器和 observer */
+  const highlightStateRef = useRef<HighlightState>({ timerId: null, observer: null })
 
   /**
    * 切换 Section 的展开状态
@@ -58,44 +47,112 @@ export const useSectionNavigation = (): UseSectionNavigationReturn => {
   }, [])
 
   /**
-   * 滚动到指定 Section（快速平滑滚动）并展开该 Section
+   * 滚动到指定 Section 并展开该 Section
+   * 使用 data-scroll-container 属性定位滚动容器
    */
-  const scrollToSection = useCallback(
-    (sectionId: string) => {
-      setExpandedSections((prev) => new Set(prev).add(sectionId))
-      setActiveSection(sectionId)
+  const scrollToSection = useCallback((sectionId: string) => {
+    setExpandedSections((prev) => new Set(prev).add(sectionId))
+    setActiveSection(sectionId)
 
-      requestAnimationFrame(() => {
-        const element = document.getElementById(sectionId)
-        if (element) {
-          const targetPosition = element.getBoundingClientRect().top + window.scrollY - 20
-          smoothScrollTo(targetPosition, 150)
-        }
-      })
-    },
-    [smoothScrollTo]
-  )
+    requestAnimationFrame(() => {
+      const element = document.getElementById(sectionId)
+      const scrollContainer = document.querySelector('[data-scroll-container]')
+      if (element && scrollContainer) {
+        const containerRect = scrollContainer.getBoundingClientRect()
+        const elementRect = element.getBoundingClientRect()
+        const targetScrollTop = scrollContainer.scrollTop + elementRect.top - containerRect.top - 20
+
+        scrollContainer.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth',
+        })
+      }
+    })
+  }, [])
 
   /**
-   * 滚动到指定锚点（配置项，快速平滑滚动）
+   * 滚动到指定锚点
+   * 使用 CSS 类实现高亮效果，支持主题色
    */
-  const scrollToAnchor = useCallback(
-    (anchorId: string) => {
-      const element = document.getElementById(anchorId)
-      if (element) {
-        const rect = element.getBoundingClientRect()
-        const targetPosition = rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2
-        smoothScrollTo(targetPosition, 150)
-        // 高亮效果（主题色）
-        element.style.transition = 'background-color 0.3s ease'
-        element.style.backgroundColor = 'rgba(57, 197, 187, 0.1)'
-        setTimeout(() => {
-          element.style.backgroundColor = ''
-        }, 1500)
+  const scrollToAnchor = useCallback((anchorId: string) => {
+    const doScroll = (element: HTMLElement) => {
+      const scrollContainer = document.querySelector('[data-scroll-container]')
+      if (scrollContainer) {
+        const containerRect = scrollContainer.getBoundingClientRect()
+        const elementRect = element.getBoundingClientRect()
+        const targetScrollTop =
+          scrollContainer.scrollTop +
+          elementRect.top -
+          containerRect.top -
+          containerRect.height / 2 +
+          elementRect.height / 2
+
+        scrollContainer.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth',
+        })
       }
-    },
-    [smoothScrollTo]
-  )
+
+      // 清理之前的高亮状态（定时器和 observer）
+      const prevState = highlightStateRef.current
+      if (prevState.timerId) {
+        clearTimeout(prevState.timerId)
+      }
+      if (prevState.observer) {
+        prevState.observer.disconnect()
+      }
+
+      // 使用 IntersectionObserver 检测元素进入可视区域后再添加高亮
+      const highlightRoot = scrollContainer ?? document.querySelector('[data-scroll-container]')
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0]
+          if (entry.isIntersecting) {
+            // 元素进入可视区域，开始高亮动画
+            observer.disconnect()
+            // 使用 requestAnimationFrame 确保动画重置可靠
+            // 先移除类，等待下一帧后再添加，确保浏览器识别为新动画
+            element.classList.remove('anchor-highlight')
+            requestAnimationFrame(() => {
+              element.classList.add('anchor-highlight')
+              const timerId = setTimeout(() => {
+                element.classList.remove('anchor-highlight')
+                highlightStateRef.current.timerId = null
+              }, 2000)
+              highlightStateRef.current.timerId = timerId
+            })
+          }
+        },
+        {
+          root: highlightRoot,
+          threshold: 0,
+        }
+      )
+      observer.observe(element)
+      highlightStateRef.current.observer = observer
+    }
+
+    // 先检查元素是否已存在（Section 已展开的情况）
+    const element = document.getElementById(anchorId)
+    if (element) {
+      // 元素已存在，立即滚动
+      doScroll(element)
+      return
+    }
+
+    // 元素不存在，等待 Collapse 展开后重试
+    const tryScroll = (retries = 5) => {
+      const el = document.getElementById(anchorId)
+      if (el) {
+        doScroll(el)
+      } else if (retries > 0) {
+        setTimeout(() => tryScroll(retries - 1), 80)
+      }
+    }
+
+    // 等待一帧后开始重试（给 React 时间更新 DOM）
+    requestAnimationFrame(() => tryScroll())
+  }, [])
 
   return {
     activeSection,

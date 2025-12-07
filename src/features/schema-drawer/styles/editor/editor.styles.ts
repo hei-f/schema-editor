@@ -20,23 +20,3 @@ export const ErrorContainer = styled.div`
   border: 1px solid #ffccc7;
   border-radius: 4px;
 `
-
-/**
- * 重试按钮
- */
-export const RetryButton = styled.button`
-  padding: 8px 16px;
-  background: #1890ff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:hover {
-    background: #40a9ff;
-  }
-
-  &:active {
-    background: #096dd9;
-  }
-`

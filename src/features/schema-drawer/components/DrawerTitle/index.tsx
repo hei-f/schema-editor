@@ -49,6 +49,8 @@ interface DrawerTitleProps {
   hasPreviewFunction: boolean
   /** 预览是否开启 */
   previewEnabled: boolean
+  /** 预览是否正在过渡中（打开或关闭动画进行中） */
+  isPreviewTransitioning: boolean
   /** 切换预览 */
   onTogglePreview: () => void
   /** 是否有草稿 */
@@ -86,6 +88,7 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
     hasHistory,
     hasPreviewFunction,
     previewEnabled,
+    isPreviewTransitioning,
     onTogglePreview,
     hasDraft,
     onLoadDraft,
@@ -150,6 +153,7 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
                 icon={previewEnabled ? <PreviewOnIcon /> : <PreviewOffIcon />}
                 onClick={onTogglePreview}
                 disabled={!hasPreviewFunction}
+                loading={isPreviewTransitioning}
               />
             </Tooltip>
           )}

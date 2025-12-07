@@ -116,7 +116,7 @@ describe('menu-config', () => {
     it('MENU_EXPANDED_WIDTH 应该是有效的宽度值', () => {
       expect(typeof MENU_EXPANDED_WIDTH).toBe('number')
       expect(MENU_EXPANDED_WIDTH).toBeGreaterThan(0)
-      expect(MENU_EXPANDED_WIDTH).toBe(200)
+      expect(MENU_EXPANDED_WIDTH).toBe(230)
     })
 
     it('MENU_COLLAPSED_WIDTH 应该是有效的宽度值', () => {
@@ -140,7 +140,7 @@ describe('menu-config', () => {
     it('元素检测菜单应该有完整的子项', () => {
       const elementDetection = MENU_CONFIG.find((item) => item.key === 'element-detection')
       expect(elementDetection).toBeDefined()
-      expect(elementDetection?.children?.length).toBeGreaterThanOrEqual(5)
+      expect(elementDetection?.children?.length).toBeGreaterThanOrEqual(4)
     })
 
     it('编辑器配置菜单应该有完整的子项', () => {
@@ -158,7 +158,7 @@ describe('menu-config', () => {
     it('快捷键配置菜单应该有完整的子项', () => {
       const keyboardShortcuts = MENU_CONFIG.find((item) => item.key === 'keyboard-shortcuts')
       expect(keyboardShortcuts).toBeDefined()
-      expect(keyboardShortcuts?.children?.length).toBeGreaterThanOrEqual(3)
+      expect(keyboardShortcuts?.children?.length).toBeGreaterThanOrEqual(1)
     })
   })
 

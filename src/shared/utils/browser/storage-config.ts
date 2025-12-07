@@ -123,8 +123,13 @@ export const SIMPLE_STORAGE_FIELDS = {
     key: STORAGE_KEYS.RECORDING_MODE_CONFIG,
     defaultValue: DEFAULT_VALUES.recordingModeConfig,
     validator: (value: any): value is RecordingModeConfig => {
+      if (!value) return false
+      const isValidAutoStopTimeout =
+        value.autoStopTimeout === null ||
+        (typeof value.autoStopTimeout === 'number' &&
+          value.autoStopTimeout >= 3 &&
+          value.autoStopTimeout <= 300)
       return (
-        value &&
         typeof value.enabled === 'boolean' &&
         typeof value.keyBinding === 'string' &&
         value.keyBinding.length === 1 &&
@@ -133,7 +138,8 @@ export const SIMPLE_STORAGE_FIELDS = {
         value.highlightColor.length > 0 &&
         typeof value.pollingInterval === 'number' &&
         value.pollingInterval >= 50 &&
-        value.pollingInterval <= 1000
+        value.pollingInterval <= 1000 &&
+        isValidAutoStopTimeout
       )
     },
   } as StorageFieldConfig<RecordingModeConfig>,

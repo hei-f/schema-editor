@@ -13,7 +13,17 @@
     body {
       min-width: 800px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      overflow-x: hidden;
+      overflow: hidden;
+    }
+    /* 修复 Tooltip 文字颜色 */
+    :root {
+      --ant-tooltip-color: #fff;
+    }
+    .ant-tooltip .ant-tooltip-inner {
+      color: #fff !important;
+    }
+    .ant-tooltip-inner {
+      color: #fff !important;
     }
   </style>
 </head>
