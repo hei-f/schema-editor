@@ -127,6 +127,8 @@ export const FORM_PATHS = {
     pollingInterval: ['recordingModeConfig', 'pollingInterval'],
     /** 自动停止超时时间 */
     autoStopTimeout: ['recordingModeConfig', 'autoStopTimeout'],
+    /** 数据获取模式 */
+    dataFetchMode: ['recordingModeConfig', 'dataFetchMode'],
   },
 
   /** iframe 支持配置 */
@@ -171,6 +173,12 @@ export const FORM_PATHS = {
       renderPreview: ['apiConfig', 'messageTypes', 'renderPreview'],
       /** 清理预览 */
       cleanupPreview: ['apiConfig', 'messageTypes', 'cleanupPreview'],
+      /** 开始录制 */
+      startRecording: ['apiConfig', 'messageTypes', 'startRecording'],
+      /** 停止录制 */
+      stopRecording: ['apiConfig', 'messageTypes', 'stopRecording'],
+      /** 推送 Schema 数据 */
+      schemaPush: ['apiConfig', 'messageTypes', 'schemaPush'],
     },
   },
 
