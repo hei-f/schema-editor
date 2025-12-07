@@ -579,6 +579,7 @@ export const ResetDefaultButton = styled(Button)`
     opacity: 0.8;
     color: var(--theme-color, #1890ff) !important;
     background: transparent !important;
+    border: none !important;
   }
 `
 
