@@ -65,6 +65,7 @@ export const DrawerContentContainer = styled.div`
   flex-direction: column;
   height: 100%;
   padding: 0 24px;
+  gap: 12px;
 `
 
 /**
@@ -305,6 +306,7 @@ export const PreviewEditArea = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
+  gap: 12px;
 `
 
 /**
@@ -357,6 +359,7 @@ export const ContentAreaContainer = styled.div`
   min-height: 0;
   overflow: hidden;
   position: relative;
+  gap: 12px;
 `
 
 /**
