@@ -1,6 +1,5 @@
 import { crx } from '@crxjs/vite-plugin'
 import react from '@vitejs/plugin-react'
-import svgr from 'vite-plugin-svgr'
 import path from 'path'
 import { defineConfig } from 'vite'
 import manifest from './src/manifest.json'
@@ -22,7 +21,6 @@ export default defineConfig({
         plugins: [['babel-plugin-react-compiler', {}]],
       },
     }),
-    svgr(),
     crx({ manifest: manifest as any }),
   ],
   resolve: {
