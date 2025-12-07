@@ -239,6 +239,10 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
     recordingStartTimeRef.current = Date.now()
     lastChangeTimeRef.current = Date.now()
 
+    // 先设置录制状态，确保 pollSchema/handleSchemaPush 能正常工作
+    isRecordingRef.current = true
+    setIsRecording(true)
+
     if (isEventDrivenMode) {
       // 事件驱动模式：先设置监听，再发送开始指令
       logger.log('[Recording] 使用事件驱动模式')
@@ -264,6 +268,9 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
             pushListenerCleanupRef.current()
             pushListenerCleanupRef.current = null
           }
+          // 重置录制状态
+          isRecordingRef.current = false
+          setIsRecording(false)
           return
         }
       } catch (error) {
@@ -273,6 +280,9 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
           pushListenerCleanupRef.current()
           pushListenerCleanupRef.current = null
         }
+        // 重置录制状态
+        isRecordingRef.current = false
+        setIsRecording(false)
         return
       }
     } else {
@@ -294,9 +304,6 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
         }
       }, 1000)
     }
-
-    isRecordingRef.current = true
-    setIsRecording(true)
   }
 
   /**
