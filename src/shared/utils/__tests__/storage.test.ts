@@ -158,6 +158,7 @@ describe('Storage工具测试', () => {
           highlightColor: '#FF4D4F',
           pollingInterval: 100,
           autoStopTimeout: null,
+          dataFetchMode: 'polling',
         },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview',
@@ -174,6 +175,9 @@ describe('Storage工具测试', () => {
             checkPreview: 'CHECK_PREVIEW',
             renderPreview: 'RENDER_PREVIEW',
             cleanupPreview: 'CLEANUP_PREVIEW',
+            startRecording: 'START_RECORDING',
+            stopRecording: 'STOP_RECORDING',
+            schemaPush: 'SCHEMA_PUSH',
           },
         },
         drawerShortcuts: {
@@ -263,6 +267,7 @@ describe('Storage工具测试', () => {
           highlightColor: '#FF4D4F',
           pollingInterval: 100,
           autoStopTimeout: null,
+          dataFetchMode: 'polling',
         },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview',
@@ -279,6 +284,9 @@ describe('Storage工具测试', () => {
             checkPreview: 'CHECK_PREVIEW',
             renderPreview: 'RENDER_PREVIEW',
             cleanupPreview: 'CLEANUP_PREVIEW',
+            startRecording: 'START_RECORDING',
+            stopRecording: 'STOP_RECORDING',
+            schemaPush: 'SCHEMA_PUSH',
           },
         },
         drawerShortcuts: {
@@ -358,6 +366,7 @@ describe('Storage工具测试', () => {
           highlightColor: '#FF4D4F',
           pollingInterval: 100,
           autoStopTimeout: null,
+          dataFetchMode: 'polling',
         },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview',
@@ -374,6 +383,9 @@ describe('Storage工具测试', () => {
             checkPreview: 'CHECK_PREVIEW',
             renderPreview: 'RENDER_PREVIEW',
             cleanupPreview: 'CLEANUP_PREVIEW',
+            startRecording: 'START_RECORDING',
+            stopRecording: 'STOP_RECORDING',
+            schemaPush: 'SCHEMA_PUSH',
           },
         },
         drawerShortcuts: {
@@ -633,6 +645,7 @@ describe('Storage工具测试', () => {
           highlightColor: '#FF4D4F',
           pollingInterval: 100,
           autoStopTimeout: null,
+          dataFetchMode: 'polling',
         },
         editorTheme: 'schemaEditorDark',
         previewFunctionName: '__getContentPreview',
@@ -649,6 +662,9 @@ describe('Storage工具测试', () => {
             checkPreview: 'CHECK_PREVIEW',
             renderPreview: 'RENDER_PREVIEW',
             cleanupPreview: 'CLEANUP_PREVIEW',
+            startRecording: 'START_RECORDING',
+            stopRecording: 'STOP_RECORDING',
+            schemaPush: 'SCHEMA_PUSH',
           },
         },
         drawerShortcuts: {
@@ -1596,6 +1612,9 @@ describe('Storage工具测试', () => {
           checkPreview: 'CHECK_PREVIEW',
           renderPreview: 'RENDER_PREVIEW',
           cleanupPreview: 'CLEANUP_PREVIEW',
+          startRecording: 'START_RECORDING',
+          stopRecording: 'STOP_RECORDING',
+          schemaPush: 'SCHEMA_PUSH',
         },
       }
 
@@ -1620,6 +1639,9 @@ describe('Storage工具测试', () => {
           checkPreview: 'CHECK_PREVIEW',
           renderPreview: 'RENDER_PREVIEW',
           cleanupPreview: 'CLEANUP_PREVIEW',
+          startRecording: 'START_RECORDING',
+          stopRecording: 'STOP_RECORDING',
+          schemaPush: 'SCHEMA_PUSH',
         },
       }
 
@@ -1647,6 +1669,9 @@ describe('Storage工具测试', () => {
           checkPreview: 'CHECK_PREVIEW',
           renderPreview: 'RENDER_PREVIEW',
           cleanupPreview: 'CLEANUP_PREVIEW',
+          startRecording: 'START_RECORDING',
+          stopRecording: 'STOP_RECORDING',
+          schemaPush: 'SCHEMA_PUSH',
         },
       })
     })
@@ -1667,6 +1692,9 @@ describe('Storage工具测试', () => {
           checkPreview: 'CHECK_PREVIEW',
           renderPreview: 'RENDER_PREVIEW',
           cleanupPreview: 'CLEANUP_PREVIEW',
+          startRecording: 'START_RECORDING',
+          stopRecording: 'STOP_RECORDING',
+          schemaPush: 'SCHEMA_PUSH',
         },
       }
 
@@ -1860,6 +1888,7 @@ describe('Storage工具测试', () => {
         highlightColor: '#ff0000',
         pollingInterval: 100,
         autoStopTimeout: null,
+        dataFetchMode: 'polling' as const,
       }
       await storage.setRecordingModeConfig(config)
 

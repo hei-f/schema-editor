@@ -192,6 +192,9 @@ describe('useSchemaRecording Hook 测试', () => {
           checkPreview: 'CHECK_PREVIEW',
           renderPreview: 'RENDER_PREVIEW',
           cleanupPreview: 'CLEANUP_PREVIEW',
+          startRecording: 'START_RECORDING',
+          stopRecording: 'STOP_RECORDING',
+          schemaPush: 'SCHEMA_PUSH',
         },
       },
     }
@@ -868,6 +871,9 @@ describe('useSchemaRecording Hook 测试', () => {
           checkPreview: 'CHECK',
           renderPreview: 'RENDER',
           cleanupPreview: 'CLEANUP',
+          startRecording: 'START',
+          stopRecording: 'STOP',
+          schemaPush: 'PUSH',
         },
       }
 
