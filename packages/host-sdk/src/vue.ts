@@ -7,13 +7,22 @@ import { onMounted, onUnmounted, watch, toValue, type MaybeRefOrGetter } from 'v
 import { createSchemaEditorBridge } from './core'
 import type {
   SchemaEditorConfig,
+  SchemaEditorBridge,
+  SchemaEditorRecording,
   SchemaValue,
   PostMessageSourceConfig,
   PostMessageTypeConfig,
 } from './core'
 
 // 重新导出类型
-export type { SchemaEditorConfig, SchemaValue, PostMessageSourceConfig, PostMessageTypeConfig }
+export type {
+  SchemaEditorConfig,
+  SchemaEditorBridge,
+  SchemaEditorRecording,
+  SchemaValue,
+  PostMessageSourceConfig,
+  PostMessageTypeConfig,
+}
 
 /**
  * Vue 版本的 Schema Editor 配置
@@ -51,43 +60,53 @@ export interface VueSchemaEditorConfig {
   messageTypes?: Partial<PostMessageTypeConfig>
 }
 
+/** Vue composable 返回值 */
+export interface UseSchemaEditorReturn {
+  /** 录制相关方法 */
+  recording: SchemaEditorRecording
+}
+
 /**
  * Schema Editor 插件接入 composable（Vue 3）
  * 用于在宿主页面接入 Schema Editor 插件，通过 postMessage 接收插件请求并返回响应
  *
  * @param config - Schema Editor 配置（支持响应式值）
+ * @returns 桥接器方法，包含 pushSchema
  *
  * @example
  * ```vue
  * <script setup>
- * import { useSchemaEditor } from 'use-schema-editor/vue'
+ * import { useSchemaEditor } from '@schema-editor/host-sdk/vue'
  * import { ref } from 'vue'
  *
  * const dataStore = ref({})
  *
- * useSchemaEditor({
+ * const { pushSchema } = useSchemaEditor({
  *   getSchema: (params) => dataStore.value[params],
  *   updateSchema: (schema, params) => {
  *     dataStore.value[params] = schema
  *     return true
  *   },
  * })
+ *
+ * // 数据变化时调用 pushSchema 推送数据（录制功能自动可用）
+ * sseHandler.onData = (params, data) => pushSchema(params, data)
  * </script>
  * ```
  */
-export function useSchemaEditor(config: VueSchemaEditorConfig): void {
+export function useSchemaEditor(config: VueSchemaEditorConfig): UseSchemaEditorReturn {
   const { getSchema, updateSchema, renderPreview, sourceConfig, messageTypes, enabled } = config
 
-  let cleanup: (() => void) | null = null
+  let bridge: SchemaEditorBridge | null = null
 
   const destroyBridge = () => {
-    if (cleanup) {
-      cleanup()
-      cleanup = null
+    if (bridge) {
+      bridge.cleanup()
+      bridge = null
     }
   }
 
-  const createBridge = () => {
+  const createBridgeInstance = () => {
     // 清理之前的桥接
     destroyBridge()
 
@@ -107,11 +126,11 @@ export function useSchemaEditor(config: VueSchemaEditorConfig): void {
       messageTypes,
     }
 
-    cleanup = createSchemaEditorBridge(proxyConfig)
+    bridge = createSchemaEditorBridge(proxyConfig)
   }
 
   onMounted(() => {
-    createBridge()
+    createBridgeInstance()
   })
 
   onUnmounted(() => {
@@ -129,10 +148,22 @@ export function useSchemaEditor(config: VueSchemaEditorConfig): void {
       messageTypes?.checkPreview,
       messageTypes?.renderPreview,
       messageTypes?.cleanupPreview,
+      messageTypes?.startRecording,
+      messageTypes?.stopRecording,
+      messageTypes?.schemaPush,
     ],
     () => {
-      createBridge()
+      createBridgeInstance()
     },
     { deep: true }
   )
+
+  // 返回 recording 对象
+  const recording: SchemaEditorRecording = {
+    push: (params: string, data: SchemaValue) => {
+      bridge?.recording.push(params, data)
+    },
+  }
+
+  return { recording }
 }
