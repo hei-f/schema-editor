@@ -38,6 +38,20 @@ export const PreviewConfigSection: React.FC<SectionProps> = (props) => {
           <Form.Item
             label={
               <Space>
+                启用内置预览器
+                <Tooltip title="当宿主页面未提供预览函数时，使用插件内置的 Markdown 预览器。支持 AST 和 RawString 类型的内容预览">
+                  <HelpTooltipIcon />
+                </Tooltip>
+              </Space>
+            }
+            name={FORM_PATHS.previewConfig.enableBuiltinPreview}
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            label={
+              <Space>
                 自动更新预览
                 <Tooltip title="编辑器内容变化时自动更新预览（使用下面设置的延迟）">
                   <HelpTooltipIcon />
