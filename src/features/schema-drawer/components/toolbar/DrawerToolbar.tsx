@@ -151,17 +151,20 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = (props) => {
 
       // AST/RawString 切换（原始组件，不包装 ToolbarButton）
       if (toolbarButtons.astRawStringToggle) {
+        const segmentValue = contentType === ContentType.Other ? undefined : contentType
+        const segmentDisabled = contentType === ContentType.Other || isRecording
         configs.push({
           key: 'ast-rawstring-toggle',
           label: (
             <ToolbarSegmented
+              key={`segment-${contentType}-${isRecording}`}
               options={[
                 { label: 'AST', value: ContentType.Ast },
                 { label: 'RawString', value: ContentType.RawString },
               ]}
-              value={contentType === ContentType.Other ? undefined : contentType}
+              value={segmentValue}
               onChange={onSegmentChange}
-              disabled={contentType === ContentType.Other || isRecording}
+              disabled={segmentDisabled}
             />
           ),
           isRawComponent: true,
