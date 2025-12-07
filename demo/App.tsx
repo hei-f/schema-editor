@@ -9,12 +9,14 @@ import {
   RobotOutlined,
   BlockOutlined,
   SettingOutlined,
+  EyeOutlined,
 } from '@ant-design/icons'
 import { AstTestPage } from './pages/AstTestPage'
 import { SchemaTestPage } from './pages/SchemaTestPage'
 import { AgenticDemoPage } from './pages/AgenticDemoPage'
 import { IframeTestPage } from './pages/IframeTestPage'
 import { OptionsTestPage } from './pages/OptionsTestPage'
+import { BuiltinPreviewTestPage } from './pages/BuiltinPreviewTestPage'
 import styled from 'styled-components'
 
 const { Header, Content, Sider } = Layout
@@ -102,7 +104,13 @@ const AppContent = styled(Content)<{
     margin-right 0.2s ease;
 `
 
-type PageKey = 'ast-test' | 'schema-test' | 'agentic-demo' | 'iframe-test' | 'options-test'
+type PageKey =
+  | 'ast-test'
+  | 'schema-test'
+  | 'agentic-demo'
+  | 'iframe-test'
+  | 'options-test'
+  | 'builtin-preview-test'
 
 /** 默认页面 */
 const DEFAULT_PAGE: PageKey = 'schema-test'
@@ -118,6 +126,7 @@ const getPageFromHash = (): PageKey => {
     'agentic-demo',
     'iframe-test',
     'options-test',
+    'builtin-preview-test',
   ]
   return validPages.includes(hash as PageKey) ? (hash as PageKey) : DEFAULT_PAGE
 }
@@ -135,6 +144,18 @@ export const TestApp: React.FC = () => {
 
   /** 是否为设置页开发模式（隐藏 header，菜单在右侧折叠） */
   const isOptionsPage = currentPage === 'options-test'
+
+  // 设置页模式下禁止 body 滚动（配置页有自己的滚动区域）
+  useEffect(() => {
+    if (isOptionsPage) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOptionsPage])
 
   // 监听 hash 变化（浏览器前进/后退）
   useEffect(() => {
@@ -183,6 +204,11 @@ export const TestApp: React.FC = () => {
       label: 'iframe 测试',
     },
     {
+      key: 'builtin-preview-test',
+      icon: <EyeOutlined />,
+      label: '内置预览器测试',
+    },
+    {
       key: 'options-test',
       icon: <SettingOutlined />,
       label: '设置页开发',
@@ -199,6 +225,8 @@ export const TestApp: React.FC = () => {
         return <AgenticDemoPage siderCollapsed={siderCollapsed} />
       case 'iframe-test':
         return <IframeTestPage siderCollapsed={siderCollapsed} />
+      case 'builtin-preview-test':
+        return <BuiltinPreviewTestPage siderCollapsed={siderCollapsed} />
       case 'options-test':
         return <OptionsTestPage siderCollapsed={siderCollapsed} />
       default:
