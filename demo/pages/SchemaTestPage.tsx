@@ -848,6 +848,7 @@ export const SchemaTestPage: React.FC<SchemaTestPageProps> = (props) => {
       const lines = [
         `录制模式测试 - 已运行 ${elapsed}ms`,
         `更新次数: ${recordingCountRef.current}`,
+        '',
         '---',
       ]
 
@@ -864,7 +865,7 @@ export const SchemaTestPage: React.FC<SchemaTestPageProps> = (props) => {
         recordingTimerRef.current = null
         setIsRecording(false)
 
-        const finalLines = [...lines, '---', '✅ 录制测试完成！']
+        const finalLines = [...lines, '', '---', '', '✅ 录制测试完成！']
         schemaStoreRef.current['recording-test'] = JSON.stringify(finalLines.join('\n'))
         setSchemaData({ ...schemaStoreRef.current })
 
