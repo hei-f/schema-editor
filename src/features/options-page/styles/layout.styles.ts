@@ -563,17 +563,19 @@ export const HintText = styled.span`
 `
 
 /** 恢复默认按钮 */
-export const ResetDefaultButton = styled(Button)`
+export const ResetDefaultButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 0;
+  /* padding: 0; */
   height: auto;
   background: transparent;
   border: none;
   font-size: 12px;
   color: var(--theme-color, #1890ff);
   transition: opacity 0.2s ease;
+  box-shadow: none;
+  cursor: pointer;
 
   &:hover {
     opacity: 0.8;

@@ -155,7 +155,6 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
         colorLink: primaryColor,
         colorLinkHover: hoverColor,
         colorLinkActive: activeColor,
-        colorTextLightSolid: primaryTextColor,
       },
       components: {
         Alert: {
@@ -164,6 +163,7 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
           colorInfoBorder: borderColor,
         },
         Button: {
+          primaryColor: primaryTextColor,
           colorLink: primaryColor,
           colorLinkHover: hoverColor,
           colorLinkActive: activeColor,
