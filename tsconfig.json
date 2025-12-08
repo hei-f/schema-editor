@@ -31,7 +31,8 @@
       "@/*": ["src/*"],
       "@shared/*": ["src/shared/*"],
       "@features/*": ["src/features/*"],
-      "@core/*": ["src/core/*"]
+      "@core/*": ["src/core/*"],
+      "@test/*": ["test/*"]
     }
   },
   "include": ["src", "test"],
