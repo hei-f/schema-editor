@@ -24,6 +24,7 @@ export { createSchemaEditorBridge } from './core'
 // 重新导出类型
 export type {
   SchemaEditorConfig,
+  SchemaEditorBridge,
   SchemaValue,
   PostMessageSourceConfig,
   PostMessageTypeConfig,

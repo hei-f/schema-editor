@@ -120,6 +120,7 @@ describe('OptionsApp组件测试', () => {
       highlightColor: '#FF4D4F',
       pollingInterval: 100,
       autoStopTimeout: null,
+      dataFetchMode: 'polling' as const,
     },
     enableAstTypeHints: true,
     exportConfig: {
@@ -139,6 +140,9 @@ describe('OptionsApp组件测试', () => {
         checkPreview: 'CHECK_PREVIEW',
         renderPreview: 'RENDER_PREVIEW',
         cleanupPreview: 'CLEANUP_PREVIEW',
+        startRecording: 'START_RECORDING',
+        stopRecording: 'STOP_RECORDING',
+        schemaPush: 'SCHEMA_PUSH',
       },
     },
   }
@@ -256,7 +260,7 @@ describe('OptionsApp组件测试', () => {
       await user.click(button)
 
       expect(mockChromeTabs.create).toHaveBeenCalledWith({
-        url: 'https://github.com/hei-f/schema-editor/releases/',
+        url: 'https://github.com/hei-f/schema-element-editor/releases',
         active: true,
       })
     })

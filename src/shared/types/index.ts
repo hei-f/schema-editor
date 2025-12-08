@@ -131,6 +131,13 @@ export interface HighlightAllConfig {
 }
 
 /**
+ * 录制模式数据获取方式
+ * - eventDriven: 事件驱动模式，宿主通过 pushSchema 主动推送数据
+ * - polling: 轮询模式，插件定期调用 getSchema 获取数据
+ */
+export type RecordingDataFetchMode = 'eventDriven' | 'polling'
+
+/**
  * 录制模式配置接口
  */
 export interface RecordingModeConfig {
@@ -140,10 +147,12 @@ export interface RecordingModeConfig {
   keyBinding: string
   /** 录制模式下的高亮颜色 */
   highlightColor: string
-  /** 轮询间隔（毫秒） */
+  /** 轮询间隔（毫秒），仅在轮询模式下生效 */
   pollingInterval: number
   /** 自动停止录制的超时时间（秒），null 表示禁用 */
   autoStopTimeout: number | null
+  /** 数据获取模式 */
+  dataFetchMode: RecordingDataFetchMode
 }
 
 /**
@@ -194,6 +203,12 @@ export interface PostMessageTypeConfig {
   renderPreview: string
   /** 清理预览的消息类型 */
   cleanupPreview: string
+  /** 开始录制的消息类型 */
+  startRecording: string
+  /** 停止录制的消息类型 */
+  stopRecording: string
+  /** 宿主主动推送 Schema 的消息类型（用于录制模式事件驱动） */
+  schemaPush: string
 }
 
 /**
@@ -261,7 +276,7 @@ export interface DrawerShortcutsConfig {
 /**
  * 编辑器主题类型
  */
-export type EditorTheme = 'light' | 'dark' | 'schemaEditorDark'
+export type EditorTheme = 'light' | 'dark' | 'seeDark' | 'schemaEditorDark'
 
 /**
  * SchemaDrawer 组件配置

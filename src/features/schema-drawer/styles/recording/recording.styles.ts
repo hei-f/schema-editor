@@ -31,13 +31,14 @@ export const RecordingModeContainer = styled.div`
 
 /**
  * 录制状态栏
+ * 背景色与工具栏一致
  */
 export const RecordingStatusBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: #eaebed;
+  background: #f7f8fa;
   border-radius: 12px;
 `
 
@@ -487,7 +488,7 @@ export const DiffInlineRemove = styled.span`
 
 /**
  * 语法高亮 - 键名（属性名）- 红色
- * 参考 schemaEditorDark: tags.propertyName
+ * 参考 seeDark: tags.propertyName
  */
 export const SyntaxKeyword = styled.span`
   color: #e06c75;
@@ -496,7 +497,7 @@ export const SyntaxKeyword = styled.span`
 
 /**
  * 语法高亮 - 字符串 - 绿色
- * 参考 schemaEditorDark: tags.string
+ * 参考 seeDark: tags.string
  */
 export const SyntaxString = styled.span`
   color: #98c379;
@@ -504,7 +505,7 @@ export const SyntaxString = styled.span`
 
 /**
  * 语法高亮 - 数字 - 橙色
- * 参考 schemaEditorDark: tags.number
+ * 参考 seeDark: tags.number
  */
 export const SyntaxNumber = styled.span`
   color: #d19a66;
@@ -512,7 +513,7 @@ export const SyntaxNumber = styled.span`
 
 /**
  * 语法高亮 - 布尔值 - 橙色加粗
- * 参考 schemaEditorDark: tags.bool
+ * 参考 seeDark: tags.bool
  */
 export const SyntaxBoolean = styled.span`
   color: #d19a66;
@@ -521,7 +522,7 @@ export const SyntaxBoolean = styled.span`
 
 /**
  * 语法高亮 - null - 橙色加粗
- * 参考 schemaEditorDark: tags.null
+ * 参考 seeDark: tags.null
  */
 export const SyntaxNull = styled.span`
   color: #d19a66;
@@ -530,7 +531,7 @@ export const SyntaxNull = styled.span`
 
 /**
  * 语法高亮 - 标点符号（逗号、冒号）
- * 参考 schemaEditorDark: tags.separator
+ * 参考 seeDark: tags.separator
  */
 export const SyntaxPunctuation = styled.span`
   color: #abb2bf;
@@ -538,7 +539,7 @@ export const SyntaxPunctuation = styled.span`
 
 /**
  * 语法高亮 - 方括号 - 黄色
- * 参考 schemaEditorDark: tags.squareBracket
+ * 参考 seeDark: tags.squareBracket
  */
 export const SyntaxSquareBracket = styled.span`
   color: #e8ba36;
@@ -547,7 +548,7 @@ export const SyntaxSquareBracket = styled.span`
 
 /**
  * 语法高亮 - 花括号 - 绿色
- * 参考 schemaEditorDark: tags.brace
+ * 参考 seeDark: tags.brace
  */
 export const SyntaxBrace = styled.span`
   color: #54a857;
@@ -752,13 +753,13 @@ export const StopRecordingButton = styled.button`
 
 /**
  * Diff按钮
+ * 禁用状态使用更明显的灰色样式，确保在浅色背景上可见
  */
 export const DiffButton = styled.button<{ $disabled?: boolean }>`
   ${recordingActionButtonBase}
-  background: ${(props) =>
-    props.$disabled ? 'rgba(255, 255, 255, 0.05)' : 'rgba(24, 144, 255, 0.15)'};
-  border: 1px solid ${(props) => (props.$disabled ? 'transparent' : 'rgba(24, 144, 255, 0.3)')};
-  color: ${(props) => (props.$disabled ? '#6b7280' : '#1890ff')};
+  background: ${(props) => (props.$disabled ? '#e6ecf4' : 'rgba(24, 144, 255, 0.15)')};
+  border: 1px solid ${(props) => (props.$disabled ? '#d9e0ea' : 'rgba(24, 144, 255, 0.3)')};
+  color: ${(props) => (props.$disabled ? '#a0aec0' : '#1890ff')};
   cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
 
   ${(props) =>

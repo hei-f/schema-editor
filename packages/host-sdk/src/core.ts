@@ -16,6 +16,10 @@ const DEFAULT_MESSAGE_TYPES = {
   checkPreview: 'CHECK_PREVIEW',
   renderPreview: 'RENDER_PREVIEW',
   cleanupPreview: 'CLEANUP_PREVIEW',
+  // 录制模式相关
+  startRecording: 'START_RECORDING',
+  stopRecording: 'STOP_RECORDING',
+  schemaPush: 'SCHEMA_PUSH',
 } as const
 
 /**
@@ -39,6 +43,10 @@ export interface PostMessageTypeConfig {
   checkPreview: string
   renderPreview: string
   cleanupPreview: string
+  // 录制模式相关
+  startRecording: string
+  stopRecording: string
+  schemaPush: string
 }
 
 /**
@@ -84,15 +92,39 @@ interface PostMessageRequest {
 }
 
 /**
+ * 录制相关方法
+ */
+export interface SchemaEditorRecording {
+  /**
+   * 推送 Schema 数据（SDK 内部判断是否在录制，未录制时静默忽略）
+   * @param params - 元素参数（data-id 的值）
+   * @param data - Schema 数据
+   */
+  push: (params: string, data: SchemaValue) => void
+}
+
+/**
+ * Schema Editor 桥接器返回值
+ */
+export interface SchemaEditorBridge {
+  /** 清理桥接器，移除事件监听 */
+  cleanup: () => void
+
+  /** 录制相关方法 */
+  recording: SchemaEditorRecording
+}
+
+/**
  * 创建 Schema Editor 桥接器
- * 纯 JS 函数，返回清理函数
+ * 纯 JS 函数，返回桥接器对象
  *
  * @param config - Schema Editor 配置
- * @returns 清理函数，用于移除事件监听器
+ * @returns 桥接器对象，包含 cleanup 和 pushSchema 方法
  *
  * @example
  * ```js
- * const cleanup = createSchemaEditorBridge({
+ * // 最简用法：只需配置基本的 getSchema 和 updateSchema
+ * const bridge = createSchemaEditorBridge({
  *   getSchema: (params) => dataStore[params],
  *   updateSchema: (schema, params) => {
  *     dataStore[params] = schema
@@ -100,11 +132,17 @@ interface PostMessageRequest {
  *   },
  * })
  *
- * // 需要清理时调用
- * cleanup()
+ * // 数据变化时调用 pushSchema 推送数据（录制功能自动可用）
+ * sseHandler.onData = (params, data) => {
+ *   bridge.pushSchema(params, data)
+ * }
+ *
+ * // 如需在录制开始/停止时执行额外逻辑，可配置回调（可选）
+ * // onStartRecording: (params) => console.log('开始录制:', params),
+ * // onStopRecording: (params) => console.log('停止录制:', params),
  * ```
  */
-export function createSchemaEditorBridge(config: SchemaEditorConfig): () => void {
+export function createSchemaEditorBridge(config: SchemaEditorConfig): SchemaEditorBridge {
   const { getSchema, updateSchema, renderPreview, sourceConfig, messageTypes } = config
 
   // 合并配置与默认值
@@ -121,6 +159,9 @@ export function createSchemaEditorBridge(config: SchemaEditorConfig): () => void
   // 存储最后一次 renderPreview 返回的清理函数
   let previewCleanupFn: (() => void) | null = null
 
+  // 正在录制的 params 集合（SDK 内部维护录制状态）
+  const recordingParams = new Set<string>()
+
   // 存储最新的配置引用（用于避免闭包陷阱，由框架包装器通过代理模式更新）
   const currentConfig = { getSchema, updateSchema, renderPreview }
 
@@ -136,6 +177,33 @@ export function createSchemaEditorBridge(config: SchemaEditorConfig): () => void
     }
 
     // 如果在 iframe 中，响应需要发给 top frame（插件运行在 top frame）
+    const isInIframe = window !== window.top
+    const targetWindow = isInIframe ? window.parent : window
+
+    targetWindow.postMessage(message, '*')
+  }
+
+  /**
+   * 主动推送 Schema 数据给插件（用于录制模式）
+   * 只有当 params 正在被录制时才真正推送，否则静默忽略
+   */
+  const pushSchema = (params: string, data: SchemaValue) => {
+    // 检查该 params 是否正在录制，不在则静默忽略
+    if (!recordingParams.has(params)) {
+      return
+    }
+
+    const message = {
+      source: mergedSourceConfig.hostSource,
+      type: mergedMessageTypes.schemaPush,
+      payload: {
+        success: true,
+        data,
+        params,
+      },
+    }
+
+    // 如果在 iframe 中，推送需要发给 top frame（插件运行在 top frame）
     const isInIframe = window !== window.top
     const targetWindow = isInIframe ? window.parent : window
 
@@ -246,6 +314,22 @@ export function createSchemaEditorBridge(config: SchemaEditorConfig): () => void
         break
       }
 
+      case mergedMessageTypes.startRecording: {
+        const params = String(payload?.params ?? '')
+        // 将 params 加入录制集合（SDK 内部管理录制状态）
+        recordingParams.add(params)
+        result = { success: true }
+        break
+      }
+
+      case mergedMessageTypes.stopRecording: {
+        const params = String(payload?.params ?? '')
+        // 将 params 从录制集合移除
+        recordingParams.delete(params)
+        result = { success: true }
+        break
+      }
+
       default:
         // 未知消息类型，不处理
         return
@@ -258,17 +342,22 @@ export function createSchemaEditorBridge(config: SchemaEditorConfig): () => void
   // 注册事件监听器
   window.addEventListener('message', handleMessage)
 
-  // 返回清理函数
-  return () => {
-    window.removeEventListener('message', handleMessage)
+  // 返回桥接器对象
+  return {
+    cleanup: () => {
+      window.removeEventListener('message', handleMessage)
 
-    // 清理预览
-    if (previewCleanupFn) {
-      previewCleanupFn()
-      previewCleanupFn = null
-    }
+      // 清理预览
+      if (previewCleanupFn) {
+        previewCleanupFn()
+        previewCleanupFn = null
+      }
+
+      // 清理录制状态
+      recordingParams.clear()
+    },
+    recording: {
+      push: pushSchema,
+    },
   }
 }
-
-/** 桥接器清理函数类型 */
-export type SchemaEditorBridge = ReturnType<typeof createSchemaEditorBridge>

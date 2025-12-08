@@ -63,6 +63,7 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     highlightColor: '#FF4D4F',
     pollingInterval: 100,
     autoStopTimeout: null,
+    dataFetchMode: 'polling',
   },
   iframeConfig: {
     enabled: false,
@@ -86,6 +87,9 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
       checkPreview: 'CHECK_PREVIEW',
       renderPreview: 'RENDER_PREVIEW',
       cleanupPreview: 'CLEANUP_PREVIEW',
+      startRecording: 'START_RECORDING',
+      stopRecording: 'STOP_RECORDING',
+      schemaPush: 'SCHEMA_PUSH',
     },
   },
   drawerShortcuts: {

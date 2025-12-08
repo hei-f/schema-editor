@@ -33,6 +33,7 @@ export const useSectionNavigation = (): UseSectionNavigationReturn => {
 
   /**
    * 切换 Section 的展开状态
+   * 展开时同时设置为 activeSection，以触发左侧菜单联动展开
    */
   const toggleSectionExpanded = useCallback((sectionId: string, expanded: boolean) => {
     setExpandedSections((prev) => {
@@ -44,6 +45,9 @@ export const useSectionNavigation = (): UseSectionNavigationReturn => {
       }
       return next
     })
+    if (expanded) {
+      setActiveSection(sectionId)
+    }
   }, [])
 
   /**

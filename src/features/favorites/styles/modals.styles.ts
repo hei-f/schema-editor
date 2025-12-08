@@ -22,7 +22,9 @@ export const EditModalContent = styled.div`
  * 名称输入框
  */
 export const EditModalNameInput = styled(Input)`
-  font-size: 14px;
+  &.see-input {
+    font-size: 14px;
+  }
 `
 
 /**
@@ -38,7 +40,9 @@ export const EditorContainer = styled.div`
  * 错误提示
  */
 export const ErrorAlert = styled(Alert)`
-  margin-top: 8px;
+  &.see-alert {
+    margin-top: 8px;
+  }
 `
 
 /**
@@ -48,7 +52,9 @@ export const FullWidthVerticalSpace = styled(Space).attrs({
   direction: 'vertical',
   size: 'middle',
 })`
-  width: 100%;
+  &.see-space {
+    width: 100%;
+  }
 `
 
 /**
@@ -57,13 +63,17 @@ export const FullWidthVerticalSpace = styled(Space).attrs({
 export const ListSearchContainer = styled(Space).attrs({
   direction: 'vertical',
 })`
-  width: 100%;
-  margin-bottom: 16px;
+  &.see-space {
+    width: 100%;
+    margin-bottom: 16px;
+  }
 `
 
 /**
  * 全宽搜索输入框
  */
 export const FullWidthSearchInput = styled(Input.Search)`
-  width: 100%;
+  &.see-input {
+    width: 100%;
+  }
 `

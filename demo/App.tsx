@@ -10,6 +10,7 @@ import {
   BlockOutlined,
   SettingOutlined,
   EyeOutlined,
+  VideoCameraOutlined,
 } from '@ant-design/icons'
 import { AstTestPage } from './pages/AstTestPage'
 import { SchemaTestPage } from './pages/SchemaTestPage'
@@ -17,6 +18,7 @@ import { AgenticDemoPage } from './pages/AgenticDemoPage'
 import { IframeTestPage } from './pages/IframeTestPage'
 import { OptionsTestPage } from './pages/OptionsTestPage'
 import { BuiltinPreviewTestPage } from './pages/BuiltinPreviewTestPage'
+import { RecordingTestPage } from './pages/RecordingTestPage'
 import styled from 'styled-components'
 
 const { Header, Content, Sider } = Layout
@@ -111,6 +113,7 @@ type PageKey =
   | 'iframe-test'
   | 'options-test'
   | 'builtin-preview-test'
+  | 'recording-test'
 
 /** 默认页面 */
 const DEFAULT_PAGE: PageKey = 'schema-test'
@@ -127,6 +130,7 @@ const getPageFromHash = (): PageKey => {
     'iframe-test',
     'options-test',
     'builtin-preview-test',
+    'recording-test',
   ]
   return validPages.includes(hash as PageKey) ? (hash as PageKey) : DEFAULT_PAGE
 }
@@ -199,6 +203,11 @@ export const TestApp: React.FC = () => {
       label: 'Agentic UI Demo',
     },
     {
+      key: 'recording-test',
+      icon: <VideoCameraOutlined />,
+      label: '录制模式测试',
+    },
+    {
       key: 'iframe-test',
       icon: <BlockOutlined />,
       label: 'iframe 测试',
@@ -223,6 +232,8 @@ export const TestApp: React.FC = () => {
         return <SchemaTestPage siderCollapsed={siderCollapsed} />
       case 'agentic-demo':
         return <AgenticDemoPage siderCollapsed={siderCollapsed} />
+      case 'recording-test':
+        return <RecordingTestPage siderCollapsed={siderCollapsed} />
       case 'iframe-test':
         return <IframeTestPage siderCollapsed={siderCollapsed} />
       case 'builtin-preview-test':
