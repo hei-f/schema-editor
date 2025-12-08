@@ -36,7 +36,7 @@ RELEASE_DIR="releases"
 mkdir -p "$RELEASE_DIR"
 
 # 打包 dist 目录
-PACKAGE_NAME="SEE-v${VERSION}"
+PACKAGE_NAME="SchemaElementEditor-v${VERSION}"
 ZIP_FILE="${RELEASE_DIR}/${PACKAGE_NAME}.zip"
 
 # 删除旧的zip文件（避免zip命令的更新模式导致旧文件残留）
