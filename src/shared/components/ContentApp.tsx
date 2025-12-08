@@ -1,6 +1,6 @@
 import { SchemaDrawer } from '@/features/schema-drawer'
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
-import { shadowDomTheme } from '@/shared/constants/theme'
+// import { shadowDomTheme } from '@/shared/constants/theme'
 import { getCommunicationMode } from '@/shared/utils/communication-mode'
 import type {
   DrawerShortcutsConfig,
@@ -24,7 +24,7 @@ import {
 import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { generate } from '@ant-design/colors'
-import { createCache, StyleProvider } from '@ant-design/cssinjs'
+import { StyleProvider } from '@ant-design/cssinjs'
 import { App as AntdApp, ConfigProvider, message as antdMessage } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -43,7 +43,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
    * 为 Shadow DOM 创建 antd 样式缓存
    * 确保 antd 的 CSS-in-JS 样式正确注入到 Shadow DOM 中
    */
-  const antdCache = useMemo(() => createCache(), [])
+  // const antdCache = useMemo(() => createCache(), [])
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [schemaData, setSchemaData] = useState<unknown>(undefined)
@@ -547,9 +547,9 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     const primaryTextColor = getLuminance(primaryColor) > 0.5 ? '#000000' : '#ffffff'
 
     return {
-      ...shadowDomTheme,
+      // ...shadowDomTheme,
       token: {
-        ...shadowDomTheme.token,
+        // ...shadowDomTheme.token,
         colorPrimary: primaryColor,
         colorPrimaryHover: hoverColor,
         colorPrimaryActive: activeColor,
@@ -580,8 +580,14 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
 
   return (
     <StyleSheetManager target={shadowRoot as unknown as HTMLElement}>
-      <StyleProvider container={shadowRoot as unknown as HTMLElement} cache={antdCache}>
-        <ConfigProvider locale={zhCN} theme={dynamicTheme} getPopupContainer={getPopupContainer}>
+      <StyleProvider container={shadowRoot as unknown as HTMLElement} layer>
+        <ConfigProvider
+          locale={zhCN}
+          theme={dynamicTheme}
+          getPopupContainer={getPopupContainer}
+          csp={{ nonce: 'YourNonceCode' }}
+          prefixCls="see"
+        >
           <AntdApp>
             {/* iframe 元素高亮覆盖层 */}
             {iframeConfig?.enabled && (

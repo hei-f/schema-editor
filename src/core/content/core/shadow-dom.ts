@@ -148,8 +148,28 @@ const loadAndInjectCSS = async (
   }
 }
 
+/** antd 组件使用的自定义前缀，与 ContentApp 中的 prefixCls 保持一致 */
+const ANTD_PREFIX_CLS = 'see'
+
+/**
+ * 检查样式内容是否包含我们的自定义前缀
+ */
+const hasCustomPrefixStyle = (cssText: string): boolean => {
+  return cssText.includes(`.${ANTD_PREFIX_CLS}-`)
+}
+
+/**
+ * 检查样式内容是否只包含宿主页面的 ant- 前缀（不包含我们的 see- 前缀）
+ */
+const isHostAntStyle = (cssText: string): boolean => {
+  const hasOriginalAntPrefix = cssText.includes('.ant-')
+  const hasCustomPrefix = hasCustomPrefixStyle(cssText)
+  return hasOriginalAntPrefix && !hasCustomPrefix
+}
+
 /**
  * 加载所有必需的CSS到Shadow DOM
+ * 对于 see- 前缀的样式，会从宿主页面移动到 Shadow DOM 中，完全隔离
  */
 const loadAllStyles = async (shadowRoot: ShadowRoot): Promise<void> => {
   // 1. 加载Ant Design CSS（从node_modules）
@@ -159,15 +179,29 @@ const loadAllStyles = async (shadowRoot: ShadowRoot): Promise<void> => {
     'antd'
   )
 
-  // 2. 复制页面中已注入的style标签（styled-components等），并转换路径
+  // 2. 处理页面中已注入的 style 标签
+  // - see- 前缀的样式：移动到 Shadow DOM（从宿主页面移除）
+  // - ant- 前缀的样式：跳过（保留在宿主页面）
+  // - 其他样式：复制到 Shadow DOM（保留在宿主页面）
   const existingStyles = document.querySelectorAll('head > style')
 
   existingStyles.forEach((style) => {
+    const cssText = style.textContent || ''
+
+    // 跳过只包含 ant- 前缀的宿主页面样式
+    if (isHostAntStyle(cssText)) {
+      return
+    }
+
     const clonedStyle = document.createElement('style')
-    // 转换CSS路径
-    clonedStyle.textContent = transformCSSPaths(style.textContent || '')
+    clonedStyle.textContent = transformCSSPaths(cssText)
     clonedStyle.setAttribute('data-shadow-copied', 'true')
     shadowRoot.appendChild(clonedStyle)
+
+    // 如果是 see- 前缀的样式，从宿主页面移除，实现完全隔离
+    if (hasCustomPrefixStyle(cssText)) {
+      style.remove()
+    }
   })
 
   // 3. 复制页面中通过link标签加载的CSS，并转换路径
@@ -180,17 +214,31 @@ const loadAllStyles = async (shadowRoot: ShadowRoot): Promise<void> => {
     }
   }
 
-  // 4. 监听后续动态添加的样式和link标签，并转换路径
+  // 4. 监听后续动态添加的样式和link标签
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node instanceof HTMLStyleElement) {
+          const cssText = node.textContent || ''
+
+          // 跳过只包含 ant- 前缀的宿主页面样式
+          if (isHostAntStyle(cssText)) {
+            return
+          }
+
           const clonedStyle = document.createElement('style')
-          // 转换CSS路径
-          clonedStyle.textContent = transformCSSPaths(node.textContent || '')
+          clonedStyle.textContent = transformCSSPaths(cssText)
           clonedStyle.setAttribute('data-shadow-copied', 'true')
           clonedStyle.setAttribute('data-dynamic', 'true')
           shadowRoot.appendChild(clonedStyle)
+
+          // 如果是 see- 前缀的样式，从宿主页面移除，实现完全隔离
+          if (hasCustomPrefixStyle(cssText)) {
+            // 使用 requestAnimationFrame 延迟移除，确保样式已被复制
+            requestAnimationFrame(() => {
+              node.remove()
+            })
+          }
         } else if (node instanceof HTMLLinkElement && node.rel === 'stylesheet') {
           // 动态添加的link标签
           const href = node.href
