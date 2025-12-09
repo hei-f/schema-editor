@@ -107,8 +107,6 @@ describe('Storage工具测试', () => {
           searchDepthUp: 5,
           throttleInterval: 16,
         },
-        getFunctionName: '__getContentById',
-        updateFunctionName: '__updateContentById',
         autoParseString: true,
         enableDebugLog: false,
         enableAstTypeHints: true,
@@ -161,9 +159,7 @@ describe('Storage工具测试', () => {
           dataFetchMode: 'polling',
         },
         editorTheme: 'seeDark',
-        previewFunctionName: '__getContentPreview',
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
@@ -200,8 +196,6 @@ describe('Storage工具测试', () => {
           searchDepthUp: 5,
           throttleInterval: 8,
         },
-        getFunctionName: 'myGetFn',
-        updateFunctionName: 'myUpdateFn',
         autoParseString: true,
       })
 
@@ -216,8 +210,6 @@ describe('Storage工具测试', () => {
           searchDepthUp: 5,
           throttleInterval: 8,
         },
-        getFunctionName: 'myGetFn',
-        updateFunctionName: 'myUpdateFn',
         autoParseString: true,
         enableDebugLog: false,
         enableAstTypeHints: true,
@@ -270,9 +262,7 @@ describe('Storage工具测试', () => {
           dataFetchMode: 'polling',
         },
         editorTheme: 'seeDark',
-        previewFunctionName: '__getContentPreview',
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
@@ -315,8 +305,6 @@ describe('Storage工具测试', () => {
           searchDepthUp: 5,
           throttleInterval: 16,
         },
-        getFunctionName: '__getContentById',
-        updateFunctionName: '__updateContentById',
         autoParseString: true,
         enableDebugLog: false,
         enableAstTypeHints: true,
@@ -369,9 +357,7 @@ describe('Storage工具测试', () => {
           dataFetchMode: 'polling',
         },
         editorTheme: 'seeDark',
-        previewFunctionName: '__getContentPreview',
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
@@ -524,8 +510,6 @@ describe('Storage工具测试', () => {
             searchDepthUp: 2,
             throttleInterval: 20,
           },
-          getFunctionName: 'getMySchema',
-          updateFunctionName: 'updateMySchema',
         }
 
         if (Array.isArray(keys)) {
@@ -550,8 +534,6 @@ describe('Storage工具测试', () => {
           searchDepthUp: 2,
           throttleInterval: 20,
         },
-        getFunctionName: 'getMySchema',
-        updateFunctionName: 'updateMySchema',
         autoParseString: true,
         enableDebugLog: false,
         enableAstTypeHints: true,
@@ -604,9 +586,7 @@ describe('Storage工具测试', () => {
           dataFetchMode: 'polling',
         },
         editorTheme: 'seeDark',
-        previewFunctionName: '__getContentPreview',
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
@@ -1385,7 +1365,6 @@ describe('Storage工具测试', () => {
       const result = await storage.getApiConfig()
 
       expect(result).toEqual({
-        communicationMode: 'postMessage',
         requestTimeout: 5,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
@@ -1407,46 +1386,13 @@ describe('Storage工具测试', () => {
     it('getApiConfig应该返回存储的配置', async () => {
       ;(chrome.storage.local.get as Mock).mockResolvedValue({
         apiConfig: {
-          communicationMode: 'windowFunction',
           requestTimeout: 10,
         },
       })
 
       const result = await storage.getApiConfig()
       expect(result).toEqual({
-        communicationMode: 'windowFunction',
         requestTimeout: 10,
-        sourceConfig: {
-          contentSource: 'schema-element-editor-content',
-          hostSource: 'schema-element-editor-host',
-        },
-        messageTypes: {
-          getSchema: 'GET_SCHEMA',
-          updateSchema: 'UPDATE_SCHEMA',
-          checkPreview: 'CHECK_PREVIEW',
-          renderPreview: 'RENDER_PREVIEW',
-          cleanupPreview: 'CLEANUP_PREVIEW',
-          startRecording: 'START_RECORDING',
-          stopRecording: 'STOP_RECORDING',
-          schemaPush: 'SCHEMA_PUSH',
-        },
-      })
-    })
-
-    it('getApiConfig应该返回存储的communicationMode值', async () => {
-      // 存储配置会被直接合并
-      ;(chrome.storage.local.get as Mock).mockResolvedValue({
-        apiConfig: {
-          communicationMode: 'invalidMode',
-          requestTimeout: 5,
-        },
-      })
-
-      const result = await storage.getApiConfig()
-      // 应该返回合并后的存储值
-      expect(result).toEqual({
-        communicationMode: 'invalidMode',
-        requestTimeout: 5,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
           hostSource: 'schema-element-editor-host',
@@ -1467,7 +1413,6 @@ describe('Storage工具测试', () => {
     it('getApiConfig应该返回存储的requestTimeout值（小值）', async () => {
       ;(chrome.storage.local.get as Mock).mockResolvedValue({
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 0,
         },
       })
@@ -1480,7 +1425,6 @@ describe('Storage工具测试', () => {
     it('getApiConfig应该返回存储的requestTimeout值（大值）', async () => {
       ;(chrome.storage.local.get as Mock).mockResolvedValue({
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 60,
         },
       })
@@ -1493,14 +1437,12 @@ describe('Storage工具测试', () => {
     it('getApiConfig应该接受有效的边界值', async () => {
       ;(chrome.storage.local.get as Mock).mockResolvedValue({
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 1, // 最小值
         },
       })
 
       const result = await storage.getApiConfig()
       expect(result).toEqual({
-        communicationMode: 'postMessage',
         requestTimeout: 1,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
@@ -1522,7 +1464,6 @@ describe('Storage工具测试', () => {
     it('getApiConfig应该接受最大超时值', async () => {
       ;(chrome.storage.local.get as Mock).mockResolvedValue({
         apiConfig: {
-          communicationMode: 'postMessage',
           requestTimeout: 30, // 最大值
         },
       })
@@ -1559,7 +1500,6 @@ describe('Storage工具测试', () => {
 
     it('setApiConfig应该保存postMessage模式配置', async () => {
       const config = {
-        communicationMode: 'postMessage' as const,
         requestTimeout: 15,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
@@ -1589,7 +1529,6 @@ describe('Storage工具测试', () => {
 
       const result = await storage.getApiConfig()
       expect(result).toEqual({
-        communicationMode: 'postMessage',
         requestTimeout: 5,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
@@ -1612,7 +1551,6 @@ describe('Storage工具测试', () => {
       ;(chrome.storage.local.set as Mock).mockRejectedValue(new Error('Storage error'))
 
       const config = {
-        communicationMode: 'postMessage' as const,
         requestTimeout: 5,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',

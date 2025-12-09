@@ -7,8 +7,6 @@ describe('storage-config', () => {
         'isActive',
         'attributeName',
         'drawerWidth',
-        'getFunctionName',
-        'updateFunctionName',
         'autoParseString',
         'enableDebugLog',
         'highlightColor',
@@ -23,7 +21,6 @@ describe('storage-config', () => {
         'iframeConfig',
         'enableAstTypeHints',
         'editorTheme',
-        'previewFunctionName',
         'apiConfig',
         'drawerShortcuts',
       ]

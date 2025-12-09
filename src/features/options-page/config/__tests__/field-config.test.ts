@@ -82,12 +82,6 @@ describe('field-config测试', () => {
       expect(result?.save).toBeDefined()
     })
 
-    it('应该找到functionNames字段组', () => {
-      const result = findFieldGroup(['getFunctionName'])
-      expect(result).toBeDefined()
-      expect(result?.save).toBeDefined()
-    })
-
     it('独立字段attributeName应该返回null', () => {
       const result = findFieldGroup(['attributeName'])
       expect(result).toBeNull()
@@ -168,12 +162,6 @@ describe('field-config测试', () => {
       expect(FIELD_GROUPS.previewConfig).toBeDefined()
       expect(FIELD_GROUPS.previewConfig.fieldPaths).toBeDefined()
       expect(FIELD_GROUPS.previewConfig.save).toBeDefined()
-    })
-
-    it('应该包含functionNames组', () => {
-      expect(FIELD_GROUPS.functionNames).toBeDefined()
-      expect(FIELD_GROUPS.functionNames.fieldPaths).toBeDefined()
-      expect(FIELD_GROUPS.functionNames.save).toBeDefined()
     })
 
     it('每个组都应该有save方法', () => {
