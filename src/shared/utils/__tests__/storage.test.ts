@@ -512,50 +512,6 @@ describe('Storage工具测试', () => {
     })
   })
 
-  describe('getGetFunctionName', () => {
-    it('应该返回默认函数名', async () => {
-      const result = await storage.getGetFunctionName()
-      expect(result).toBe('__getContentById')
-    })
-
-    it('应该返回存储的函数名', async () => {
-      ;(chrome.storage.local.get as Mock).mockResolvedValue({
-        getFunctionName: 'customGetFunction',
-      })
-
-      const result = await storage.getGetFunctionName()
-      expect(result).toBe('customGetFunction')
-    })
-  })
-
-  describe('getUpdateFunctionName', () => {
-    it('应该返回默认函数名', async () => {
-      const result = await storage.getUpdateFunctionName()
-      expect(result).toBe('__updateContentById')
-    })
-
-    it('应该返回存储的函数名', async () => {
-      ;(chrome.storage.local.get as Mock).mockResolvedValue({
-        updateFunctionName: 'customUpdateFunction',
-      })
-
-      const result = await storage.getUpdateFunctionName()
-      expect(result).toBe('customUpdateFunction')
-    })
-  })
-
-  describe('setFunctionNames', () => {
-    it('应该保存三个函数名', async () => {
-      await storage.setFunctionNames('myGetFn', 'myUpdateFn', 'myPreviewFn')
-
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({
-        getFunctionName: 'myGetFn',
-        updateFunctionName: 'myUpdateFn',
-        previewFunctionName: 'myPreviewFn',
-      })
-    })
-  })
-
   describe('getAllData', () => {
     it('应该返回包含函数名的所有数据', async () => {
       ;(chrome.storage.local.get as Mock).mockImplementation((keys) => {
@@ -963,24 +919,11 @@ describe('Storage工具测试', () => {
       expect(result).toBe(false)
     })
 
-    it('getFunctionName失败时应该返回默认值', async () => {
-      ;(chrome.storage.local.get as Mock).mockRejectedValue(new Error('Storage error'))
-
-      const result = await storage.getGetFunctionName()
-      expect(result).toBe('__getContentById')
-    })
-
     it('set操作失败时不应该抛出错误', async () => {
       ;(chrome.storage.local.set as Mock).mockRejectedValue(new Error('Storage error'))
 
       // setActiveState内部捕获了错误，不会抛出
       await expect(storage.setActiveState(true)).resolves.not.toThrow()
-    })
-
-    it('setFunctionNames失败时不应该抛出错误', async () => {
-      ;(chrome.storage.local.set as Mock).mockRejectedValue(new Error('Storage error'))
-
-      await expect(storage.setFunctionNames('fn1', 'fn2', 'fn3')).resolves.not.toThrow()
     })
 
     it('getToolbarButtons失败时应该返回默认值', async () => {
@@ -1106,16 +1049,6 @@ describe('Storage工具测试', () => {
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
         attributeName: 'custom-attr',
-      })
-    })
-
-    it('setFunctionNames应该同时设置三个函数名', async () => {
-      await storage.setFunctionNames('getFunc', 'updateFunc', 'previewFunc')
-
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({
-        getFunctionName: 'getFunc',
-        updateFunctionName: 'updateFunc',
-        previewFunctionName: 'previewFunc',
       })
     })
 
@@ -1598,21 +1531,8 @@ describe('Storage工具测试', () => {
       expect(result.requestTimeout).toBe(30)
     })
 
-    it('getApiConfig应该接受windowFunction模式', async () => {
-      ;(chrome.storage.local.get as Mock).mockResolvedValue({
-        apiConfig: {
-          communicationMode: 'windowFunction',
-          requestTimeout: 5,
-        },
-      })
-
-      const result = await storage.getApiConfig()
-      expect(result.communicationMode).toBe('windowFunction')
-    })
-
     it('setApiConfig应该设置配置', async () => {
       const config = {
-        communicationMode: 'windowFunction' as const,
         requestTimeout: 10,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
@@ -1917,14 +1837,6 @@ describe('Storage工具测试', () => {
       await storage.setEditorTheme('dark')
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith({ editorTheme: 'dark' })
-    })
-
-    it('setPreviewFunctionName 应该保存预览函数名', async () => {
-      await storage.setPreviewFunctionName('customPreview')
-
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({
-        previewFunctionName: 'customPreview',
-      })
     })
 
     it('getExportConfig 应该返回导出配置', async () => {

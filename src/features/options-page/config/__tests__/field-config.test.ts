@@ -216,22 +216,6 @@ describe('field-config测试', () => {
       expect(storage.setSearchConfig).toHaveBeenCalledWith(mockValues.searchConfig)
     })
 
-    it('functionNames.save 应该调用 storage.setFunctionNames', async () => {
-      const mockValues = {
-        getFunctionName: 'getSchema',
-        updateFunctionName: 'updateSchema',
-        previewFunctionName: 'previewSchema',
-      }
-
-      await FIELD_GROUPS.functionNames.save(mockValues)
-
-      expect(storage.setFunctionNames).toHaveBeenCalledWith(
-        mockValues.getFunctionName,
-        mockValues.updateFunctionName,
-        mockValues.previewFunctionName
-      )
-    })
-
     it('toolbarButtons.save 应该调用 storage.setToolbarButtons', async () => {
       const mockValues = {
         toolbarButtons: {

@@ -221,12 +221,6 @@ describe('defaults', () => {
       expect(DEFAULT_VALUES.apiConfig).toHaveProperty('messageTypes')
     })
 
-    it('communicationMode 应该是有效的值', () => {
-      expect(['postMessage', 'windowFunction']).toContain(
-        DEFAULT_VALUES.apiConfig.communicationMode
-      )
-    })
-
     it('requestTimeout 应该在有效范围内', () => {
       expect(DEFAULT_VALUES.apiConfig.requestTimeout).toBeGreaterThanOrEqual(1)
       expect(DEFAULT_VALUES.apiConfig.requestTimeout).toBeLessThanOrEqual(30)
