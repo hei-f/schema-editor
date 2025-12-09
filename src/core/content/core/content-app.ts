@@ -1,4 +1,5 @@
 import { App } from '@/shared/components/ContentApp'
+import { PLUGIN_EVENTS } from '@/shared/constants/events'
 import type { IframeConfig } from '@/shared/types'
 import { MessageType, type ElementAttributes, type Message } from '@/shared/types'
 import { listenChromeMessages } from '@/shared/utils/browser/message'
@@ -172,27 +173,27 @@ export class SEEContent {
     const handlers: IframeBridgeHandlers = {
       onElementHover: (payload) => {
         // 触发自定义事件，通知 React 应用渲染高亮框
-        const event = new CustomEvent('schema-editor:iframe-element-hover', {
+        const event = new CustomEvent(PLUGIN_EVENTS.IFRAME_ELEMENT_HOVER, {
           detail: payload,
         })
         window.dispatchEvent(event)
       },
       onElementClick: (payload) => {
         // 清除高亮
-        window.dispatchEvent(new CustomEvent('schema-editor:iframe-clear-highlight'))
+        window.dispatchEvent(new CustomEvent(PLUGIN_EVENTS.IFRAME_CLEAR_HIGHLIGHT))
         // 触发自定义事件，通知 React 应用处理 iframe 内元素点击
-        const event = new CustomEvent('schema-editor:iframe-element-click', {
+        const event = new CustomEvent(PLUGIN_EVENTS.IFRAME_ELEMENT_CLICK, {
           detail: payload,
         })
         window.dispatchEvent(event)
       },
       onClearHighlight: () => {
         // 触发清除 iframe 高亮事件
-        window.dispatchEvent(new CustomEvent('schema-editor:iframe-clear-highlight'))
+        window.dispatchEvent(new CustomEvent(PLUGIN_EVENTS.IFRAME_CLEAR_HIGHLIGHT))
       },
       onHighlightAllResponse: (payload) => {
         // 触发自定义事件，通知 React 应用渲染 iframe 内的高亮框
-        const event = new CustomEvent('schema-editor:iframe-highlight-all-response', {
+        const event = new CustomEvent(PLUGIN_EVENTS.IFRAME_HIGHLIGHT_ALL_RESPONSE, {
           detail: payload,
         })
         window.dispatchEvent(event)
@@ -300,7 +301,7 @@ export class SEEContent {
    */
   private handleElementClick(element: HTMLElement, attrs: ElementAttributes): void {
     // 触发自定义事件，通知React应用
-    const event = new CustomEvent('schema-editor:element-click', {
+    const event = new CustomEvent(PLUGIN_EVENTS.ELEMENT_CLICK, {
       detail: { element, attributes: attrs, isRecordingMode: false },
     })
     window.dispatchEvent(event)
@@ -311,7 +312,7 @@ export class SEEContent {
    */
   private handleRecordingModeClick(element: HTMLElement, attrs: ElementAttributes): void {
     // 触发自定义事件，通知React应用以录制模式打开
-    const event = new CustomEvent('schema-editor:element-click', {
+    const event = new CustomEvent(PLUGIN_EVENTS.ELEMENT_CLICK, {
       detail: { element, attributes: attrs, isRecordingMode: true },
     })
     window.dispatchEvent(event)

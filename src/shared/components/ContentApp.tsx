@@ -1,5 +1,6 @@
 import { SchemaDrawer } from '@/features/schema-drawer'
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
+import { PLUGIN_EVENTS } from '@/shared/constants/events'
 // import { shadowDomTheme } from '@/shared/constants/theme'
 import { getCommunicationMode } from '@/shared/utils/communication-mode'
 import type {
@@ -36,7 +37,7 @@ interface AppProps {
 }
 
 /**
- * Schema Editor主应用
+ * Schema Element Editor主应用
  */
 export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   /**
@@ -233,7 +234,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         setSchemaData(payload.data)
         setDrawerOpen(true)
         // 抽屉打开时暂停元素监听
-        window.dispatchEvent(new CustomEvent('schema-editor:pause-monitor'))
+        window.dispatchEvent(new CustomEvent(PLUGIN_EVENTS.PAUSE_MONITOR))
         checkPreviewFunction()
       } else {
         antdMessage.error(payload.error || '获取Schema失败')
@@ -310,7 +311,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
           try {
             iframe.contentWindow?.postMessage(
               {
-                source: sourceConfig?.contentSource ?? 'schema-editor-content',
+                source: sourceConfig?.contentSource ?? 'schema-element-editor-content',
                 type,
                 payload,
                 requestId,
@@ -405,10 +406,10 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
       requestSchema(attributes, false)
     }
 
-    window.addEventListener('schema-editor:element-click', handleElementClick)
+    window.addEventListener(PLUGIN_EVENTS.ELEMENT_CLICK, handleElementClick)
 
     return () => {
-      window.removeEventListener('schema-editor:element-click', handleElementClick)
+      window.removeEventListener(PLUGIN_EVENTS.ELEMENT_CLICK, handleElementClick)
     }
   }, [requestSchema])
 
@@ -427,10 +428,10 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
       requestSchema(attrs, true, iframeOrigin)
     }
 
-    window.addEventListener('schema-editor:iframe-element-click', handleIframeElementClick)
+    window.addEventListener(PLUGIN_EVENTS.IFRAME_ELEMENT_CLICK, handleIframeElementClick)
 
     return () => {
-      window.removeEventListener('schema-editor:iframe-element-click', handleIframeElementClick)
+      window.removeEventListener(PLUGIN_EVENTS.IFRAME_ELEMENT_CLICK, handleIframeElementClick)
     }
   }, [requestSchema])
 
@@ -524,7 +525,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     setHasPreviewFunction(false)
 
     // 抽屉关闭时，恢复元素监听
-    window.dispatchEvent(new CustomEvent('schema-editor:resume-monitor'))
+    window.dispatchEvent(new CustomEvent(PLUGIN_EVENTS.RESUME_MONITOR))
     // 注意：滚动条恢复在 SchemaDrawer 的 afterOpenChange 中处理，确保动画完成后再恢复
   }
 
