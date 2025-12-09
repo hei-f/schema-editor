@@ -126,13 +126,13 @@ describe('OptionsApp组件测试', () => {
     exportConfig: {
       customFileName: false,
     },
-    editorTheme: 'schemaEditorDark' as const,
+    editorTheme: 'seeDark' as const,
     apiConfig: {
       communicationMode: 'postMessage' as const,
       requestTimeout: 5,
       sourceConfig: {
-        contentSource: 'schema-editor-content',
-        hostSource: 'schema-editor-host',
+        contentSource: 'schema-element-editor-content',
+        hostSource: 'schema-element-editor-host',
       },
       messageTypes: {
         getSchema: 'GET_SCHEMA',
@@ -388,7 +388,7 @@ describe('OptionsApp组件测试', () => {
 
       await waitFor(() => {
         // 验证 document.title 包含应用名称和版本号
-        expect(document.title).toMatch(/Schema Editor 设置/)
+        expect(document.title).toMatch(/Schema Element Editor 设置/)
         expect(document.title).toMatch(/v\d+\.\d+\.\d+/)
       })
     })
@@ -397,8 +397,8 @@ describe('OptionsApp组件测试', () => {
       render(<OptionsApp />)
 
       await waitFor(() => {
-        // 验证格式为 "Schema Editor 设置 (vX.X.X)"
-        expect(document.title).toMatch(/^Schema Editor 设置 \(v\d+\.\d+\.\d+\)$/)
+        // 验证格式为 "Schema Element Editor 设置 (vX.X.X)"
+        expect(document.title).toMatch(/^Schema Element Editor 设置 \(v\d+\.\d+\.\d+\)$/)
       })
     })
 

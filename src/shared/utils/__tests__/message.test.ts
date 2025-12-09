@@ -72,7 +72,7 @@ describe('Message工具测试', () => {
 
       expect(window.postMessage).toHaveBeenCalledWith(
         {
-          source: 'schema-editor-content',
+          source: 'schema-element-editor-content',
           ...message,
         },
         '*'
@@ -88,7 +88,7 @@ describe('Message工具测试', () => {
       postMessageToPage(message)
 
       const call = (window.postMessage as Mock).mock.calls[0]
-      expect(call[0]).toHaveProperty('source', 'schema-editor-content')
+      expect(call[0]).toHaveProperty('source', 'schema-element-editor-content')
       expect(call[1]).toBe('*')
     })
 
@@ -293,7 +293,7 @@ describe('Message工具测试', () => {
 
       const event = new MessageEvent('message', {
         data: {
-          source: 'schema-editor-injected',
+          source: 'schema-element-editor-injected',
           type: MessageType.GET_SCHEMA,
           payload: {},
         },
@@ -303,7 +303,7 @@ describe('Message工具测试', () => {
       window.dispatchEvent(event)
 
       expect(handler).toHaveBeenCalledWith({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: MessageType.GET_SCHEMA,
         payload: {},
       })
@@ -317,7 +317,7 @@ describe('Message工具测试', () => {
 
       const event = new MessageEvent('message', {
         data: {
-          source: 'schema-editor-injected',
+          source: 'schema-element-editor-injected',
           type: MessageType.GET_SCHEMA,
           payload: {},
         },
@@ -359,7 +359,7 @@ describe('Message工具测试', () => {
 
       const event = new MessageEvent('message', {
         data: {
-          source: 'schema-editor-injected',
+          source: 'schema-element-editor-injected',
           type: MessageType.GET_SCHEMA,
           payload: {},
         },

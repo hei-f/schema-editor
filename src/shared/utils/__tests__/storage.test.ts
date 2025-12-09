@@ -166,8 +166,8 @@ describe('Storage工具测试', () => {
           communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
-            contentSource: 'schema-editor-content',
-            hostSource: 'schema-editor-host',
+            contentSource: 'schema-element-editor-content',
+            hostSource: 'schema-element-editor-host',
           },
           messageTypes: {
             getSchema: 'GET_SCHEMA',
@@ -275,8 +275,8 @@ describe('Storage工具测试', () => {
           communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
-            contentSource: 'schema-editor-content',
-            hostSource: 'schema-editor-host',
+            contentSource: 'schema-element-editor-content',
+            hostSource: 'schema-element-editor-host',
           },
           messageTypes: {
             getSchema: 'GET_SCHEMA',
@@ -374,8 +374,8 @@ describe('Storage工具测试', () => {
           communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
-            contentSource: 'schema-editor-content',
-            hostSource: 'schema-editor-host',
+            contentSource: 'schema-element-editor-content',
+            hostSource: 'schema-element-editor-host',
           },
           messageTypes: {
             getSchema: 'GET_SCHEMA',
@@ -653,8 +653,8 @@ describe('Storage工具测试', () => {
           communicationMode: 'postMessage',
           requestTimeout: 5,
           sourceConfig: {
-            contentSource: 'schema-editor-content',
-            hostSource: 'schema-editor-host',
+            contentSource: 'schema-element-editor-content',
+            hostSource: 'schema-element-editor-host',
           },
           messageTypes: {
             getSchema: 'GET_SCHEMA',
@@ -1455,8 +1455,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'postMessage',
         requestTimeout: 5,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',
@@ -1484,8 +1484,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'windowFunction',
         requestTimeout: 10,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',
@@ -1515,8 +1515,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'invalidMode',
         requestTimeout: 5,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',
@@ -1570,8 +1570,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'postMessage',
         requestTimeout: 1,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',
@@ -1615,8 +1615,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'windowFunction' as const,
         requestTimeout: 10,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',
@@ -1642,8 +1642,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'postMessage' as const,
         requestTimeout: 15,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',
@@ -1672,8 +1672,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'postMessage',
         requestTimeout: 5,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',
@@ -1695,8 +1695,8 @@ describe('Storage工具测试', () => {
         communicationMode: 'postMessage' as const,
         requestTimeout: 5,
         sourceConfig: {
-          contentSource: 'schema-editor-content',
-          hostSource: 'schema-editor-host',
+          contentSource: 'schema-element-editor-content',
+          hostSource: 'schema-element-editor-host',
         },
         messageTypes: {
           getSchema: 'GET_SCHEMA',

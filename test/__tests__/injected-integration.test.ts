@@ -53,8 +53,8 @@ describe('Injected Script 集成测试', () => {
    */
   function simulateInjectedScript() {
     const MESSAGE_SOURCE = {
-      FROM_CONTENT: 'schema-editor-content',
-      FROM_INJECTED: 'schema-editor-injected',
+      FROM_CONTENT: 'schema-element-editor-content',
+      FROM_INJECTED: 'schema-element-editor-injected',
     }
 
     const functionNames = {
@@ -184,7 +184,7 @@ describe('Injected Script 集成测试', () => {
 
       // 触发获取Schema消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'param1,param2' },
       })
@@ -195,7 +195,7 @@ describe('Injected Script 集成测试', () => {
       // 验证响应消息
       expect(postedMessages).toHaveLength(1)
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'SCHEMA_RESPONSE',
         payload: {
           success: true,
@@ -213,7 +213,7 @@ describe('Injected Script 集成测试', () => {
       simulateInjectedScript()
 
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'UPDATE_SCHEMA',
         payload: {
           schema: { updated: 'data' },
@@ -227,7 +227,7 @@ describe('Injected Script 集成测试', () => {
       )
 
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'UPDATE_RESULT',
         payload: {
           success: true,
@@ -243,14 +243,14 @@ describe('Injected Script 集成测试', () => {
       simulateInjectedScript()
 
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'test' },
       })
 
       expect(postedMessages).toHaveLength(1)
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'SCHEMA_RESPONSE',
         payload: {
           success: false,
@@ -271,7 +271,7 @@ describe('Injected Script 集成测试', () => {
 
       // 先发送 CONFIG_SYNC 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'CONFIG_SYNC',
         payload: {
           getFunctionName: 'myCustomGetFn',
@@ -281,7 +281,7 @@ describe('Injected Script 集成测试', () => {
 
       // 再发送 GET_SCHEMA 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'custom-params' },
       })
@@ -291,7 +291,7 @@ describe('Injected Script 集成测试', () => {
 
       // 验证响应
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'SCHEMA_RESPONSE',
         payload: {
           success: true,
@@ -310,7 +310,7 @@ describe('Injected Script 集成测试', () => {
 
       // 先发送 CONFIG_SYNC 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'CONFIG_SYNC',
         payload: {
           getFunctionName: 'myCustomGetFn',
@@ -320,7 +320,7 @@ describe('Injected Script 集成测试', () => {
 
       // 再发送 UPDATE_SCHEMA 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'UPDATE_SCHEMA',
         payload: {
           schema: { custom: 'update' },
@@ -334,7 +334,7 @@ describe('Injected Script 集成测试', () => {
       )
 
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'UPDATE_RESULT',
         payload: {
           success: true,
@@ -351,7 +351,7 @@ describe('Injected Script 集成测试', () => {
 
       // 先发送 CONFIG_SYNC 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'CONFIG_SYNC',
         payload: {
           getFunctionName: 'myCustomGetFn',
@@ -360,14 +360,14 @@ describe('Injected Script 集成测试', () => {
 
       // 再发送 GET_SCHEMA 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'test' },
       })
 
       expect(postedMessages).toHaveLength(1)
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'SCHEMA_RESPONSE',
         payload: {
           success: false,
@@ -384,7 +384,7 @@ describe('Injected Script 集成测试', () => {
 
       // 先发送 CONFIG_SYNC 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'CONFIG_SYNC',
         payload: {
           updateFunctionName: 'myCustomUpdateFn',
@@ -393,7 +393,7 @@ describe('Injected Script 集成测试', () => {
 
       // 再发送 UPDATE_SCHEMA 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'UPDATE_SCHEMA',
         payload: {
           schema: { data: 'test' },
@@ -403,7 +403,7 @@ describe('Injected Script 集成测试', () => {
 
       expect(postedMessages).toHaveLength(1)
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'UPDATE_RESULT',
         payload: {
           success: false,
@@ -422,13 +422,13 @@ describe('Injected Script 集成测试', () => {
       simulateInjectedScript()
 
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'test' },
       })
 
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'SCHEMA_RESPONSE',
         payload: {
           success: false,
@@ -445,7 +445,7 @@ describe('Injected Script 集成测试', () => {
       simulateInjectedScript()
 
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'UPDATE_SCHEMA',
         payload: {
           schema: { data: 'test' },
@@ -454,7 +454,7 @@ describe('Injected Script 集成测试', () => {
       })
 
       expect(postedMessages[0]).toEqual({
-        source: 'schema-editor-injected',
+        source: 'schema-element-editor-injected',
         type: 'UPDATE_RESULT',
         payload: {
           success: false,
@@ -467,32 +467,32 @@ describe('Injected Script 集成测试', () => {
   describe('重复注入检测', () => {
     it('应该在首次注入时设置全局标记', () => {
       // 确保标记初始不存在
-      delete (window as any).__SCHEMA_EDITOR_INJECTED__
+      delete (window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__
 
       // 模拟 injected.js 的注入检测逻辑
       const injectScript = () => {
-        if ((window as any).__SCHEMA_EDITOR_INJECTED__) {
+        if ((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__) {
           return false // 已注入，跳过
         }
-        ;(window as any).__SCHEMA_EDITOR_INJECTED__ = true
+        ;(window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__ = true
         return true // 新注入
       }
 
       const result = injectScript()
 
       expect(result).toBe(true)
-      expect((window as any).__SCHEMA_EDITOR_INJECTED__).toBe(true)
+      expect((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__).toBe(true)
     })
 
     it('应该在重复注入时返回 false', () => {
       // 设置已注入标记
-      ;(window as any).__SCHEMA_EDITOR_INJECTED__ = true
+      ;(window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__ = true
 
       const injectScript = () => {
-        if ((window as any).__SCHEMA_EDITOR_INJECTED__) {
+        if ((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__) {
           return false // 已注入，跳过
         }
-        ;(window as any).__SCHEMA_EDITOR_INJECTED__ = true
+        ;(window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__ = true
         return true // 新注入
       }
 
@@ -502,18 +502,18 @@ describe('Injected Script 集成测试', () => {
     })
 
     it('应该在检测到已注入时跳过脚本执行', () => {
-      ;(window as any).__SCHEMA_EDITOR_INJECTED__ = true
+      ;(window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__ = true
 
       let scriptExecuted = false
 
       // 模拟完整的 injected.js 逻辑
       const runInjectedScript = () => {
-        if ((window as any).__SCHEMA_EDITOR_INJECTED__) {
-          console.log('Schema Editor injected script已存在，跳过重复注入')
+        if ((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__) {
+          console.log('Schema Element Editor injected script已存在，跳过重复注入')
           return
         }
 
-        ;(window as any).__SCHEMA_EDITOR_INJECTED__ = true
+        ;(window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__ = true
         scriptExecuted = true
         // ... 其他初始化逻辑
       }
@@ -524,17 +524,17 @@ describe('Injected Script 集成测试', () => {
     })
 
     it('应该在标记不存在时正常执行脚本', () => {
-      delete (window as any).__SCHEMA_EDITOR_INJECTED__
+      delete (window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__
 
       let scriptExecuted = false
 
       const runInjectedScript = () => {
-        if ((window as any).__SCHEMA_EDITOR_INJECTED__) {
-          console.log('Schema Editor injected script已存在，跳过重复注入')
+        if ((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__) {
+          console.log('Schema Element Editor injected script已存在，跳过重复注入')
           return
         }
 
-        ;(window as any).__SCHEMA_EDITOR_INJECTED__ = true
+        ;(window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__ = true
         scriptExecuted = true
         // ... 其他初始化逻辑
       }
@@ -542,19 +542,19 @@ describe('Injected Script 集成测试', () => {
       runInjectedScript()
 
       expect(scriptExecuted).toBe(true)
-      expect((window as any).__SCHEMA_EDITOR_INJECTED__).toBe(true)
+      expect((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__).toBe(true)
     })
 
     it('全局标记应该在整个会话中保持', () => {
-      delete (window as any).__SCHEMA_EDITOR_INJECTED__
+      delete (window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__
 
       // 第一次注入
-      ;(window as any).__SCHEMA_EDITOR_INJECTED__ = true
+      ;(window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__ = true
 
       // 模拟后续的注入尝试
       const attempts = [1, 2, 3, 4, 5]
       const results = attempts.map(() => {
-        if ((window as any).__SCHEMA_EDITOR_INJECTED__) {
+        if ((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__) {
           return 'skipped'
         }
         return 'injected'
@@ -562,7 +562,7 @@ describe('Injected Script 集成测试', () => {
 
       // 所有后续尝试都应该被跳过
       expect(results).toEqual(['skipped', 'skipped', 'skipped', 'skipped', 'skipped'])
-      expect((window as any).__SCHEMA_EDITOR_INJECTED__).toBe(true)
+      expect((window as any).__SCHEMA_ELEMENT_EDITOR_INJECTED__).toBe(true)
     })
   })
 
@@ -574,7 +574,7 @@ describe('Injected Script 集成测试', () => {
 
       // 发送 CONFIG_SYNC 消息
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'CONFIG_SYNC',
         payload: {
           getFunctionName: 'syncedGetFn',
@@ -584,7 +584,7 @@ describe('Injected Script 集成测试', () => {
 
       // 触发 GET_SCHEMA 验证配置已更新
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'test' },
       })
@@ -600,7 +600,7 @@ describe('Injected Script 集成测试', () => {
 
       // 只更新 getFunctionName
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'CONFIG_SYNC',
         payload: {
           getFunctionName: 'partialGetFn',
@@ -609,7 +609,7 @@ describe('Injected Script 集成测试', () => {
 
       // 验证 get 函数名已更新
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'test' },
       })
@@ -617,7 +617,7 @@ describe('Injected Script 集成测试', () => {
 
       // 验证 update 函数名仍为默认值
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'UPDATE_SCHEMA',
         payload: { schema: {}, params: 'test' },
       })
@@ -631,14 +631,14 @@ describe('Injected Script 集成测试', () => {
 
       // 发送空配置
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'CONFIG_SYNC',
         payload: {},
       })
 
       // 验证仍使用默认函数名
       triggerMessage({
-        source: 'schema-editor-content',
+        source: 'schema-element-editor-content',
         type: 'GET_SCHEMA',
         payload: { params: 'test' },
       })

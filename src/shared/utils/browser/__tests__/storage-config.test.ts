@@ -349,7 +349,7 @@ describe('storage-config', () => {
     it('有效主题应该返回 true', () => {
       expect(validator?.('light')).toBe(true)
       expect(validator?.('dark')).toBe(true)
-      expect(validator?.('schemaEditorDark')).toBe(true)
+      expect(validator?.('seeDark')).toBe(true)
     })
 
     it('无效主题应该返回 false', () => {
