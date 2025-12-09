@@ -14,7 +14,6 @@ import {
 import { logger } from '@/shared/utils/logger'
 import React from 'react'
 import type ReactDOM from 'react-dom/client'
-import { injectPageScript } from './injector'
 import { ElementMonitor } from './monitor'
 import { createShadowRoot } from './shadow-dom'
 
@@ -251,10 +250,8 @@ export class SEEContent {
     const frameInfo = this.isTop ? 'top frame' : 'iframe'
     logger.log(`启动 SEE [${frameInfo}]`)
 
-    // 首次激活时执行初始化（仅 top frame 需要注入脚本）
+    // 标记已初始化
     if (!this.isInitialized && this.isTop) {
-      // 注入页面脚本（仅 windowFunction 模式需要）
-      await injectPageScript()
       this.isInitialized = true
     }
 
