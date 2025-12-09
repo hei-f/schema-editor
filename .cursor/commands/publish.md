@@ -355,7 +355,7 @@ TypeScript 类型检查结果：
 
 ### 7. 构建打包并生成压缩包
 
-执行打包命令：`tnpm run package`
+执行打包命令：`npm run package`
 
 - 该命令会自动清理旧的dist目录、重新构建并生成zip包
 - 打包失败则终止流程，提示用户检查错误
