@@ -1,4 +1,4 @@
-# Schema 编辑器
+# Schema Element 编辑器
 
 Schema Element Editor 内置功能强大的代码编辑器，基于 CodeMirror 6 构建，提供专业的 JSON 编辑体验。
 

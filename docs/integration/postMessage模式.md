@@ -15,14 +15,14 @@ postMessage 模式是 Schema Element Editor 推荐的集成方式，使用 `wind
 最简单的集成方式是使用官方 SDK。详细说明请参阅 [SDK 使用指南](./SDK使用指南.md)。
 
 ```bash
-npm install @schema-editor/host-sdk
+npm install @schema-element-editor/host-sdk
 ```
 
 ```typescript
-import { useSchemaEditor } from '@schema-editor/host-sdk'
+import { useSchemaElementEditor } from '@schema-element-editor/host-sdk'
 
 function App() {
-  useSchemaEditor({
+  useSchemaElementEditor({
     getSchema: (params) => dataStore[params],
     updateSchema: (schema, params) => {
       dataStore[params] = schema
@@ -186,7 +186,7 @@ window.postMessage(
 使用 SDK 时，调用 `recording.push()` 方法：
 
 ```typescript
-const { recording } = useSchemaEditor({
+const { recording } = useSchemaElementEditor({
   getSchema: (params) => dataStore[params],
   updateSchema: (schema, params) => {
     /* ... */
@@ -223,7 +223,7 @@ sseHandler.onData = (params, data) => {
 ### 在代码中自定义（使用 SDK）
 
 ```typescript
-useSchemaEditor({
+useSchemaElementEditor({
   getSchema: (params) => dataStore[params],
   updateSchema: (schema, params) => {
     /* ... */

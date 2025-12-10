@@ -1,11 +1,11 @@
 # SDK 使用指南
 
-`@schema-editor/host-sdk` 是 Schema Element Editor 的官方宿主端 SDK，提供便捷的 postMessage 通信封装。
+`@schema-element-editor/host-sdk` 是 Schema Element Editor 的官方宿主端 SDK，提供便捷的 postMessage 通信封装。
 
 ## 安装
 
 ```bash
-npm install @schema-editor/host-sdk
+npm install @schema-element-editor/host-sdk
 ```
 
 支持的框架：
@@ -19,7 +19,7 @@ npm install @schema-editor/host-sdk
 ### 基本用法
 
 ```tsx
-import { useSchemaEditor } from '@schema-editor/host-sdk'
+import { useSchemaElementEditor } from '@schema-element-editor/host-sdk'
 
 function App() {
   // 数据存储（示例）
@@ -27,7 +27,7 @@ function App() {
     'message-1': { type: 'paragraph', children: [{ text: 'Hello' }] },
   })
 
-  useSchemaEditor({
+  useSchemaElementEditor({
     // 获取 Schema（必需）
     getSchema: (params) => dataStore[params],
 
@@ -45,7 +45,7 @@ function App() {
 ### 添加预览功能
 
 ```tsx
-import { useSchemaEditor } from '@schema-editor/host-sdk'
+import { useSchemaElementEditor } from '@schema-element-editor/host-sdk'
 import ReactDOM from 'react-dom/client'
 
 function PreviewComponent({ data }: { data: any }) {
@@ -53,7 +53,7 @@ function PreviewComponent({ data }: { data: any }) {
 }
 
 function App() {
-  useSchemaEditor({
+  useSchemaElementEditor({
     getSchema: (params) => dataStore[params],
     updateSchema: (schema, params) => {
       /* ... */
@@ -82,7 +82,7 @@ function App() {
 function App() {
   const [isReady, setIsReady] = useState(false)
 
-  useSchemaEditor({
+  useSchemaElementEditor({
     // 仅在 isReady 为 true 时启用
     enabled: isReady,
     getSchema: (params) => dataStore[params],
@@ -104,7 +104,7 @@ function App() {
 
 ```tsx
 function App() {
-  const { recording } = useSchemaEditor({
+  const { recording } = useSchemaElementEditor({
     getSchema: (params) => dataStore[params],
     updateSchema: (schema, params) => {
       /* ... */
@@ -135,14 +135,14 @@ function App() {
 
 ```vue
 <script setup lang="ts">
-import { useSchemaEditor } from '@schema-editor/host-sdk/vue'
+import { useSchemaElementEditor } from '@schema-element-editor/host-sdk/vue'
 import { ref } from 'vue'
 
 const dataStore = ref<Record<string, any>>({
   'message-1': { type: 'paragraph', children: [{ text: 'Hello' }] },
 })
 
-const { recording } = useSchemaEditor({
+const { recording } = useSchemaElementEditor({
   getSchema: (params) => dataStore.value[params],
   updateSchema: (schema, params) => {
     dataStore.value[params] = schema
@@ -160,12 +160,12 @@ const { recording } = useSchemaEditor({
 
 ```vue
 <script setup lang="ts">
-import { useSchemaEditor } from '@schema-editor/host-sdk/vue'
+import { useSchemaElementEditor } from '@schema-element-editor/host-sdk/vue'
 import { ref, computed } from 'vue'
 
 const isReady = ref(false)
 
-useSchemaEditor({
+useSchemaElementEditor({
   // 支持 ref 或 computed
   enabled: isReady,
   getSchema: (params) => dataStore.value[params],
@@ -186,10 +186,10 @@ onMounted(async () => {
 ### 基本用法
 
 ```typescript
-import { createSchemaEditorBridge } from '@schema-editor/host-sdk/core'
+import { createSchemaElementEditorBridge } from '@schema-element-editor/host-sdk/core'
 
 // 创建桥接器
-const bridge = createSchemaEditorBridge({
+const bridge = createSchemaElementEditorBridge({
   getSchema: (params) => dataStore[params],
   updateSchema: (schema, params) => {
     dataStore[params] = schema
@@ -204,7 +204,7 @@ const bridge = createSchemaEditorBridge({
 ### 录制模式
 
 ```typescript
-const bridge = createSchemaEditorBridge({
+const bridge = createSchemaElementEditorBridge({
   getSchema: (params) => dataStore[params],
   updateSchema: (schema, params) => {
     /* ... */
@@ -261,7 +261,7 @@ interface ReactSchemaEditorConfig extends SchemaEditorConfig {
 ### 自定义消息配置
 
 ```typescript
-useSchemaEditor({
+useSchemaElementEditor({
   getSchema: (params) => dataStore[params],
   updateSchema: (schema, params) => {
     /* ... */
@@ -294,7 +294,7 @@ interface UseSchemaEditorReturn {
   }
 }
 
-const { recording } = useSchemaEditor({
+const { recording } = useSchemaElementEditor({
   /* ... */
 })
 ```
@@ -316,7 +316,7 @@ interface SchemaEditorBridge {
   }
 }
 
-const bridge = createSchemaEditorBridge({
+const bridge = createSchemaElementEditorBridge({
   /* ... */
 })
 ```
@@ -345,7 +345,7 @@ import type {
   PostMessageTypeConfig,
   SchemaEditorBridge,
   SchemaEditorRecording,
-} from '@schema-editor/host-sdk'
+} from '@schema-element-editor/host-sdk'
 ```
 
 ## 最佳实践
@@ -361,10 +361,10 @@ const updateSchema = useCallback((schema, params) => {
   /* ... */
 }, [])
 
-useSchemaEditor({ getSchema, updateSchema })
+useSchemaElementEditor({ getSchema, updateSchema })
 
 // ❌ 避免：每次渲染创建新函数
-useSchemaEditor({
+useSchemaElementEditor({
   getSchema: (params) => dataStore[params], // 每次渲染都是新函数
   updateSchema: (schema, params) => {
     /* ... */
@@ -379,7 +379,7 @@ useSchemaEditor({
 React 和 Vue 版本会自动处理清理，使用 Core 版本时需要手动清理：
 
 ```typescript
-const bridge = createSchemaEditorBridge({
+const bridge = createSchemaElementEditorBridge({
   /* ... */
 })
 
@@ -406,11 +406,11 @@ renderPreview: (schema, containerId) => {
 
 ### SDK 不工作
 
-1. **检查安装**：确认 `@schema-editor/host-sdk` 已安装
+1. **检查安装**：确认 `@schema-element-editor/host-sdk` 已安装
 2. **检查导入路径**：
-   - React: `@schema-editor/host-sdk`
-   - Vue: `@schema-editor/host-sdk/vue`
-   - Core: `@schema-editor/host-sdk/core`
+   - React: `@schema-element-editor/host-sdk`
+   - Vue: `@schema-element-editor/host-sdk/vue`
+   - Core: `@schema-element-editor/host-sdk/core`
 3. **检查 enabled 配置**：确认不是 `false`
 
 ### 配置与插件不匹配

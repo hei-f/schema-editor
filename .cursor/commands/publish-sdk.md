@@ -57,9 +57,9 @@
 按分组顺序，依次提交每组改动：
 
 1. **生成commit message**，遵循以下规范：
-   - **格式**：`{类型前缀}(host-sdk): {具体改动描述}`
+   - **格式**：`{类型前缀}(sdk): {具体改动描述}`
    - **类型前缀**：feat / fix / refactor / perf / docs / style / test / chore
-   - **示例**：`feat(host-sdk): 新增Vue composable支持`
+   - **示例**：`feat(sdk): 新增Vue composable支持`
 
 2. **执行提交**：
    - `git add {文件路径}`
@@ -97,7 +97,7 @@
 **4.1 分析上次SDK版本tag以来的commit历史**
 
 - 获取当前SDK版本号：从 `packages/schema-element-editor-sdk/package.json` 中读取
-- 查找上一个SDK版本tag：执行 `git tag -l "host-sdk-v*" --sort=-v:refname | head -1`
+- 查找上一个SDK版本tag：执行 `git tag -l "schema-element-editor-sdk-v*" --sort=-v:refname | head -1`
 - 分析commit历史：执行 `git log <上次版本tag>..HEAD --oneline -- packages/schema-element-editor-sdk`
 - 如果是首次发布或找不到tag，则分析所有SDK相关commit
 
@@ -160,14 +160,14 @@
 
 ```bash
 git add packages/schema-element-editor-sdk/package.json
-git commit -m "chore(host-sdk): release v{版本号}"
+git commit -m "chore(sdk): release v{版本号}"
 ```
 
 如果有CHANGELOG改动：
 
 ```bash
 git add packages/schema-element-editor-sdk/CHANGELOG.md
-git commit -m "docs(host-sdk): 更新CHANGELOG"
+git commit -m "docs(sdk): 更新CHANGELOG"
 ```
 
 ### 9. 发布到npm
@@ -195,9 +195,9 @@ git push
 
 **10.2 创建并推送Tag**
 
-- Tag命名格式：`host-sdk-v{版本号}`（如 `host-sdk-v1.2.3`）
-- 创建tag：`git tag host-sdk-v{版本号}`
-- 推送tag：`git push origin host-sdk-v{版本号}`
+- Tag命名格式：`schema-element-editor-sdk-v{版本号}`（如 `schema-element-editor-sdk-v1.2.3`）
+- 创建tag：`git tag schema-element-editor-sdk-v{版本号}`
+- 推送tag：`git push origin schema-element-editor-sdk-v{版本号}`
 
 ### 11. 发布总结
 
@@ -223,4 +223,4 @@ git push
 - 如果SDK改动影响了插件功能，建议先发布SDK，再更新插件依赖后发布插件
 - 两者使用不同的Tag命名空间：
   - 插件：`v{版本号}`（如 `v1.17.0`）
-  - SDK：`host-sdk-v{版本号}`（如 `host-sdk-v1.0.0`）
+  - SDK：`schema-element-editor-sdk-v{版本号}`（如 `schema-element-editor-sdk-v1.0.0`）

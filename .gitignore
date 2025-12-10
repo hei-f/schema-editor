@@ -54,3 +54,4 @@ coverage/
 !docs/**/*.md
 !.cursor/commands/publish.md
 !.cursor/commands/publish-sdk.md
+!.gemini/styleguide.md

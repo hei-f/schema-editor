@@ -335,7 +335,7 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
           <span className="keyword">function</span> <span className="function">App</span>() {'{'}
           {'\n'}
           {'  '}
-          <span className="keyword">const</span> {'{ pushSchema }'} ={' '}
+          <span className="keyword">const</span> {'{ recording }'} ={' '}
           <span className="function">useSchemaElementEditor</span>({'{'}
           {'\n'}
           {'    '}
@@ -371,7 +371,7 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
           </span>
           {'\n'}
           {'  '}sseHandler.onData = (params, data) =&gt;{' '}
-          <span className="function">pushSchema</span>(params, data);{'\n\n'}
+          <span className="function">recording.push</span>(params, data);{'\n\n'}
           {'  '}
           <span className="keyword">return</span> &lt;div&gt;...&lt;/div&gt;;{'\n'}
           {'}'}
