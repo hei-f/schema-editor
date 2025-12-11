@@ -1,5 +1,6 @@
 import type { ElementAttributes, ToolbarButtonsConfig } from '@/shared/types'
 import { ContentType } from '@/shared/types'
+import { TOOLBAR_MODE, type ToolbarMode } from '@/shared/constants/ui-modes'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   EditorToolbar as StyledEditorToolbar,
@@ -8,17 +9,8 @@ import {
 import { ResponsiveButtonGroup, type ToolbarButtonConfig } from './ResponsiveButtonGroup'
 import { ScrollableParams } from './ScrollableParams'
 
-/**
- * Diff 模式下的内容类型
- * 用于 AST/RawString Segment 切换
- * - ast: AST 格式
- * - rawstring: RawString 格式
- * - other: 无效 JSON，禁用切换
- */
-export type DiffContentType = 'ast' | 'rawstring' | 'other'
-
-/** 工具栏模式类型 */
-export type ToolbarMode = 'diff' | 'recording' | 'preview' | 'normal'
+// 重新导出 ToolbarMode 类型以保持向后兼容
+export type { ToolbarMode }
 
 /** 参数区域隐藏的容器最小宽度阈值（px） */
 const PARAMS_HIDE_THRESHOLD = 300
@@ -29,7 +21,7 @@ const PARAMS_HIDE_THRESHOLD = 300
  */
 export interface DiffToolbarActions {
   /** Diff 模式下的 AST/RawString 切换 */
-  onDiffSegmentChange?: (value: DiffContentType) => void
+  onDiffSegmentChange?: (value: ContentType) => void
   /** Diff 模式下的格式化 */
   onDiffFormat?: () => void
   /** Diff 模式下的转义 */
@@ -41,7 +33,7 @@ export interface DiffToolbarActions {
   /** Diff 模式下的解析 */
   onDiffParse?: () => void
   /** Diff 模式当前内容类型 */
-  diffContentType?: DiffContentType
+  diffContentType?: ContentType
   /** Diff 模式是否可以解析 */
   diffCanParse?: boolean
 }
@@ -94,7 +86,7 @@ interface DrawerToolbarProps {
  */
 export const DrawerToolbar: React.FC<DrawerToolbarProps> = (props) => {
   const {
-    mode = 'normal',
+    mode = TOOLBAR_MODE.NORMAL,
     attributes,
     contentType,
     canParse,
@@ -130,7 +122,7 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = (props) => {
   }, [])
 
   /** 判断是否为 Diff 模式（支持 mode prop 和 isDiffMode prop） */
-  const isInDiffMode = mode === 'diff' || isDiffMode
+  const isInDiffMode = mode === TOOLBAR_MODE.DIFF || isDiffMode
 
   /** Diff 按钮点击处理：根据当前模式决定进入或退出 */
   const handleDiffButtonClick = useCallback(() => {
@@ -294,20 +286,18 @@ export const DrawerToolbar: React.FC<DrawerToolbarProps> = (props) => {
       if (toolbarButtons.astRawStringToggle && diffToolbarActions?.onDiffSegmentChange) {
         const segmentValue = diffToolbarActions.diffContentType
         // other 类型时禁用切换，且不选中任何选项
-        const isOther = segmentValue === 'other'
+        const isOther = segmentValue === ContentType.Other
         configs.push({
           key: 'diff-ast-rawstring-toggle',
           label: (
             <ToolbarSegmented
               key={`diff-segment-${segmentValue}`}
               options={[
-                { label: 'AST', value: 'ast' as DiffContentType },
-                { label: 'RawString', value: 'rawstring' as DiffContentType },
+                { label: 'AST', value: ContentType.Ast },
+                { label: 'RawString', value: ContentType.RawString },
               ]}
               value={isOther ? undefined : segmentValue}
-              onChange={(value) =>
-                diffToolbarActions.onDiffSegmentChange?.(value as DiffContentType)
-              }
+              onChange={(value) => diffToolbarActions.onDiffSegmentChange?.(value)}
               disabled={isOther}
             />
           ),

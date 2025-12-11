@@ -584,7 +584,7 @@ describe('DrawerToolbar组件测试', () => {
       onDiffUnescape: vi.fn(),
       onDiffCompact: vi.fn(),
       onDiffParse: vi.fn(),
-      diffContentType: 'rawstring' as const,
+      diffContentType: ContentType.RawString,
       diffCanParse: true,
     }
 
