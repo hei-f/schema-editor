@@ -43,6 +43,14 @@ const StyledIframe = styled.iframe`
   background: #fff;
 `
 
+const NestedIframe = styled.iframe`
+  width: 100%;
+  height: 380px;
+  border: 1px solid #ffc069;
+  border-radius: 4px;
+  background: #fffbe6;
+`
+
 const TestCard = styled(Card)<{ $isValid?: boolean }>`
   cursor: pointer;
   transition: all 0.3s;
@@ -129,6 +137,12 @@ export const IframeTestPage: React.FC<IframeTestPageProps> = () => {
     },
     'iframe-element-2': { message: '这是主页面提供的数据' },
     'iframe-nested-object': { type: 'top-frame-data', items: [1, 2, 3] },
+    // 多层嵌套测试用的 Schema
+    'middle-layer-element': {
+      title: '中间层元素（来自主页面）',
+      layer: 2,
+      source: 'top-frame',
+    },
   })
 
   // 监听来自插件的 postMessage（主页面模式）
@@ -253,6 +267,32 @@ export const IframeTestPage: React.FC<IframeTestPageProps> = () => {
                 src="/iframe-app.html"
                 title="测试 iframe (SDK)"
                 onLoad={handleIframeLoad}
+              />
+            </IframeContainer>
+          </Card>
+
+          <Card
+            title={
+              <Space>
+                <BlockOutlined />
+                <span>多层嵌套 iframe 测试</span>
+                <Tag color="orange">嵌套</Tag>
+              </Space>
+            }
+            style={{ marginTop: 24 }}
+          >
+            <Alert
+              type="warning"
+              showIcon
+              message="多层嵌套测试"
+              description="此区域包含 3 层嵌套：主页面 → 中间层 iframe → 内层 iframe。用于验证 window.top 支持多层嵌套通信。"
+              style={{ marginBottom: 16 }}
+            />
+            <IframeContainer style={{ background: '#fffbe6', borderColor: '#ffc069' }}>
+              <NestedIframe
+                src="/iframe-nested.html"
+                title="多层嵌套 iframe 测试"
+                onLoad={() => addLog('success', '多层嵌套 iframe 已加载')}
               />
             </IframeContainer>
           </Card>

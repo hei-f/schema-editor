@@ -25,14 +25,39 @@ function IframeApp() {
   }
 
   useEffect(() => {
+    // 调试：打印 iframe 层级信息
+    const isTopFrame = window === window.top
+    const hasParent = window.parent !== window
+    console.log('[iframe-app] 初始化', {
+      isTopFrame,
+      hasParent,
+      windowTop: window.top,
+      windowParent: window.parent,
+    })
+
+    // 调试：监听所有 postMessage
+    const debugListener = (event: MessageEvent) => {
+      if (event.data?.source?.includes('schema-element-editor')) {
+        console.log(
+          '[iframe-app] 收到消息:',
+          event.data,
+          'from:',
+          event.source === window ? 'self' : event.source === window.parent ? 'parent' : 'other'
+        )
+      }
+    }
+    window.addEventListener('message', debugListener)
+
     // 使用 SDK 创建桥接
     const bridge = createSchemaElementEditorBridge({
       getSchema: (params) => {
+        console.log('[iframe-app] SDK getSchema 被调用:', params)
         const data = schemaStore[params]
         addLog(`getSchema: ${params} => ${JSON.stringify(data)}`)
         return data ?? null
       },
       updateSchema: (schema, params) => {
+        console.log('[iframe-app] SDK updateSchema 被调用:', params)
         schemaStore[params] = schema
         addLog(`updateSchema: ${params} => ${JSON.stringify(schema)}`)
         return true
@@ -40,9 +65,12 @@ function IframeApp() {
     })
 
     // 使用 setTimeout 避免在 effect 中同步调用 setState
-    setTimeout(() => addLog('SDK 桥接已初始化'), 0)
+    setTimeout(() => addLog(`SDK 桥接已初始化 (${isTopFrame ? '顶层' : '嵌套'})`), 0)
 
-    return () => bridge.cleanup()
+    return () => {
+      window.removeEventListener('message', debugListener)
+      bridge.cleanup()
+    }
   }, [])
 
   return (
