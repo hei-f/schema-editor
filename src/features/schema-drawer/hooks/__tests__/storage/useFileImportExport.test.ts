@@ -327,10 +327,12 @@ describe('useFileImportExport', () => {
       )
 
       // Mock FileReader
-      const mockFileReader = {
-        readAsText: vi.fn(function (this: any) {
+      class MockFileReader {
+        onload: ((event: ProgressEvent<FileReader>) => void) | null = null
+        onerror: ((event: ProgressEvent<FileReader>) => void) | null = null
+        readAsText() {
           setTimeout(() => {
-            this.onload({
+            this.onload?.({
               target: {
                 result: JSON.stringify({
                   __SCHEMA_ELEMENT_EDITOR_EXPORT__: true,
@@ -344,11 +346,11 @@ describe('useFileImportExport', () => {
                   },
                 }),
               },
-            })
+            } as unknown as ProgressEvent<FileReader>)
           }, 0)
-        }),
+        }
       }
-      global.FileReader = vi.fn(() => mockFileReader) as any
+      global.FileReader = MockFileReader as unknown as typeof FileReader
 
       act(() => {
         result.current.handleImport(mockFile)
@@ -372,18 +374,20 @@ describe('useFileImportExport', () => {
     it('应该成功导入普通 JSON 文件', async () => {
       const { result } = renderHook(() => useFileImportExport(defaultProps))
 
-      const mockFileReader = {
-        readAsText: vi.fn(function (this: any) {
+      class MockFileReader {
+        onload: ((event: ProgressEvent<FileReader>) => void) | null = null
+        onerror: ((event: ProgressEvent<FileReader>) => void) | null = null
+        readAsText() {
           setTimeout(() => {
-            this.onload({
+            this.onload?.({
               target: {
                 result: JSON.stringify({ type: 'card', title: 'plain' }),
               },
-            })
+            } as unknown as ProgressEvent<FileReader>)
           }, 0)
-        }),
+        }
       }
-      global.FileReader = vi.fn(() => mockFileReader) as any
+      global.FileReader = MockFileReader as unknown as typeof FileReader
 
       const mockFile = new File([JSON.stringify({ type: 'card', title: 'plain' })], 'test.json', {
         type: 'application/json',
@@ -422,16 +426,18 @@ describe('useFileImportExport', () => {
     it('当 JSON 格式错误时应该提示错误', async () => {
       const { result } = renderHook(() => useFileImportExport(defaultProps))
 
-      const mockFileReader = {
-        readAsText: vi.fn(function (this: any) {
+      class MockFileReader {
+        onload: ((event: ProgressEvent<FileReader>) => void) | null = null
+        onerror: ((event: ProgressEvent<FileReader>) => void) | null = null
+        readAsText() {
           setTimeout(() => {
-            this.onload({
+            this.onload?.({
               target: { result: 'invalid json' },
-            })
+            } as unknown as ProgressEvent<FileReader>)
           }, 0)
-        }),
+        }
       }
-      global.FileReader = vi.fn(() => mockFileReader) as any
+      global.FileReader = MockFileReader as unknown as typeof FileReader
 
       const mockFile = new File(['invalid json'], 'test.json', {
         type: 'application/json',
@@ -452,10 +458,12 @@ describe('useFileImportExport', () => {
     it('当导入的文件内容为空时应该提示错误', async () => {
       const { result } = renderHook(() => useFileImportExport(defaultProps))
 
-      const mockFileReader = {
-        readAsText: vi.fn(function (this: any) {
+      class MockFileReader {
+        onload: ((event: ProgressEvent<FileReader>) => void) | null = null
+        onerror: ((event: ProgressEvent<FileReader>) => void) | null = null
+        readAsText() {
           setTimeout(() => {
-            this.onload({
+            this.onload?.({
               target: {
                 result: JSON.stringify({
                   __SCHEMA_ELEMENT_EDITOR_EXPORT__: true,
@@ -469,11 +477,11 @@ describe('useFileImportExport', () => {
                   },
                 }),
               },
-            })
+            } as unknown as ProgressEvent<FileReader>)
           }, 0)
-        }),
+        }
       }
-      global.FileReader = vi.fn(() => mockFileReader) as any
+      global.FileReader = MockFileReader as unknown as typeof FileReader
 
       const mockFile = new File(['test'], 'test.json', {
         type: 'application/json',
@@ -494,14 +502,16 @@ describe('useFileImportExport', () => {
     it('当文件读取失败时应该处理错误', async () => {
       const { result } = renderHook(() => useFileImportExport(defaultProps))
 
-      const mockFileReader = {
-        readAsText: vi.fn(function (this: any) {
+      class MockFileReader {
+        onload: ((event: ProgressEvent<FileReader>) => void) | null = null
+        onerror: ((event: ProgressEvent<FileReader>) => void) | null = null
+        readAsText() {
           setTimeout(() => {
-            this.onerror()
+            this.onerror?.({} as ProgressEvent<FileReader>)
           }, 0)
-        }),
+        }
       }
-      global.FileReader = vi.fn(() => mockFileReader) as any
+      global.FileReader = MockFileReader as unknown as typeof FileReader
 
       const mockFile = new File(['test'], 'test.json', {
         type: 'application/json',
@@ -520,6 +530,16 @@ describe('useFileImportExport', () => {
     })
 
     it('应该始终返回 false 以阻止默认上传行为', () => {
+      // Mock FileReader for this test
+      class MockFileReader {
+        onload: ((event: ProgressEvent<FileReader>) => void) | null = null
+        onerror: ((event: ProgressEvent<FileReader>) => void) | null = null
+        readAsText() {
+          // Do nothing, just need to test return value
+        }
+      }
+      global.FileReader = MockFileReader as unknown as typeof FileReader
+
       const { result } = renderHook(() => useFileImportExport(defaultProps))
 
       const mockFile = new File(['test'], 'test.json', {
