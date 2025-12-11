@@ -147,6 +147,24 @@ export class ElementMonitor {
   private initIframeBridgeListener(): void {
     this.iframeBridgeCleanup = initIframeBridgeListener({
       onHighlightAllRequest: () => {
+        // DEBUG: 打印到 top frame 的控制台
+        console.log(
+          '[Monitor iframe] 收到 HIGHLIGHT_ALL_REQUEST, currentElement:',
+          this.currentElement
+        )
+        window.top?.postMessage(
+          { type: 'DEBUG', message: '[iframe] 收到 HIGHLIGHT_ALL_REQUEST' },
+          '*'
+        )
+
+        // 清除单元素高亮
+        this.clearHighlight()
+        console.log('[Monitor iframe] 已调用 clearHighlight')
+
+        // 转发给子 iframe（支持多层嵌套）
+        if (this.iframeEnabled) {
+          broadcastHighlightAllRequest()
+        }
         // 收集 iframe 内所有合法元素并发送给 top frame
         this.collectAndSendHighlightAllElements()
       },
@@ -178,6 +196,11 @@ export class ElementMonitor {
    * 处理从主页面同步的 Alt 键状态（仅 iframe 内）
    */
   private handleAltKeySync(payload: AltKeySyncPayload): void {
+    // 继续转发给子 iframe（支持多层嵌套）
+    if (this.iframeEnabled) {
+      broadcastAltKeyState(payload.isPressed, payload.mousePosition)
+    }
+
     if (!this.isActive || this.isPaused) {
       return
     }
@@ -886,10 +909,17 @@ export class ElementMonitor {
    * 高亮所有合法元素
    */
   private async highlightAll(): Promise<void> {
+    console.log('[Monitor] highlightAll 被调用, isIframeMode:', this.isIframeMode)
+
     if (!this.highlightAllConfig) return
 
     // 清除单元素高亮（如果存在）
     this.clearHighlight()
+
+    // 如果在 iframe 内，需要通知主页面清除 iframe 高亮框
+    if (this.isIframeMode) {
+      sendClearHighlightToTop()
+    }
 
     this.isHighlightingAll = true
 
@@ -937,6 +967,7 @@ export class ElementMonitor {
 
     // 如果是 top frame，向所有 iframe 广播高亮请求
     if (!this.isIframeMode) {
+      console.log('[Monitor] 广播 HIGHLIGHT_ALL_REQUEST 到 iframe')
       broadcastHighlightAllRequest()
     }
   }

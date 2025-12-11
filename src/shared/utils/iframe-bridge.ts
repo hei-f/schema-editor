@@ -204,6 +204,8 @@ export function sendCrossOriginDetectedToTop(): void {
  * 向所有 iframe 广播高亮所有元素请求
  */
 export function broadcastHighlightAllRequest(): void {
+  const iframes = document.querySelectorAll('iframe')
+  console.log('[iframe-bridge] 广播 HIGHLIGHT_ALL_REQUEST, iframe 数量:', iframes.length)
   broadcastToIframes(MessageType.HIGHLIGHT_ALL_REQUEST, null)
 }
 
@@ -276,6 +278,7 @@ export function initIframeBridgeListener(handlers: IframeBridgeHandlers): () => 
         break
 
       case MessageType.HIGHLIGHT_ALL_REQUEST:
+        console.log('[iframe-bridge] 收到 HIGHLIGHT_ALL_REQUEST')
         handlers.onHighlightAllRequest?.()
         break
 
