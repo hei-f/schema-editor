@@ -179,8 +179,8 @@ export function createSchemaElementEditorBridge(
     }
 
     // 如果在 iframe 中，响应需要发给 top frame（插件运行在 top frame）
-    const isInIframe = window !== window.top
-    const targetWindow = isInIframe ? window.parent : window
+    // 使用 window.top 支持多层 iframe 嵌套
+    const targetWindow = window.top ?? window
 
     targetWindow.postMessage(message, '*')
   }
@@ -206,8 +206,8 @@ export function createSchemaElementEditorBridge(
     }
 
     // 如果在 iframe 中，推送需要发给 top frame（插件运行在 top frame）
-    const isInIframe = window !== window.top
-    const targetWindow = isInIframe ? window.parent : window
+    // 使用 window.top 支持多层 iframe 嵌套
+    const targetWindow = window.top ?? window
 
     targetWindow.postMessage(message, '*')
   }
