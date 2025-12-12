@@ -288,9 +288,7 @@ export class SEEContent {
     this.reactRoot = root
 
     // 渲染React应用，传递shadowRoot引用
-    this.reactRoot.render(
-      React.createElement(React.StrictMode, null, React.createElement(App, { shadowRoot }))
-    )
+    this.reactRoot.render(React.createElement(App, { shadowRoot }))
   }
 
   /**
