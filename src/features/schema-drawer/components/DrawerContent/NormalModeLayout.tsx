@@ -194,7 +194,7 @@ export const NormalModeLayout: React.FC<NormalModeLayoutProps> = (props) => {
               $isOpening={isOpeningInitial}
               $isDragging={isDragging}
             >
-              {/* 内置预览器模式：直接在占位区域内渲染 MarkdownEditor */}
+              {/* 内置预览器模式：直接在占位区域内渲染 BuiltinPreview */}
               {useBuiltinPreview && !isClosingTransition && !isOpeningInitial && (
                 <BuiltinPreview editorValue={editorValue} contentType={contentType} />
               )}
