@@ -387,16 +387,6 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     const hoverColor = colors[4]
     const activeColor = colors[6]
 
-    // 计算颜色亮度，决定 primary 按钮的文字颜色
-    const getLuminance = (hex: string) => {
-      const rgb = parseInt(hex.slice(1), 16)
-      const r = (rgb >> 16) & 0xff
-      const g = (rgb >> 8) & 0xff
-      const b = rgb & 0xff
-      return (0.299 * r + 0.587 * g + 0.114 * b) / 255
-    }
-    const primaryTextColor = getLuminance(primaryColor) > 0.5 ? '#000000' : '#ffffff'
-
     return {
       token: {
         colorPrimary: primaryColor,
@@ -406,7 +396,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         colorLink: primaryColor,
         colorLinkHover: hoverColor,
         colorLinkActive: activeColor,
-        colorTextLightSolid: primaryTextColor,
+        colorTextLightSolid: '#ffffff',
       },
     }
   }, [drawerConfig?.themeColor])

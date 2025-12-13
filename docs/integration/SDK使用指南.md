@@ -350,31 +350,7 @@ import type {
 
 ## 最佳实践
 
-### 1. 使用稳定的引用
-
-确保 `getSchema` 和 `updateSchema` 的引用稳定，避免不必要的重新初始化：
-
-```tsx
-// ✅ 好的做法
-const getSchema = useCallback((params) => dataStore[params], [dataStore])
-const updateSchema = useCallback((schema, params) => {
-  /* ... */
-}, [])
-
-useSchemaElementEditor({ getSchema, updateSchema })
-
-// ❌ 避免：每次渲染创建新函数
-useSchemaElementEditor({
-  getSchema: (params) => dataStore[params], // 每次渲染都是新函数
-  updateSchema: (schema, params) => {
-    /* ... */
-  },
-})
-```
-
-> 💡 SDK 内部使用 ref 存储最新的配置，所以即使引用变化也能正常工作，但稳定的引用是更好的实践。
-
-### 2. 正确处理清理
+### 1. 正确处理清理
 
 React 和 Vue 版本会自动处理清理，使用 Core 版本时需要手动清理：
 
@@ -389,7 +365,9 @@ window.addEventListener('beforeunload', () => {
 })
 ```
 
-### 3. 预览函数返回清理函数
+### 2. 预览函数的清理
+
+如果 `renderPreview` 创建了需要清理的资源（如 React root、事件监听器等），应该返回清理函数：
 
 ```typescript
 renderPreview: (schema, containerId) => {
@@ -397,8 +375,20 @@ renderPreview: (schema, containerId) => {
   const root = ReactDOM.createRoot(container)
   root.render(<Preview data={schema} />)
 
-  // 必须返回清理函数
+  // 返回清理函数,SDK 会在下次渲染前或清理预览时调用
   return () => root.unmount()
+}
+```
+
+如果只是简单修改 DOM 内容，可以不返回清理函数：
+
+```typescript
+renderPreview: (schema, containerId) => {
+  const container = document.getElementById(containerId)
+  if (container) {
+    container.innerHTML = `<pre>${JSON.stringify(schema, null, 2)}</pre>`
+  }
+  // 不需要返回清理函数
 }
 ```
 
