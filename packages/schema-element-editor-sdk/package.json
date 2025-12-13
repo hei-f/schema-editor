@@ -1,6 +1,6 @@
 {
   "name": "@schema-element-editor/host-sdk",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Schema Element Editor (SEE) 插件宿主接入 SDK，支持 React/Vue/纯 JS",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -48,9 +48,9 @@
     }
   },
   "devDependencies": {
-    "tsup": "^8.0.0",
-    "typescript": "^5.3.0",
-    "vue": "^3.4.0"
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.25"
   },
   "keywords": [
     "schema-element-editor",

@@ -117,10 +117,14 @@ describe('useSectionNavigation', () => {
         disconnect: vi.fn(),
         unobserve: vi.fn(),
       }
-      const IntersectionObserverMock = vi.fn().mockImplementation((callback) => {
-        observeCallback.mockImplementation(callback)
-        return mockObserver
-      })
+      class IntersectionObserverMock {
+        constructor(callback: IntersectionObserverCallback) {
+          observeCallback.mockImplementation(callback)
+        }
+        observe = mockObserver.observe
+        disconnect = mockObserver.disconnect
+        unobserve = mockObserver.unobserve
+      }
       vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
 
       // Mock requestAnimationFrame

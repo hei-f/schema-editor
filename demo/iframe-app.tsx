@@ -25,6 +25,8 @@ function IframeApp() {
   }
 
   useEffect(() => {
+    const isTopFrame = window === window.top
+
     // 使用 SDK 创建桥接
     const bridge = createSchemaElementEditorBridge({
       getSchema: (params) => {
@@ -40,9 +42,11 @@ function IframeApp() {
     })
 
     // 使用 setTimeout 避免在 effect 中同步调用 setState
-    setTimeout(() => addLog('SDK 桥接已初始化'), 0)
+    setTimeout(() => addLog(`SDK 桥接已初始化 (${isTopFrame ? '顶层' : '嵌套'})`), 0)
 
-    return () => bridge.cleanup()
+    return () => {
+      bridge.cleanup()
+    }
   }, [])
 
   return (

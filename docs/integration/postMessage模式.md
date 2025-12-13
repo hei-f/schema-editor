@@ -42,11 +42,28 @@ function App() {
 **插件发送的请求**：
 
 ```typescript
-interface PluginRequest {
+interface PluginRequest<T = unknown> {
   source: string // 默认 'schema-element-editor-content'
   type: string // 消息类型，如 'GET_SCHEMA'
-  payload?: object // 请求数据
+  payload?: T // 请求数据，结构取决于消息类型
   requestId: string // 请求 ID，响应时需要原样返回
+}
+
+// GET_SCHEMA 的 payload
+interface GetSchemaPayload {
+  params: string // 元素的 data-id 属性值
+}
+
+// UPDATE_SCHEMA 的 payload
+interface UpdateSchemaPayload {
+  params: string // 元素的 data-id 属性值
+  schema: unknown // Schema 数据
+}
+
+// RENDER_PREVIEW 的 payload
+interface RenderPreviewPayload {
+  schema: unknown // Schema 数据
+  containerId: string // 预览容器 ID
 }
 ```
 
@@ -150,15 +167,16 @@ window.addEventListener('message', (event) => {
 
 ### 消息类型说明
 
-| 消息类型          | 说明                 | 必需 |
-| ----------------- | -------------------- | ---- |
-| `GET_SCHEMA`      | 获取 Schema 数据     | ✅   |
-| `UPDATE_SCHEMA`   | 更新 Schema 数据     | ✅   |
-| `CHECK_PREVIEW`   | 检查预览功能是否可用 | ❌   |
-| `RENDER_PREVIEW`  | 渲染预览内容         | ❌   |
-| `CLEANUP_PREVIEW` | 清理预览资源         | ❌   |
-| `START_RECORDING` | 通知开始录制         | ❌   |
-| `STOP_RECORDING`  | 通知停止录制         | ❌   |
+| 消息类型          | 说明                         | 方向      | 必需 |
+| ----------------- | ---------------------------- | --------- | ---- |
+| `GET_SCHEMA`      | 获取 Schema 数据             | 插件→宿主 | ✅   |
+| `UPDATE_SCHEMA`   | 更新 Schema 数据             | 插件→宿主 | ✅   |
+| `CHECK_PREVIEW`   | 检查预览功能是否可用         | 插件→宿主 | ❌   |
+| `RENDER_PREVIEW`  | 渲染预览内容                 | 插件→宿主 | ❌   |
+| `CLEANUP_PREVIEW` | 清理预览资源                 | 插件→宿主 | ❌   |
+| `START_RECORDING` | 通知开始录制                 | 插件→宿主 | ❌   |
+| `STOP_RECORDING`  | 通知停止录制                 | 插件→宿主 | ❌   |
+| `SCHEMA_PUSH`     | 主动推送数据（用于录制模式） | 宿主→插件 | ❌   |
 
 ## 主动推送数据（录制模式）
 
@@ -266,11 +284,11 @@ window.addEventListener('message', (event) => {
 
 ### 消息发送
 
-在 iframe 中，响应需要发送给父窗口：
+在 iframe 中，响应需要发送给顶层窗口：
 
 ```typescript
-const isInIframe = window !== window.top
-const targetWindow = isInIframe ? window.parent : window
+// 使用 window.top 支持多层 iframe 嵌套
+const targetWindow = window.top ?? window
 
 targetWindow.postMessage(
   {

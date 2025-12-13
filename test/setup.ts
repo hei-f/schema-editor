@@ -98,3 +98,18 @@ class MockResizeObserver implements ResizeObserver {
 }
 
 global.ResizeObserver = MockResizeObserver
+
+// Fix cssstyle issue with CSS variables in jsdom
+// cssstyle库在处理antd的CSS变量时会抛出错误，需要包装CSSStyleDeclaration.setProperty
+const originalSetProperty = CSSStyleDeclaration.prototype.setProperty
+CSSStyleDeclaration.prototype.setProperty = function (
+  property: string,
+  value: string | null,
+  priority?: string
+) {
+  try {
+    return originalSetProperty.call(this, property, value, priority ?? '')
+  } catch {
+    // 忽略 CSS 变量导致的错误
+  }
+}
