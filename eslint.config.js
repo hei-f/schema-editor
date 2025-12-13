@@ -3,7 +3,6 @@ import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
-import reactCompilerPlugin from 'eslint-plugin-react-compiler'
 import prettierPlugin from 'eslint-plugin-prettier'
 
 export default [
@@ -98,7 +97,6 @@ export default [
       '@typescript-eslint': tsPlugin,
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
-      'react-compiler': reactCompilerPlugin,
       prettier: prettierPlugin,
     },
     settings: {
@@ -111,7 +109,6 @@ export default [
       ...reactPlugin.configs.recommended.rules,
       ...reactPlugin.configs['jsx-runtime'].rules,
       ...reactHooksPlugin.configs.recommended.rules,
-      'react-compiler/react-compiler': 'error',
       'prettier/prettier': 'error',
       'prefer-const': 'error',
       // 允许以 _ 开头的未使用变量

@@ -15,14 +15,7 @@ const IS_RELEASE_BUILD = false
 export default defineConfig({
   // Chrome扩展需要使用相对路径，不能使用绝对路径
   base: './',
-  plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler', {}]],
-      },
-    }),
-    crx({ manifest: manifest as any }),
-  ],
+  plugins: [react(), crx({ manifest: manifest as any })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -39,5 +32,14 @@ export default defineConfig({
   esbuild: {
     /** 发布模式移除所有 console 和 debugger */
     drop: IS_RELEASE_BUILD ? ['console', 'debugger'] : [],
+  },
+  /** 构建优化配置 */
+  build: {
+    /** 关闭源码映射以加快构建速度 */
+    sourcemap: false,
+    /** 使用 esbuild 压缩以提升构建速度 */
+    minify: 'esbuild',
+    /** 目标环境 */
+    target: 'esnext',
   },
 })
