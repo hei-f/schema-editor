@@ -137,16 +137,6 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
     const lightBgColor = colors[0]
     const borderColor = colors[2]
 
-    // 计算颜色亮度，决定 primary 按钮的文字颜色
-    const getLuminance = (hex: string) => {
-      const rgb = parseInt(hex.slice(1), 16)
-      const r = (rgb >> 16) & 0xff
-      const g = (rgb >> 8) & 0xff
-      const b = rgb & 0xff
-      return (0.299 * r + 0.587 * g + 0.114 * b) / 255
-    }
-    const primaryTextColor = getLuminance(primaryColor) > 0.5 ? '#000000' : '#ffffff'
-
     return {
       token: {
         colorPrimary: primaryColor,
@@ -163,7 +153,7 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
           colorInfoBorder: borderColor,
         },
         Button: {
-          primaryColor: primaryTextColor,
+          primaryColor: '#ffffff',
           colorLink: primaryColor,
           colorLinkHover: hoverColor,
           colorLinkActive: activeColor,
