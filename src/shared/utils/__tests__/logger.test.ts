@@ -118,7 +118,13 @@ describe('Logger工具测试', () => {
     it('init成功后应该设置启用状态', async () => {
       // 创建一个新的Logger实例用于测试（通过重新导入）
       vi.resetModules()
-      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      // 重新 mock storage 模块
+      vi.doMock('../browser/storage', () => ({
+        storage: {
+          getEnableDebugLog: vi.fn().mockResolvedValue(true),
+        },
+      }))
 
       const { logger: freshLogger } = await import('../logger')
       await freshLogger.init()
@@ -133,7 +139,13 @@ describe('Logger工具测试', () => {
 
     it('init失败时应该默认禁用日志', async () => {
       vi.resetModules()
-      ;(storage.getEnableDebugLog as Mock).mockRejectedValue(new Error('Storage error'))
+
+      // 重新 mock storage 模块，模拟失败情况
+      vi.doMock('../browser/storage', () => ({
+        storage: {
+          getEnableDebugLog: vi.fn().mockRejectedValue(new Error('Storage error')),
+        },
+      }))
 
       const { logger: freshLogger } = await import('../logger')
       await freshLogger.init()
@@ -210,7 +222,13 @@ describe('Logger工具测试', () => {
   describe('启用状态测试', () => {
     it('启用状态下log应该输出', async () => {
       vi.resetModules()
-      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      // 重新 mock storage 模块
+      vi.doMock('../browser/storage', () => ({
+        storage: {
+          getEnableDebugLog: vi.fn().mockResolvedValue(true),
+        },
+      }))
 
       const { logger: enabledLogger } = await import('../logger')
       await enabledLogger.init()
@@ -223,7 +241,13 @@ describe('Logger工具测试', () => {
 
     it('启用状态下warn应该输出', async () => {
       vi.resetModules()
-      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      // 重新 mock storage 模块
+      vi.doMock('../browser/storage', () => ({
+        storage: {
+          getEnableDebugLog: vi.fn().mockResolvedValue(true),
+        },
+      }))
 
       const { logger: enabledLogger } = await import('../logger')
       await enabledLogger.init()
@@ -236,7 +260,13 @@ describe('Logger工具测试', () => {
 
     it('启用状态下info应该输出', async () => {
       vi.resetModules()
-      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      // 重新 mock storage 模块
+      vi.doMock('../browser/storage', () => ({
+        storage: {
+          getEnableDebugLog: vi.fn().mockResolvedValue(true),
+        },
+      }))
 
       const { logger: enabledLogger } = await import('../logger')
       await enabledLogger.init()
