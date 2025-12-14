@@ -433,11 +433,6 @@ describe('DrawerTitle', () => {
         <DrawerTitle
           {...defaultProps}
           toolbarButtons={{
-            showFormatButton: true,
-            showEscapeButton: true,
-            showUnescapeButton: true,
-            showCompactButton: true,
-            showParseButton: true,
             astRawStringToggle: true,
             escape: true,
             deserialize: true,
