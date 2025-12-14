@@ -4,6 +4,15 @@
  */
 
 import { logger } from '../logger'
+import { storage } from '../browser/storage'
+import type { Mock } from 'vitest'
+
+// Mock storage
+vi.mock('../browser/storage', () => ({
+  storage: {
+    getEnableDebugLog: vi.fn(),
+  },
+}))
 
 describe('Logger工具测试', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>
@@ -99,9 +108,41 @@ describe('Logger工具测试', () => {
     })
 
     it('init应该可以被调用多次而不报错', async () => {
+      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(false)
+
       await expect(logger.init()).resolves.not.toThrow()
       await expect(logger.init()).resolves.not.toThrow()
       await expect(logger.init()).resolves.not.toThrow()
+    })
+
+    it('init成功后应该设置启用状态', async () => {
+      // 创建一个新的Logger实例用于测试（通过重新导入）
+      vi.resetModules()
+      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      const { logger: freshLogger } = await import('../logger')
+      await freshLogger.init()
+
+      // 清空之前的调用记录
+      consoleLogSpy.mockClear()
+
+      // 现在日志应该输出
+      freshLogger.log('test enabled')
+      expect(consoleLogSpy).toHaveBeenCalledWith('test enabled')
+    })
+
+    it('init失败时应该默认禁用日志', async () => {
+      vi.resetModules()
+      ;(storage.getEnableDebugLog as Mock).mockRejectedValue(new Error('Storage error'))
+
+      const { logger: freshLogger } = await import('../logger')
+      await freshLogger.init()
+
+      consoleLogSpy.mockClear()
+
+      // 日志不应该输出
+      freshLogger.log('test disabled')
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
   })
 
@@ -163,6 +204,47 @@ describe('Logger工具测试', () => {
       expect(consoleLogSpy).not.toHaveBeenCalled()
       expect(consoleWarnSpy).not.toHaveBeenCalled()
       expect(consoleInfoSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('启用状态测试', () => {
+    it('启用状态下log应该输出', async () => {
+      vi.resetModules()
+      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      const { logger: enabledLogger } = await import('../logger')
+      await enabledLogger.init()
+
+      consoleLogSpy.mockClear()
+      enabledLogger.log('enabled log')
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('enabled log')
+    })
+
+    it('启用状态下warn应该输出', async () => {
+      vi.resetModules()
+      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      const { logger: enabledLogger } = await import('../logger')
+      await enabledLogger.init()
+
+      consoleWarnSpy.mockClear()
+      enabledLogger.warn('enabled warn')
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith('enabled warn')
+    })
+
+    it('启用状态下info应该输出', async () => {
+      vi.resetModules()
+      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(true)
+
+      const { logger: enabledLogger } = await import('../logger')
+      await enabledLogger.init()
+
+      consoleInfoSpy.mockClear()
+      enabledLogger.info('enabled info')
+
+      expect(consoleInfoSpy).toHaveBeenCalledWith('enabled info')
     })
   })
 })
