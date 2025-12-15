@@ -335,6 +335,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     customFileName: exportConfig.customFileName,
     onImportSuccess: handleImportSuccess,
     showLightNotification,
+    onError: (msg) => message.error(msg),
+    onWarning: (msg) => message.warning(msg),
   })
 
   /** 编辑历史管理 */

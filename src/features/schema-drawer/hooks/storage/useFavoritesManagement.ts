@@ -2,7 +2,7 @@ import { MODAL_Z_INDEX } from '@/shared/constants/theme'
 import type { Favorite, FavoriteTag } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
-import { Modal, message } from 'antd'
+import { Modal } from 'antd'
 import { useCallback, useState } from 'react'
 
 interface UseFavoritesManagementProps {
@@ -92,14 +92,14 @@ export const useFavoritesManagement = ({
 
     try {
       await storage.addFavorite(favoriteNameInput.trim(), editorValue)
-      message.success('已添加到收藏')
+      onSuccess?.('已添加到收藏')
       setAddFavoriteModalVisible(false)
       setFavoriteNameInput('')
     } catch (error) {
       console.error('添加收藏失败:', error)
       onError?.('添加收藏失败')
     }
-  }, [favoriteNameInput, editorValue, onWarning, onError])
+  }, [favoriteNameInput, editorValue, onWarning, onError, onSuccess])
 
   /**
    * 打开收藏列表
@@ -125,9 +125,9 @@ export const useFavoritesManagement = ({
 
       await storage.updateFavoriteUsedTime(favorite.id)
 
-      message.success('已应用收藏内容')
+      onSuccess?.('已应用收藏内容')
     },
-    [onApplyFavorite]
+    [onApplyFavorite, onSuccess]
   )
 
   /**
@@ -163,13 +163,13 @@ export const useFavoritesManagement = ({
         await storage.deleteFavorite(id)
         const favorites = await storage.getFavorites()
         setFavoritesList(favorites)
-        message.success('收藏已删除')
+        onSuccess?.('收藏已删除')
       } catch (error) {
         console.error('删除收藏失败:', error)
         onError?.('删除收藏失败')
       }
     },
-    [onError]
+    [onError, onSuccess]
   )
 
   /**
@@ -222,14 +222,14 @@ export const useFavoritesManagement = ({
         const favorites = await storage.getFavorites()
         setFavoritesList(favorites)
 
-        message.success('标签已添加')
+        onSuccess?.('标签已添加')
         setAddTagModalVisible(false)
         setCurrentFavoriteForTag(null)
       } catch (_error) {
         onError?.('添加标签失败')
       }
     },
-    [currentFavoriteForTag, onError]
+    [currentFavoriteForTag, onError, onSuccess]
   )
 
   /**
@@ -248,12 +248,12 @@ export const useFavoritesManagement = ({
         const favorites = await storage.getFavorites()
         setFavoritesList(favorites)
 
-        message.success('标签已删除')
+        onSuccess?.('标签已删除')
       } catch (_error) {
         onError?.('删除标签失败')
       }
     },
-    [favoritesList, onError]
+    [favoritesList, onError, onSuccess]
   )
 
   const closeAddTagModal = useCallback(() => {
@@ -289,14 +289,14 @@ export const useFavoritesManagement = ({
         const favorites = await storage.getFavorites()
         setFavoritesList(favorites)
 
-        message.success('收藏已更新')
+        onSuccess?.('收藏已更新')
         setEditModalVisible(false)
       } catch (error) {
         onError?.('更新收藏失败')
         throw error
       }
     },
-    [onError]
+    [onError, onSuccess]
   )
 
   const closeFavoritesModal = useCallback(() => setFavoritesModalVisible(false), [])
