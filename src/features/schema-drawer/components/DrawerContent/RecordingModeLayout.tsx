@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { ThemeProvider } from 'styled-components'
 import {
   ContentAreaContainer,
@@ -24,7 +24,7 @@ import {
 import { CodeMirrorEditor } from '../editor/CodeMirrorEditor'
 import { RecordingStatusBar } from '../recording/RecordingStatusBar'
 import { VersionHistoryPanel } from '../recording/VersionHistoryPanel'
-import { BuiltinPreview } from '../preview/BuiltinPreview'
+import { BuiltinPreview } from '../preview/BuiltinPreview.lazy'
 import { DiffModeContent } from './modes'
 import { ToolbarSection } from './shared/ToolbarSection'
 import { useDiffContentTransform } from '../../hooks/diff/useDiffContentTransform'
@@ -229,7 +229,23 @@ export const RecordingModeLayout: React.FC<RecordingModeLayoutProps> = (props) =
             >
               {/* 内置预览器模式：直接在占位区域内渲染 BuiltinPreview */}
               {useBuiltinPreview && !isClosingTransition && !isOpeningInitial && (
-                <BuiltinPreview editorValue={editorValue} contentType={contentType} />
+                <Suspense
+                  fallback={
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: '#999',
+                      }}
+                    >
+                      加载预览中...
+                    </div>
+                  }
+                >
+                  <BuiltinPreview editorValue={editorValue} contentType={contentType} />
+                </Suspense>
               )}
             </PreviewPlaceholder>
 
