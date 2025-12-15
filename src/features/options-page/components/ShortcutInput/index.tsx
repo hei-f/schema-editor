@@ -166,6 +166,7 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = (props) => {
               onClick={confirmRecording}
               disabled={!tempShortcut || Boolean(isReserved)}
               style={{ borderRadius: 6, background: '#13c2c2', borderColor: '#13c2c2' }}
+              data-testid="shortcut-confirm-button"
             />
           </Tooltip>
           <Tooltip title="取消 (Esc)">
@@ -174,6 +175,7 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = (props) => {
               icon={<CloseOutlined />}
               onClick={cancelRecording}
               style={{ borderRadius: 6 }}
+              data-testid="shortcut-cancel-button"
             />
           </Tooltip>
         </ActionButtonGroup>

@@ -234,7 +234,9 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
 
         <PreviewSection>
           <PreviewLabel>预览效果：</PreviewLabel>
-          <StyledTag color={color}>{label || '标签名称'}</StyledTag>
+          <StyledTag color={color} data-testid="preview-tag">
+            {label || '标签名称'}
+          </StyledTag>
         </PreviewSection>
       </Modal>
     </ConfigProvider>

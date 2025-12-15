@@ -75,7 +75,7 @@ export const ParamTag: React.FC<ParamTagProps> = (props) => {
     <Tooltip title={value} placement="bottom" getPopupContainer={shadowRootManager.getContainer}>
       <AttributeTagWrapper style={{ flexShrink: 0 }}>
         <span>params {index + 1}</span>
-        <CopyIconWrapper onClick={handleCopy}>
+        <CopyIconWrapper onClick={handleCopy} data-testid="param-copy-icon">
           <StyledCopyIcon>
             <CopyIcon />
           </StyledCopyIcon>
