@@ -125,7 +125,7 @@ describe('FavoritesListModal组件测试', () => {
       render(<FavoritesListModal {...defaultProps} favoritesList={[]} />)
 
       // antd Table 空状态会显示空描述元素
-      const emptyElements = screen.getAllByText(/No data/)
+      const emptyElements = screen.getAllByText(/no data/i)
       expect(emptyElements.length).toBeGreaterThan(0)
     })
   })
@@ -200,7 +200,7 @@ describe('FavoritesListModal组件测试', () => {
 
       await waitFor(() => {
         // antd Table 空状态会显示空描述元素
-        const emptyElements = screen.getAllByText(/No data/)
+        const emptyElements = screen.getAllByText(/no data/i)
         expect(emptyElements.length).toBeGreaterThan(0)
       })
     })
