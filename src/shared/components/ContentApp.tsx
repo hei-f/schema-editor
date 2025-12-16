@@ -382,12 +382,14 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   /** 动态主题配置：合并基础主题和用户配置的主题色 */
   const dynamicTheme = useMemo(() => {
     const themeColor = drawerConfig?.themeColor || DEFAULT_VALUES.themeColor
+    console.log('drawerConfig?.themeColor', drawerConfig?.themeColor)
     const colors = generate(themeColor)
     const primaryColor = colors[5]
     const hoverColor = colors[4]
     const activeColor = colors[6]
 
     return {
+      cssVar: { prefix: 'see' },
       token: {
         colorPrimary: primaryColor,
         colorPrimaryHover: hoverColor,
@@ -397,6 +399,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         colorLinkHover: hoverColor,
         colorLinkActive: activeColor,
         colorTextLightSolid: '#ffffff',
+        colorBgSolid: primaryColor,
       },
     }
   }, [drawerConfig?.themeColor])

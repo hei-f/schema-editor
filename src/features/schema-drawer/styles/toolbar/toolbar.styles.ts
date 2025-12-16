@@ -107,8 +107,8 @@ export const AttributeTagWrapper = styled.span`
   background:
     linear-gradient(
       0deg,
-      color-mix(in srgb, var(--drawer-theme-color, #1677ff) 15%, transparent),
-      color-mix(in srgb, var(--drawer-theme-color, #1677ff) 15%, transparent)
+      color-mix(in srgb, var(--see-color-primary, #1677ff) 15%, transparent),
+      color-mix(in srgb, var(--see-color-primary, #1677ff) 15%, transparent)
     ),
     #ffffff;
   border-radius: 8px;
@@ -256,16 +256,16 @@ export const ToolbarButton = styled(Button)`
   /* primary 按钮使用主题色（仅非禁用状态） */
   &.see-btn-primary:not(:disabled):not(.see-btn-disabled) {
     border: 1px solid transparent;
-    background: var(--drawer-theme-color, #1677ff);
+    background: var(--see-color-primary, #1677ff);
     color: #ffffff;
 
     &:hover {
-      background: color-mix(in srgb, var(--drawer-theme-color, #1677ff) 85%, #ffffff);
+      background: color-mix(in srgb, var(--see-color-primary, #1677ff) 85%, #ffffff);
       color: #ffffff;
     }
 
     &:active {
-      background: color-mix(in srgb, var(--drawer-theme-color, #1677ff) 85%, #000000);
+      background: color-mix(in srgb, var(--see-color-primary, #1677ff) 85%, #000000);
       color: #ffffff;
     }
   }
@@ -330,8 +330,8 @@ export const AttributeTag = styled.span`
   background:
     linear-gradient(
       0deg,
-      color-mix(in srgb, var(--drawer-theme-color, #1677ff) 15%, transparent),
-      color-mix(in srgb, var(--drawer-theme-color, #1677ff) 15%, transparent)
+      color-mix(in srgb, var(--see-color-primary, #1677ff) 15%, transparent),
+      color-mix(in srgb, var(--see-color-primary, #1677ff) 15%, transparent)
     ),
     #ffffff;
   border-radius: 8px;

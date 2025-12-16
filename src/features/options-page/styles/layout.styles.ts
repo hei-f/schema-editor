@@ -505,7 +505,7 @@ export const VersionContainer = styled.div`
   padding: 0 2px 0 12px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.04),
-    0 4px 16px rgba(var(--theme-color-rgb, 57, 197, 187), 0.06);
+    0 4px 16px color-mix(in srgb, var(--see-color-primary, #1677ff) 6%, transparent);
 `
 
 /** 版本号文字 */
@@ -703,8 +703,8 @@ export const NativePanelActionButton = styled.button<{ $variant?: 'default' | 'p
     border: 1px solid #e6ecf4;
     
     &:hover {
-      color: var(--theme-color, #39c5bb);
-      border-color: var(--theme-color, #39c5bb);
+      color: var(--see-color-primary, #1677ff);
+      border-color: var(--see-color-primary, #1677ff);
     }
   `}
 `
@@ -819,7 +819,7 @@ export const StyledCollapseModern = styled(Collapse)<{ id?: string }>`
     overflow: hidden;
     box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.04),
-      0 4px 16px rgba(var(--theme-color-rgb, 57, 197, 187), 0.06);
+      0 4px 16px color-mix(in srgb, var(--see-color-primary, #1677ff) 6%, transparent);
     transition: all 0.3s ease;
 
     /* 底部强调线 - 使用透明渐变 */
@@ -832,9 +832,9 @@ export const StyledCollapseModern = styled(Collapse)<{ id?: string }>`
       height: 2px;
       background: linear-gradient(
         90deg,
-        rgba(var(--theme-color-rgb, 57, 197, 187), 0.6) 0%,
-        rgba(var(--theme-color-rgb, 57, 197, 187), 0.3) 30%,
-        rgba(var(--theme-color-rgb, 57, 197, 187), 0.1) 60%,
+        color-mix(in srgb, var(--see-color-primary, #1677ff) 60%, transparent) 0%,
+        color-mix(in srgb, var(--see-color-primary, #1677ff) 30%, transparent) 30%,
+        color-mix(in srgb, var(--see-color-primary, #1677ff) 10%, transparent) 60%,
         transparent 100%
       );
       opacity: 0;
@@ -873,7 +873,7 @@ export const StyledCollapseModern = styled(Collapse)<{ id?: string }>`
   .ant-collapse-item:hover {
     box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.06),
-      0 8px 24px rgba(var(--theme-color-rgb, 57, 197, 187), 0.1);
+      0 8px 24px color-mix(in srgb, var(--see-color-primary, #1677ff) 10%, transparent);
 
     &::after {
       opacity: 1;
@@ -885,14 +885,14 @@ export const StyledCollapseModern = styled(Collapse)<{ id?: string }>`
     background: rgba(255, 255, 255, 0.45);
     box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.05),
-      0 8px 24px rgba(var(--theme-color-rgb, 57, 197, 187), 0.08);
+      0 8px 24px color-mix(in srgb, var(--see-color-primary, #1677ff) 8%, transparent);
 
     &::after {
       opacity: 1;
     }
 
     .ant-collapse-header .ant-collapse-expand-icon {
-      color: var(--theme-color, #39c5bb);
+      color: var(--see-color-primary, #1677ff);
     }
   }
 `
@@ -972,7 +972,7 @@ export const FormSectionLabel = styled.div`
   color: #353e5c;
   position: relative;
   padding: 8px 12px 8px 14px;
-  background: rgba(var(--theme-color-rgb, 57, 197, 187), 0.06);
+  background: color-mix(in srgb, var(--see-color-primary, #1677ff) 6%, transparent);
   border-radius: 8px;
 
   &::before {
@@ -985,8 +985,8 @@ export const FormSectionLabel = styled.div`
     height: 60%;
     background: linear-gradient(
       180deg,
-      var(--theme-color, #39c5bb),
-      color-mix(in srgb, var(--theme-color, #39c5bb) 60%, white)
+      var(--see-color-primary, #1677ff),
+      color-mix(in srgb, var(--see-color-primary, #1677ff) 60%, white)
     );
     border-radius: 0 2px 2px 0;
   }
@@ -999,8 +999,8 @@ export const FormSectionLabel = styled.div`
   @keyframes anchorHighlight {
     0% {
       box-shadow:
-        0 0 0 2px rgba(var(--theme-color-rgb, 57, 197, 187), 0.4),
-        0 0 12px rgba(var(--theme-color-rgb, 57, 197, 187), 0.3);
+        0 0 0 2px color-mix(in srgb, var(--see-color-primary, #1677ff) 40%, transparent),
+        0 0 12px color-mix(in srgb, var(--see-color-primary, #1677ff) 30%, transparent);
     }
     100% {
       box-shadow:
@@ -1090,5 +1090,17 @@ export const SpacedAlert = styled(Alert)<{ $marginTop?: number; $marginBottom?: 
   && {
     ${(props) => (props.$marginTop ? `margin-top: ${props.$marginTop}px;` : '')}
     ${(props) => (props.$marginBottom ? `margin-bottom: ${props.$marginBottom}px;` : '')}
+  }
+`
+
+/**
+ * 辅助说明文本
+ * 用于表单下方的次要提示信息
+ */
+export const SecondaryHintText = styled(Text)`
+  &.ant-typography {
+    display: block;
+    margin-top: -8px;
+    margin-bottom: 16px;
   }
 `

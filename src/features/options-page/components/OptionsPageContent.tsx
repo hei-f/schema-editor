@@ -126,18 +126,26 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
     }
   }, [shouldSetDocumentTitle])
 
-  /** 动态主题配置 */
-  const themeConfig = useMemo(() => {
+  /** 生成主题色梯度 */
+  const themeColors = useMemo(() => {
     // 使用 @ant-design/colors 生成完整的颜色序列
     // 索引: 0-1 最浅, 4 hover, 5 主色, 6 active, 8-9 最深
     const colors = generate(themeColor)
-    const primaryColor = colors[5]
-    const hoverColor = colors[4]
-    const activeColor = colors[6]
-    const lightBgColor = colors[0]
-    const borderColor = colors[2]
+    return {
+      primaryColor: colors[5],
+      hoverColor: colors[4],
+      activeColor: colors[6],
+      lightBgColor: colors[0],
+      borderColor: colors[2],
+    }
+  }, [themeColor])
+
+  /** 动态主题配置 */
+  const themeConfig = useMemo(() => {
+    const { primaryColor, hoverColor, activeColor, lightBgColor, borderColor } = themeColors
 
     return {
+      cssVar: { prefix: 'see' },
       token: {
         colorPrimary: primaryColor,
         colorPrimaryHover: hoverColor,
@@ -168,35 +176,17 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
         },
       },
     }
-  }, [themeColor])
-
-  // 计算主题色 RGB 值，用于 CSS 变量
-  const themeColorRgb = useMemo(() => {
-    const colors = generate(themeColor)
-    const hex = colors[5]
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    return `${r}, ${g}, ${b}`
-  }, [themeColor])
+  }, [themeColors])
 
   return (
-    <ConfigProvider theme={themeConfig}>
+    <ConfigProvider theme={themeConfig} prefixCls="see">
       <Form
         form={form}
         layout="vertical"
         onValuesChange={handleValuesChange}
         initialValues={DEFAULT_VALUES}
       >
-        <PageRoot
-          ref={pageRootRef}
-          style={
-            {
-              '--theme-color': themeConfig.token?.colorPrimary,
-              '--theme-color-rgb': themeColorRgb,
-            } as React.CSSProperties
-          }
-        >
+        <PageRoot ref={pageRootRef}>
           {/* 背景光晕层 */}
           <BackgroundGlowLayer ref={bgGlowRef} />
           <EdgeGlowLayer ref={edgeGlowRef} />
@@ -309,6 +299,9 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
                   toggleSectionExpanded('section-keyboard-shortcuts', active)
                 }
                 onResetDefault={() => resetSectionToDefault(SECTION_KEYS.KEYBOARD_SHORTCUTS)}
+                themeColor={themeColors.primaryColor}
+                hoverColor={themeColors.hoverColor}
+                activeColor={themeColors.activeColor}
               />
 
               {!isReleaseBuild && (

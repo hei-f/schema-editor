@@ -100,16 +100,16 @@ export const DrawerTitleButton = styled(Button)`
 
   /* primary 按钮使用主题色（仅非禁用状态） */
   &.see-btn-primary:not(:disabled):not(.see-btn-disabled) {
-    background: var(--drawer-theme-color, #1677ff);
+    background: var(--see-color-primary, #1677ff);
     color: #fff;
 
     &:hover {
-      background: color-mix(in srgb, var(--drawer-theme-color, #1677ff) 85%, #ffffff);
+      background: color-mix(in srgb, var(--see-color-primary, #1677ff) 85%, #ffffff);
       color: #fff;
     }
 
     &:active {
-      background: color-mix(in srgb, var(--drawer-theme-color, #1677ff) 85%, #000000);
+      background: color-mix(in srgb, var(--see-color-primary, #1677ff) 85%, #000000);
     }
   }
 

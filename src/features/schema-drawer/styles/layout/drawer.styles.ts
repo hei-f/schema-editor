@@ -38,11 +38,11 @@ const fadeIn = keyframes`
 
 /**
  * 草稿通知提示（3秒后消失）
- * 使用 CSS 变量 --drawer-theme-color 获取主题色
+ * 使用 Ant Design CSS 变量获取主题色
  */
 export const DraftNotification = styled.span`
   font-size: 12px;
-  color: var(--drawer-theme-color, #1677ff);
+  color: var(--see-color-primary, #1677ff);
   opacity: 0.8;
   animation: ${fadeIn} 0.3s ease-in-out;
 `
@@ -161,7 +161,7 @@ const RESIZER_LEFT_OFFSET = (PREVIEW_GAP - RESIZER_WIDTH) / 2 - PREVIEW_GAP / 2
 export const PreviewResizer = styled.div<{ $isDragging?: boolean; $previewWidth?: number }>`
   width: ${RESIZER_WIDTH}px;
   height: 100%;
-  background: ${(props) => (props.$isDragging ? 'var(--drawer-theme-color, #1677ff)' : '#d9d9d9')};
+  background: ${(props) => (props.$isDragging ? 'var(--see-color-primary, #1677ff)' : '#d9d9d9')};
   cursor: col-resize;
   position: absolute;
   left: calc(${(props) => props.$previewWidth || 0}% + ${RESIZER_LEFT_OFFSET}px);
@@ -172,7 +172,7 @@ export const PreviewResizer = styled.div<{ $isDragging?: boolean; $previewWidth?
   z-index: 10;
 
   &:hover {
-    background: var(--drawer-theme-color, #1677ff);
+    background: var(--see-color-primary, #1677ff);
   }
 
   /* 扩大点击热区 */
@@ -262,17 +262,17 @@ export const DragOverlay = styled.div<{ $width: number }>`
   border-radius: 12px;
 
   /* 虚线边框 */
-  border: 2px dashed color-mix(in srgb, var(--drawer-theme-color, #1677ff) 60%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--see-color-primary, #1677ff) 60%, transparent);
 
   /* 静止条纹效果 */
   background-image: linear-gradient(
     45deg,
-    color-mix(in srgb, var(--drawer-theme-color, #1677ff) 12%, transparent) 25%,
-    color-mix(in srgb, var(--drawer-theme-color, #1677ff) 4%, transparent) 25%,
-    color-mix(in srgb, var(--drawer-theme-color, #1677ff) 4%, transparent) 50%,
-    color-mix(in srgb, var(--drawer-theme-color, #1677ff) 12%, transparent) 50%,
-    color-mix(in srgb, var(--drawer-theme-color, #1677ff) 12%, transparent) 75%,
-    color-mix(in srgb, var(--drawer-theme-color, #1677ff) 4%, transparent) 75%
+    color-mix(in srgb, var(--see-color-primary, #1677ff) 12%, transparent) 25%,
+    color-mix(in srgb, var(--see-color-primary, #1677ff) 4%, transparent) 25%,
+    color-mix(in srgb, var(--see-color-primary, #1677ff) 4%, transparent) 50%,
+    color-mix(in srgb, var(--see-color-primary, #1677ff) 12%, transparent) 50%,
+    color-mix(in srgb, var(--see-color-primary, #1677ff) 12%, transparent) 75%,
+    color-mix(in srgb, var(--see-color-primary, #1677ff) 4%, transparent) 75%
   );
   background-size: 40px 40px;
 `
@@ -283,7 +283,7 @@ export const DragOverlay = styled.div<{ $width: number }>`
 export const DragWidthIndicator = styled.div`
   font-size: 32px;
   font-weight: 600;
-  color: var(--drawer-theme-color, #1677ff);
+  color: var(--see-color-primary, #1677ff);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 8px;
 `
@@ -384,4 +384,16 @@ export const ModeContentWrapper = styled.div<{ $active: boolean }>`
   /* 只有激活时才有过渡动画（从偏移位置滑入） */
   transition: ${(props) => (props.$active ? 'transform 180ms ease-out' : 'none')};
   pointer-events: ${(props) => (props.$active ? 'auto' : 'none')};
+`
+
+/**
+ * Suspense 加载提示容器
+ * 用于统一 Suspense fallback 的样式
+ */
+export const SuspenseFallbackContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
 `
