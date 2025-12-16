@@ -382,7 +382,6 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   /** 动态主题配置：合并基础主题和用户配置的主题色 */
   const dynamicTheme = useMemo(() => {
     const themeColor = drawerConfig?.themeColor || DEFAULT_VALUES.themeColor
-    console.log('drawerConfig?.themeColor', drawerConfig?.themeColor)
     const colors = generate(themeColor)
     const primaryColor = colors[5]
     const hoverColor = colors[4]
