@@ -1,4 +1,4 @@
-import { Alert, Input, Space } from 'antd'
+import { Alert, Button, Input, Space, Table, Tag } from 'antd'
 import styled from 'styled-components'
 
 /**
@@ -77,3 +77,176 @@ export const FullWidthSearchInput = styled(Input.Search)`
     width: 100%;
   }
 `
+
+/**
+ * 主题色主按钮
+ * 用于支持动态主题色的主按钮样式
+ */
+export const ThemedPrimaryButton = styled(Button)<{
+  $themeColor: string
+  $hoverColor: string
+  $activeColor: string
+}>`
+  &.see-btn-primary:not(:disabled):not(.see-btn-disabled) {
+    background: ${(props) => props.$themeColor} !important;
+    border-color: ${(props) => props.$themeColor} !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: ${(props) => props.$hoverColor} !important;
+      border-color: ${(props) => props.$hoverColor} !important;
+      color: #ffffff !important;
+    }
+
+    &:active {
+      background: ${(props) => props.$activeColor} !important;
+      border-color: ${(props) => props.$activeColor} !important;
+      color: #ffffff !important;
+    }
+  }
+`
+
+/**
+ * 收藏模态框标签
+ */
+export const FavoriteModalTag = styled(Tag)`
+  && {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+  }
+`
+
+/**
+ * 可点击的收藏模态框标签
+ */
+export const ClickableFavoriteModalTag = styled(FavoriteModalTag)`
+  && {
+    cursor: pointer;
+  }
+`
+
+/**
+ * 标签颜色选择网格
+ */
+export const TagColorGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+`
+
+/**
+ * 标签颜色选择框
+ */
+export const TagColorBox = styled.div<{ $selected: boolean }>`
+  width: 100%;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid ${(props) => (props.$selected ? '#1677ff' : '#f0f0f0')};
+  background: ${(props) => (props.$selected ? '#f0f8ff' : '#fff')};
+  transition: all 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+    border-color: #1677ff;
+    box-shadow: 0 2px 8px rgba(22, 119, 255, 0.2);
+  }
+`
+
+/**
+ * 标签预览区域
+ */
+export const TagPreviewSection = styled.div`
+  margin-top: 16px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+`
+
+/**
+ * 标签预览标签文本
+ */
+export const TagPreviewLabel = styled.div`
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+`
+
+/**
+ * 收藏列表固定按钮
+ */
+export const FavoritesPinButton = styled(Button)<{ $pinned: boolean }>`
+  && {
+    font-size: 16px !important;
+    transition: all 0.2s;
+
+    ${(props) =>
+      props.$pinned
+        ? `
+      color: #faad14 !important;
+    `
+        : `
+      color: #d9d9d9 !important;
+      &:hover {
+        color: #faad14 !important;
+      }
+    `}
+  }
+`
+
+/**
+ * 表单标签
+ */
+export const FormLabel = styled.label`
+  font-size: 14px;
+  font-weight: 500;
+`
+
+/**
+ * 错误提示文本
+ */
+export const ErrorText = styled.div`
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+`
+
+/**
+ * 表单区域容器
+ */
+export const FormSection = styled.div`
+  margin-top: 16px;
+`
+
+/**
+ * 表单项容器
+ */
+export const FormItem = styled.div`
+  margin-bottom: 8px;
+`
+
+/**
+ * 收藏名称文本
+ */
+export const FavoriteName = styled.span<{ $pinned?: boolean }>`
+  font-weight: ${(props) => (props.$pinned ? 600 : 400)};
+`
+
+/**
+ * 收藏列表表格
+ * 支持固定行的高亮样式
+ */
+export const FavoritesTable = styled(Table)`
+  && .pinned-row {
+    background-color: #fffbf0 !important;
+  }
+
+  && .pinned-row:hover > td {
+    background-color: #fff7e6 !important;
+  }
+` as typeof Table

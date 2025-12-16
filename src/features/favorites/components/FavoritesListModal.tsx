@@ -2,38 +2,18 @@ import { MODAL_Z_INDEX } from '@/shared/constants/theme'
 import type { Favorite, FavoriteTag } from '@/shared/types'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import type { TableColumnsType } from 'antd'
-import { Button, Modal, Space, Table, Tag, Flex } from 'antd'
+import { Button, Modal, Space, Flex } from 'antd'
 import { PlusOutlined, PushpinFilled, PushpinOutlined } from '@ant-design/icons'
 import React, { useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
-import { FullWidthSearchInput, ListSearchContainer } from '../styles/modals.styles'
-
-const StyledTag = styled(Tag)`
-  && {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-  }
-`
-
-const PinButton = styled(Button)<{ $pinned: boolean }>`
-  && {
-    font-size: 16px !important;
-    transition: all 0.2s;
-
-    ${(props) =>
-      props.$pinned
-        ? `
-      color: #faad14 !important;
-    `
-        : `
-      color: #d9d9d9 !important;
-      &:hover {
-        color: #faad14 !important;
-      }
-    `}
-  }
-`
+import {
+  ClickableFavoriteModalTag,
+  FavoriteModalTag,
+  FavoriteName,
+  FavoritesPinButton,
+  FavoritesTable,
+  FullWidthSearchInput,
+  ListSearchContainer,
+} from '../styles/modals.styles'
 
 interface FavoritesListModalProps {
   visible: boolean
@@ -100,7 +80,7 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
       key: 'pin',
       width: 50,
       render: (_: any, record: Favorite) => (
-        <PinButton
+        <FavoritesPinButton
           type="text"
           size="small"
           icon={record.isPinned ? <PushpinFilled /> : <PushpinOutlined />}
@@ -117,7 +97,7 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
       width: 150,
       ellipsis: true,
       render: (name: string, record: Favorite) => (
-        <span style={{ fontWeight: record.isPinned ? 600 : 400 }}>{name}</span>
+        <FavoriteName $pinned={record.isPinned}>{name}</FavoriteName>
       ),
     },
     {
@@ -127,7 +107,7 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
       render: (_: any, record: Favorite) => (
         <Flex wrap="wrap" gap="4px">
           {(record.tags || []).map((tag: FavoriteTag) => (
-            <StyledTag
+            <FavoriteModalTag
               key={tag.label}
               color={tag.color}
               closable
@@ -137,16 +117,12 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
               }}
             >
               {tag.label}
-            </StyledTag>
+            </FavoriteModalTag>
           ))}
           {(!record.tags || record.tags.length < 10) && (
-            <StyledTag
-              icon={<PlusOutlined />}
-              onClick={() => onAddTag(record.id)}
-              style={{ cursor: 'pointer' }}
-            >
+            <ClickableFavoriteModalTag icon={<PlusOutlined />} onClick={() => onAddTag(record.id)}>
               添加
-            </StyledTag>
+            </ClickableFavoriteModalTag>
           )}
         </Flex>
       ),
@@ -196,23 +172,13 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
           allowClear
         />
       </ListSearchContainer>
-      <Table
+      <FavoritesTable
         dataSource={filteredFavoritesList}
         rowKey="id"
         pagination={{ pageSize: 10 }}
         columns={favoritesColumns}
         rowClassName={(record) => (record.isPinned ? 'pinned-row' : '')}
       />
-      <style>
-        {`
-          .see-table .pinned-row {
-            background-color: #fffbf0 !important;
-          }
-          .see-table .pinned-row:hover > td {
-            background-color: #fff7e6 !important;
-          }
-        `}
-      </style>
     </Modal>
   )
 }

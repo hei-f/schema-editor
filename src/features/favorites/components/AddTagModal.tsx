@@ -2,9 +2,20 @@ import { MODAL_Z_INDEX } from '@/shared/constants/theme'
 import type { FavoriteTag } from '@/shared/types'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { generate } from '@ant-design/colors'
-import { Button, ConfigProvider, Input, Modal, Space, Tag } from 'antd'
+import { Button, ConfigProvider, Input, Modal, Space } from 'antd'
 import React, { useMemo, useState } from 'react'
-import styled from 'styled-components'
+import {
+  ErrorText,
+  FavoriteModalTag,
+  FormItem,
+  FormLabel,
+  FormSection,
+  TagColorBox,
+  TagColorGrid,
+  TagPreviewLabel,
+  TagPreviewSection,
+  ThemedPrimaryButton,
+} from '../styles/modals.styles'
 
 const TAG_COLORS = [
   'magenta',
@@ -21,77 +32,6 @@ const TAG_COLORS = [
 ] as const
 
 const EMPTY_TAGS: FavoriteTag[] = []
-
-const ColorGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-  margin-top: 8px;
-`
-
-const ColorBox = styled.div<{ $selected: boolean }>`
-  width: 100%;
-  height: 40px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid ${(props) => (props.$selected ? '#1677ff' : '#f0f0f0')};
-  background: ${(props) => (props.$selected ? '#f0f8ff' : '#fff')};
-  transition: all 0.2s;
-
-  &:hover {
-    transform: scale(1.05);
-    border-color: #1677ff;
-    box-shadow: 0 2px 8px rgba(22, 119, 255, 0.2);
-  }
-`
-
-const StyledTag = styled(Tag)`
-  && {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-  }
-`
-
-const PreviewSection = styled.div`
-  margin-top: 16px;
-  padding: 12px;
-  background: #f5f5f5;
-  border-radius: 4px;
-`
-
-const PreviewLabel = styled.div`
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-`
-
-const StyledButton = styled(Button)<{
-  $themeColor: string
-  $hoverColor: string
-  $activeColor: string
-}>`
-  &.see-btn-primary:not(:disabled):not(.see-btn-disabled) {
-    background: ${(props) => props.$themeColor} !important;
-    border-color: ${(props) => props.$themeColor} !important;
-    color: #ffffff !important;
-
-    &:hover {
-      background: ${(props) => props.$hoverColor} !important;
-      border-color: ${(props) => props.$hoverColor} !important;
-      color: #ffffff !important;
-    }
-
-    &:active {
-      background: ${(props) => props.$activeColor} !important;
-      border-color: ${(props) => props.$activeColor} !important;
-      color: #ffffff !important;
-    }
-  }
-`
 
 interface AddTagModalProps {
   visible: boolean
@@ -126,6 +66,7 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
       hoverColor,
       activeColor,
       modalTheme: {
+        cssVar: { prefix: 'see' },
         token: {
           colorPrimary: primaryColor,
           colorPrimaryHover: hoverColor,
@@ -135,6 +76,7 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
           colorLinkHover: hoverColor,
           colorLinkActive: activeColor,
           colorTextLightSolid: '#ffffff',
+          colorBgSolid: primaryColor,
         },
         components: {
           Modal: {
@@ -184,7 +126,7 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
         footer={
           <Space>
             <Button onClick={handleClose}>取消</Button>
-            <StyledButton
+            <ThemedPrimaryButton
               type="primary"
               onClick={handleAdd}
               $themeColor={primaryColor}
@@ -192,7 +134,7 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
               $activeColor={activeColor}
             >
               确定
-            </StyledButton>
+            </ThemedPrimaryButton>
           </Space>
         }
         width={400}
@@ -200,9 +142,9 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
         zIndex={MODAL_Z_INDEX}
       >
         <div>
-          <div style={{ marginBottom: 8 }}>
-            <label style={{ fontSize: 14, fontWeight: 500 }}>标签名称</label>
-          </div>
+          <FormItem>
+            <FormLabel>标签名称</FormLabel>
+          </FormItem>
           <Input
             value={label}
             onChange={(e) => {
@@ -213,33 +155,33 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
             maxLength={10}
             status={error ? 'error' : ''}
           />
-          {error && <div style={{ color: '#ff4d4f', fontSize: 12, marginTop: 4 }}>{error}</div>}
+          {error && <ErrorText>{error}</ErrorText>}
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <div style={{ marginBottom: 8 }}>
-            <label style={{ fontSize: 14, fontWeight: 500 }}>选择颜色</label>
-          </div>
-          <ColorGrid>
+        <FormSection>
+          <FormItem>
+            <FormLabel>选择颜色</FormLabel>
+          </FormItem>
+          <TagColorGrid>
             {TAG_COLORS.map((c) => (
-              <ColorBox
+              <TagColorBox
                 key={c}
                 $selected={color === c}
                 onClick={() => setColor(c)}
                 data-testid={`color-box-${c}`}
               >
-                <StyledTag color={c}>示例</StyledTag>
-              </ColorBox>
+                <FavoriteModalTag color={c}>示例</FavoriteModalTag>
+              </TagColorBox>
             ))}
-          </ColorGrid>
-        </div>
+          </TagColorGrid>
+        </FormSection>
 
-        <PreviewSection>
-          <PreviewLabel>预览效果：</PreviewLabel>
-          <StyledTag color={color} data-testid="preview-tag">
+        <TagPreviewSection>
+          <TagPreviewLabel>预览效果：</TagPreviewLabel>
+          <FavoriteModalTag color={color} data-testid="preview-tag">
             {label || '标签名称'}
-          </StyledTag>
-        </PreviewSection>
+          </FavoriteModalTag>
+        </TagPreviewSection>
       </Modal>
     </ConfigProvider>
   )

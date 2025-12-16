@@ -3,31 +3,7 @@ import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { generate } from '@ant-design/colors'
 import { Button, ConfigProvider, Input, Modal, Space } from 'antd'
 import React, { useMemo } from 'react'
-import styled from 'styled-components'
-
-const StyledButton = styled(Button)<{
-  $themeColor: string
-  $hoverColor: string
-  $activeColor: string
-}>`
-  &.see-btn-primary:not(:disabled):not(.see-btn-disabled) {
-    background: ${(props) => props.$themeColor} !important;
-    border-color: ${(props) => props.$themeColor} !important;
-    color: #ffffff !important;
-
-    &:hover {
-      background: ${(props) => props.$hoverColor} !important;
-      border-color: ${(props) => props.$hoverColor} !important;
-      color: #ffffff !important;
-    }
-
-    &:active {
-      background: ${(props) => props.$activeColor} !important;
-      border-color: ${(props) => props.$activeColor} !important;
-      color: #ffffff !important;
-    }
-  }
-`
+import { ThemedPrimaryButton } from '../styles/modals.styles'
 
 interface AddFavoriteModalProps {
   visible: boolean
@@ -60,6 +36,7 @@ export const AddFavoriteModal: React.FC<AddFavoriteModalProps> = ({
       hoverColor,
       activeColor,
       modalTheme: {
+        cssVar: { prefix: 'see' },
         token: {
           colorPrimary: primaryColor,
           colorPrimaryHover: hoverColor,
@@ -89,7 +66,7 @@ export const AddFavoriteModal: React.FC<AddFavoriteModalProps> = ({
         footer={
           <Space>
             <Button onClick={onClose}>取消</Button>
-            <StyledButton
+            <ThemedPrimaryButton
               type="primary"
               onClick={onAdd}
               $themeColor={primaryColor}
@@ -97,7 +74,7 @@ export const AddFavoriteModal: React.FC<AddFavoriteModalProps> = ({
               $activeColor={activeColor}
             >
               添加
-            </StyledButton>
+            </ThemedPrimaryButton>
           </Space>
         }
         getContainer={shadowRootManager.getContainer}
