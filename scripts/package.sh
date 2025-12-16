@@ -5,6 +5,10 @@
 
 set -e  # 遇到错误立即退出
 
+# 加载 NVM 环境
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 # 恢复开发模式的函数（确保即使构建失败也会执行）
 restore_dev_mode() {
   echo "🔧 恢复开发模式..."

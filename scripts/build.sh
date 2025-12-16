@@ -5,6 +5,10 @@
 
 set -e
 
+# 加载 NVM 环境
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 echo "🔨 开始开发模式构建..."
 
 # 确保是开发模式
