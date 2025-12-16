@@ -335,6 +335,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     customFileName: exportConfig.customFileName,
     onImportSuccess: handleImportSuccess,
     showLightNotification,
+    onError: (msg) => message.error(msg),
+    onWarning: (msg) => message.warning(msg),
   })
 
   /** 编辑历史管理 */
@@ -427,7 +429,6 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     editorValue,
     isModified,
     onApplyFavorite: handleApplyFavoriteContent,
-    onShowLightNotification: showLightNotification,
     onWarning: (msg) => message.warning(msg),
     onError: (msg) => message.error(msg),
     onSuccess: (msg) => message.success(msg, 1.5),

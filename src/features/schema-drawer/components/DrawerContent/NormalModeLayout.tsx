@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { ThemeProvider } from 'styled-components'
 import {
   ContentAreaContainer,
@@ -19,7 +19,7 @@ import { LightSuccessNotification } from '../../styles/notifications/notificatio
 import { CodeMirrorEditor } from '../editor/CodeMirrorEditor'
 import { DiffModeContent } from './modes'
 import { ToolbarSection } from './shared/ToolbarSection'
-import { BuiltinPreview } from '../preview/BuiltinPreview'
+import { BuiltinPreview } from '../preview/BuiltinPreview.lazy'
 import { useDiffContentTransform } from '../../hooks/diff/useDiffContentTransform'
 import { TOOLBAR_MODE, type ToolbarMode } from '@/shared/constants/ui-modes'
 import type { BaseContentProps, DiffModeContentProps, PreviewModeContentProps } from './types'
@@ -196,7 +196,23 @@ export const NormalModeLayout: React.FC<NormalModeLayoutProps> = (props) => {
             >
               {/* 内置预览器模式：直接在占位区域内渲染 BuiltinPreview */}
               {useBuiltinPreview && !isClosingTransition && !isOpeningInitial && (
-                <BuiltinPreview editorValue={editorValue} contentType={contentType} />
+                <Suspense
+                  fallback={
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: '#999',
+                      }}
+                    >
+                      加载预览中...
+                    </div>
+                  }
+                >
+                  <BuiltinPreview editorValue={editorValue} contentType={contentType} />
+                </Suspense>
               )}
             </PreviewPlaceholder>
 

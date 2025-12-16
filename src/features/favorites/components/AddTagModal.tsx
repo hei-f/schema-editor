@@ -49,9 +49,11 @@ const ColorBox = styled.div<{ $selected: boolean }>`
 `
 
 const StyledTag = styled(Tag)`
-  display: inline-flex;
-  align-items: center;
-  margin: 0;
+  && {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+  }
 `
 
 const PreviewSection = styled.div`
@@ -234,7 +236,9 @@ export const AddTagModal: React.FC<AddTagModalProps> = ({
 
         <PreviewSection>
           <PreviewLabel>预览效果：</PreviewLabel>
-          <StyledTag color={color}>{label || '标签名称'}</StyledTag>
+          <StyledTag color={color} data-testid="preview-tag">
+            {label || '标签名称'}
+          </StyledTag>
         </PreviewSection>
       </Modal>
     </ConfigProvider>

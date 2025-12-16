@@ -8,7 +8,7 @@ import {
 import { MODAL_Z_INDEX } from '@/shared/constants/theme'
 import { logger } from '@/shared/utils/logger'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
-import { Modal, message } from 'antd'
+import { Modal } from 'antd'
 import React, { useCallback } from 'react'
 
 interface UseFileImportExportProps {
@@ -32,6 +32,12 @@ interface UseFileImportExportProps {
 
   /** 轻量提示函数 */
   showLightNotification: (message: string) => void
+
+  /** 错误提示回调 */
+  onError: (message: string) => void
+
+  /** 警告提示回调 */
+  onWarning: (message: string) => void
 }
 
 interface UseFileImportExportReturn {
@@ -57,6 +63,8 @@ export const useFileImportExport = ({
   customFileName,
   onImportSuccess,
   showLightNotification,
+  onError,
+  onWarning,
 }: UseFileImportExportProps): UseFileImportExportReturn => {
   /**
    * 执行导出的核心逻辑
@@ -98,11 +106,11 @@ export const useFileImportExport = ({
         showLightNotification('✅ 已导出到文件')
         logger.log('Export successful:', { fileName: finalFileName, size: blob.size })
       } catch (error) {
-        message.error('导出失败：数据处理错误')
+        onError('导出失败：数据处理错误')
         logger.error('Export failed:', error)
       }
     },
-    [editorValue, paramsKey, wasStringData, showLightNotification]
+    [editorValue, paramsKey, wasStringData, showLightNotification, onError]
   )
 
   /**
@@ -110,7 +118,7 @@ export const useFileImportExport = ({
    */
   const handleExport = useCallback(() => {
     if (!canParse) {
-      message.error('导出失败：JSON 格式错误')
+      onError('导出失败：JSON 格式错误')
       return
     }
 
@@ -145,7 +153,7 @@ export const useFileImportExport = ({
                 Modal.destroyAll()
                 performExport(fileName)
               } else {
-                message.warning('文件名不能为空')
+                onWarning('文件名不能为空')
               }
             }
           },
@@ -169,7 +177,7 @@ export const useFileImportExport = ({
           if (fileName) {
             performExport(fileName)
           } else {
-            message.warning('文件名不能为空')
+            onWarning('文件名不能为空')
             return Promise.reject()
           }
         },
@@ -179,7 +187,7 @@ export const useFileImportExport = ({
       const fileName = generateExportFileName(paramsKey).replace('.json', '')
       performExport(fileName)
     }
-  }, [canParse, customFileName, paramsKey, performExport])
+  }, [canParse, customFileName, paramsKey, performExport, onError, onWarning])
 
   /**
    * 导入 JSON 文件
@@ -188,7 +196,7 @@ export const useFileImportExport = ({
     (file: File): false => {
       // 验证文件大小
       if (!validateFileSize(file)) {
-        message.error('文件过大，最大支持 10MB')
+        onError('文件过大，最大支持 10MB')
         return false
       }
 
@@ -204,7 +212,7 @@ export const useFileImportExport = ({
 
           // 验证 content 字段
           if (!detection.content) {
-            message.error('导入失败：文件内容为空')
+            onError('导入失败：文件内容为空')
             return
           }
 
@@ -228,20 +236,20 @@ export const useFileImportExport = ({
             size: file.size,
           })
         } catch (error) {
-          message.error('导入失败：文件格式错误或非法 JSON')
+          onError('导入失败：文件格式错误或非法 JSON')
           logger.error('Import failed:', error)
         }
       }
 
       reader.onerror = () => {
-        message.error('文件读取失败')
+        onError('文件读取失败')
         logger.error('FileReader error')
       }
 
       reader.readAsText(file)
       return false // 阻止默认上传行为
     },
-    [onImportSuccess, showLightNotification]
+    [onImportSuccess, showLightNotification, onError]
   )
 
   return {

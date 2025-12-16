@@ -10,11 +10,28 @@ import { ContentType, EditorTheme } from '@/shared/types'
 import type { CodeMirrorEditorHandle } from '../../editor/CodeMirrorEditor'
 
 // Mock styled-components
-vi.mock('styled-components', () => ({
-  ThemeProvider: ({ children }: any) => children,
-  keyframes: () => '',
-  default: () => () => null,
-}))
+vi.mock('styled-components', () => {
+  const mockStyled = (tag: string) => (_styles: any) => {
+    const Component = ({ children, ...props }: any) => React.createElement(tag, props, children)
+    Component.displayName = `styled.${tag}`
+    return Component
+  }
+  const styledProxy = new Proxy(mockStyled, {
+    get: (target, prop) => {
+      if (typeof prop === 'string') {
+        return target(prop)
+      }
+      return target
+    },
+  })
+  return {
+    ThemeProvider: ({ children }: any) => children,
+    keyframes: () => '',
+    css: () => '',
+    styled: styledProxy,
+    default: styledProxy,
+  }
+})
 
 // Mock 子组件
 vi.mock('../../editor/CodeMirrorEditor', () => {
@@ -31,6 +48,15 @@ vi.mock('../../editor/CodeMirrorEditor', () => {
   MockCodeMirrorEditor.displayName = 'MockCodeMirrorEditor'
   return { CodeMirrorEditor: MockCodeMirrorEditor }
 })
+
+vi.mock('../../editor/SchemaDiffView', () => ({
+  SchemaDiffView: (props: any) => (
+    <div data-testid="schema-diff-view">
+      <div data-testid="diff-left">{props.transformedLeftContent}</div>
+      <div data-testid="diff-right">{props.transformedRightContent}</div>
+    </div>
+  ),
+}))
 
 vi.mock('./modes/DiffModeContent', () => ({
   DiffModeContent: (props: any) => (
