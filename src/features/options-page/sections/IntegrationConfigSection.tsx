@@ -1,7 +1,7 @@
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import { FORM_PATHS } from '@/shared/constants/form-paths'
 import { ApiOutlined } from '@ant-design/icons'
-import { Form, Input, Space, Tooltip, Typography } from 'antd'
+import { Form, Space, Tooltip } from 'antd'
 import React from 'react'
 import { SectionCard } from '../components/SectionCard'
 import { FormSectionLabelWithVariant } from '../components/FormSectionLabelWithVariant'
@@ -9,14 +9,14 @@ import {
   CodeBlock,
   ExampleLabel,
   ExampleSection,
+  FixedWidthInput,
   FixedWidthInputNumber,
   FormContent,
   FormSection,
   HelpTooltipIcon,
+  SecondaryHintText,
 } from '../styles/layout.styles'
 import type { SectionProps } from '../types'
-
-const { Text } = Typography
 
 /**
  * 集成配置区块
@@ -65,14 +65,11 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               },
             ]}
           >
-            <Input
-              placeholder={`例如: ${DEFAULT_VALUES.attributeName}`}
-              style={{ maxWidth: 300 }}
-            />
+            <FixedWidthInput placeholder={`例如: ${DEFAULT_VALUES.attributeName}`} $width={300} />
           </Form.Item>
-          <Text type="secondary" style={{ display: 'block', marginTop: -8, marginBottom: 16 }}>
+          <SecondaryHintText type="secondary">
             实际使用的 HTML 属性为 <code>data-{attributeName ?? DEFAULT_VALUES.attributeName}</code>
-          </Text>
+          </SecondaryHintText>
         </FormContent>
       </FormSection>
 
@@ -125,9 +122,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.sourceConfig.contentSource}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -148,9 +145,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.sourceConfig.hostSource}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
         </FormContent>
@@ -176,9 +173,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.getSchema}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -196,9 +193,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.updateSchema}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -216,9 +213,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.checkPreview}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -236,9 +233,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.renderPreview}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -256,9 +253,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.cleanupPreview}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -276,9 +273,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.startRecording}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -296,9 +293,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.stopRecording}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
           <Form.Item
@@ -316,9 +313,9 @@ export const IntegrationConfigSection: React.FC<SectionProps> = (props) => {
               { pattern: /^[A-Z][A-Z0-9_]*$/, message: '建议使用大写字母和下划线' },
             ]}
           >
-            <Input
+            <FixedWidthInput
               placeholder={DEFAULT_VALUES.apiConfig.messageTypes.schemaPush}
-              style={{ maxWidth: 300 }}
+              $width={300}
             />
           </Form.Item>
         </FormContent>
