@@ -2,29 +2,17 @@ import type { Mocked } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
-import { Modal, message } from 'antd'
 import { useFavoritesManagement } from '../../storage/useFavoritesManagement'
 import type { Favorite } from '@/shared/types'
 
 // Mock dependencies
 vi.mock('@/shared/utils/browser/storage')
-vi.mock('antd', () => ({
-  Modal: {
-    confirm: vi.fn(),
-  },
-  message: {
-    success: vi.fn(),
-    warning: vi.fn(),
-    error: vi.fn(),
-  },
-}))
 
 const mockStorage = storage as Mocked<typeof storage>
-const mockModal = Modal as Mocked<typeof Modal>
-const mockMessage = message as Mocked<typeof message>
 
 describe('useFavoritesManagement Hook 测试', () => {
   const mockOnApplyFavorite = vi.fn()
+  const mockOnSuccess = vi.fn()
   const mockOnWarning = vi.fn()
   const mockOnError = vi.fn()
 
@@ -32,6 +20,7 @@ describe('useFavoritesManagement Hook 测试', () => {
     editorValue: 'test content',
     isModified: false,
     onApplyFavorite: mockOnApplyFavorite,
+    onSuccess: mockOnSuccess,
     onWarning: mockOnWarning,
     onError: mockOnError,
   }
@@ -46,6 +35,10 @@ describe('useFavoritesManagement Hook 测试', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockOnSuccess.mockClear()
+    mockOnApplyFavorite.mockClear()
+    mockOnWarning.mockClear()
+    mockOnError.mockClear()
 
     // 初始化 shadowRootManager
     const mockShadowRoot = document.createElement('div') as unknown as ShadowRoot
@@ -148,7 +141,7 @@ describe('useFavoritesManagement Hook 测试', () => {
       })
 
       expect(mockStorage.addFavorite).toHaveBeenCalledWith('My Favorite', 'test content')
-      expect(mockMessage.success).toHaveBeenCalledWith('已添加到收藏')
+      expect(mockOnSuccess).toHaveBeenCalledWith('已添加到收藏')
       expect(result.current.addFavoriteModalVisible).toBe(false)
       expect(result.current.favoriteNameInput).toBe('')
     })
@@ -225,17 +218,13 @@ describe('useFavoritesManagement Hook 测试', () => {
       await waitFor(() => {
         expect(mockOnApplyFavorite).toHaveBeenCalledWith('{"test": "data"}')
         expect(mockStorage.updateFavoriteUsedTime).toHaveBeenCalledWith('fav_1')
-        expect(mockMessage.success).toHaveBeenCalledWith('已应用收藏内容')
+        expect(mockOnSuccess).toHaveBeenCalledWith('已应用收藏内容')
         expect(result.current.favoritesModalVisible).toBe(false)
       })
     })
 
-    it('已修改时应该显示确认对话框', async () => {
+    it('已修改时应该打开确认modal', async () => {
       mockStorage.updateFavoriteUsedTime.mockResolvedValue(undefined)
-      mockModal.confirm.mockImplementation(({ onOk }: { onOk?: () => void }) => {
-        onOk?.()
-        return {} as any
-      })
 
       const { result } = renderHook(() =>
         useFavoritesManagement({
@@ -248,15 +237,23 @@ describe('useFavoritesManagement Hook 测试', () => {
         result.current.handleApplyFavorite(mockFavorite)
       })
 
-      expect(mockModal.confirm).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: '确认应用收藏',
-          content: '当前内容未保存，应用收藏将替换当前内容，确认吗？',
-        })
-      )
+      // 应该设置applyConfirmModalVisible为true
+      expect(result.current.applyConfirmModalVisible).toBe(true)
+      expect(result.current.pendingApplyFavorite).toEqual(mockFavorite)
+
+      // 此时还未应用收藏
+      expect(mockOnApplyFavorite).not.toHaveBeenCalled()
+
+      // 模拟用户确认
+      await act(async () => {
+        result.current.handleConfirmApply()
+      })
 
       await waitFor(() => {
         expect(mockOnApplyFavorite).toHaveBeenCalledWith('{"test": "data"}')
+        expect(mockOnSuccess).toHaveBeenCalledWith('已应用收藏内容')
+        expect(result.current.applyConfirmModalVisible).toBe(false)
+        expect(result.current.pendingApplyFavorite).toBe(null)
       })
     })
   })
@@ -276,7 +273,7 @@ describe('useFavoritesManagement Hook 测试', () => {
       expect(mockStorage.deleteFavorite).toHaveBeenCalledWith('fav_1')
       expect(mockStorage.getFavorites).toHaveBeenCalled()
       expect(result.current.favoritesList).toEqual(updatedFavorites)
-      expect(mockMessage.success).toHaveBeenCalledWith('收藏已删除')
+      expect(mockOnSuccess).toHaveBeenCalledWith('收藏已删除')
     })
 
     it('删除失败时应该显示错误', async () => {

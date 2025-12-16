@@ -18,6 +18,11 @@ vi.mock('../FavoriteEditModal', () => ({
     visible ? <div data-testid="edit-modal">FavoriteEditModal</div> : null,
 }))
 
+vi.mock('../ApplyFavoriteConfirmModal', () => ({
+  ApplyFavoriteConfirmModal: ({ visible }: any) =>
+    visible ? <div data-testid="apply-confirm-modal">ApplyFavoriteConfirmModal</div> : null,
+}))
+
 describe('FavoritesManager组件测试', () => {
   const mockFavorite: Favorite = {
     id: 'fav_1',
