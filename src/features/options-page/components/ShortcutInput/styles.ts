@@ -1,4 +1,4 @@
-import { Tag } from 'antd'
+import { Button, Tag } from 'antd'
 import styled from 'styled-components'
 
 export const ShortcutInputContainer = styled.div`
@@ -62,5 +62,54 @@ export const WarningTag = styled(Tag)`
   && {
     margin: 0;
     font-size: 12px;
+  }
+`
+
+/**
+ * 快捷键录入确认按钮
+ * 使用主题色作为背景色
+ */
+export const ShortcutConfirmButton = styled(Button)<{
+  $themeColor: string
+  $hoverColor: string
+  $activeColor: string
+}>`
+  &.see-btn-primary:not(:disabled):not(.see-btn-disabled) {
+    border-radius: 6px;
+    background: ${(props) => props.$themeColor} !important;
+    border-color: ${(props) => props.$themeColor} !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: ${(props) => props.$hoverColor} !important;
+      border-color: ${(props) => props.$hoverColor} !important;
+      color: #ffffff !important;
+    }
+
+    &:active {
+      background: ${(props) => props.$activeColor} !important;
+      border-color: ${(props) => props.$activeColor} !important;
+      color: #ffffff !important;
+    }
+  }
+`
+
+/**
+ * 快捷键录入取消按钮
+ */
+export const ShortcutCancelButton = styled(Button)`
+  && {
+    border-radius: 6px;
+  }
+`
+
+/**
+ * 快捷键重置按钮
+ */
+export const ShortcutResetButton = styled(Button)`
+  && {
+    border-radius: 6px;
+    opacity: ${(props) => (props.disabled ? 0.3 : 1)};
+    transition: opacity 0.2s ease;
   }
 `

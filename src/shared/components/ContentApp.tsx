@@ -388,6 +388,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     const activeColor = colors[6]
 
     return {
+      cssVar: { prefix: 'see' },
       token: {
         colorPrimary: primaryColor,
         colorPrimaryHover: hoverColor,
@@ -397,6 +398,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         colorLinkHover: hoverColor,
         colorLinkActive: activeColor,
         colorTextLightSolid: '#ffffff',
+        colorBgSolid: primaryColor,
       },
     }
   }, [drawerConfig?.themeColor])

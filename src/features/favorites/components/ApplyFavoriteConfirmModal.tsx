@@ -1,29 +1,25 @@
 import { MODAL_Z_INDEX } from '@/shared/constants/theme'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { generate } from '@ant-design/colors'
-import { Button, ConfigProvider, Input, Modal, Space } from 'antd'
+import { Button, ConfigProvider, Modal, Space } from 'antd'
 import React, { useMemo } from 'react'
 import { ThemedPrimaryButton } from '../styles/modals.styles'
 
-interface AddFavoriteModalProps {
+interface ApplyFavoriteConfirmModalProps {
   visible: boolean
-  favoriteNameInput: string
   themeColor: string
-  onInputChange: (value: string) => void
-  onAdd: () => Promise<void>
-  onClose: () => void
+  onConfirm: () => void
+  onCancel: () => void
 }
 
 /**
- * 添加收藏模态框组件
+ * 应用收藏确认弹窗组件
  */
-export const AddFavoriteModal: React.FC<AddFavoriteModalProps> = ({
+export const ApplyFavoriteConfirmModal: React.FC<ApplyFavoriteConfirmModalProps> = ({
   visible,
-  favoriteNameInput,
   themeColor,
-  onInputChange,
-  onAdd,
-  onClose,
+  onConfirm,
+  onCancel,
 }) => {
   const { modalTheme, primaryColor, hoverColor, activeColor } = useMemo(() => {
     const colors = generate(themeColor)
@@ -60,33 +56,27 @@ export const AddFavoriteModal: React.FC<AddFavoriteModalProps> = ({
   return (
     <ConfigProvider theme={modalTheme} prefixCls="see">
       <Modal
-        title="添加到收藏"
+        title="确认应用收藏"
         open={visible}
-        onCancel={onClose}
+        onCancel={onCancel}
         footer={
           <Space>
-            <Button onClick={onClose}>取消</Button>
+            <Button onClick={onCancel}>取消</Button>
             <ThemedPrimaryButton
               type="primary"
-              onClick={onAdd}
+              onClick={onConfirm}
               $themeColor={primaryColor}
               $hoverColor={hoverColor}
               $activeColor={activeColor}
             >
-              添加
+              应用
             </ThemedPrimaryButton>
           </Space>
         }
         getContainer={shadowRootManager.getContainer}
         zIndex={MODAL_Z_INDEX}
       >
-        <Input
-          placeholder="请输入收藏名称（不超过50字符）"
-          value={favoriteNameInput}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInputChange(e.target.value)}
-          maxLength={50}
-          onPressEnter={onAdd}
-        />
+        当前内容未保存，应用收藏将替换当前内容，确认吗？
       </Modal>
     </ConfigProvider>
   )

@@ -7,6 +7,7 @@ import { DEFAULT_VALUES, RECORDING_PANEL_WIDTH } from '@/shared/constants/defaul
 import { FULL_SCREEN_MODE, type FullScreenMode } from '@/shared/constants/ui-modes'
 import { FavoritesManager } from '@/features/favorites/components/FavoritesManager'
 import { AddTagModal } from '@/features/favorites/components/AddTagModal'
+import { generate } from '@ant-design/colors'
 import type {
   DrawerShortcutsConfig,
   ElementAttributes,
@@ -99,6 +100,16 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
 
   // 根据编辑器主题计算 styled-components 主题变量
   const editorThemeVars = useMemo(() => getEditorThemeVars(editorTheme), [editorTheme])
+
+  // 计算主题色梯度，用于传递给需要动态主题色的组件
+  const themeColors = useMemo(() => {
+    const colors = generate(themeColor)
+    return {
+      primaryColor: colors[5],
+      hoverColor: colors[4],
+      activeColor: colors[6],
+    }
+  }, [themeColor])
 
   const [editorValue, setEditorValue] = useState<string>('')
   const [originalValue, setOriginalValue] = useState<string>('') // 原始值，用于 diff 对比
@@ -409,11 +420,14 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     editingContent,
     addTagModalVisible,
     currentFavoriteForTag,
+    applyConfirmModalVisible,
     setFavoriteNameInput,
     handleOpenAddFavorite,
     handleAddFavorite,
     handleOpenFavorites,
     handleApplyFavorite,
+    handleConfirmApply,
+    handleCancelApply,
     handleDeleteFavorite,
     handlePinFavorite,
     handleOpenAddTag,
@@ -1043,8 +1057,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           section: {
             borderRadius: isMaxWidth ? '0px' : '12px 0px 0px 12px',
             transition: 'border-radius 0.3s ease',
-            '--drawer-theme-color': themeColor,
-          } as React.CSSProperties,
+          },
           body: { padding: 0 },
           header: { position: 'relative', borderBottom: 'none' },
           footer: { borderTop: 'none', padding: '16px 24px' },
@@ -1058,6 +1071,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             isSaving={isSaving}
             isModified={isModified}
             onError={(msg) => message.error(msg)}
+            themeColor={themeColors.primaryColor}
+            hoverColor={themeColors.hoverColor}
+            activeColor={themeColors.activeColor}
           />
         }
       >
@@ -1147,6 +1163,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         editingFavoriteId={editingFavoriteId}
         editingName={editingName}
         editingContent={editingContent}
+        applyConfirmModalVisible={applyConfirmModalVisible}
         editorTheme={editorTheme}
         themeColor={config.themeColor}
         onAddFavoriteInputChange={setFavoriteNameInput}
@@ -1155,6 +1172,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         onCloseFavoritesModal={closeFavoritesModal}
         onEditFavorite={handleEditFavorite}
         onApplyFavorite={handleApplyFavorite}
+        onConfirmApply={handleConfirmApply}
+        onCancelApply={handleCancelApply}
         onDeleteFavorite={handleDeleteFavorite}
         onPinFavorite={handlePinFavorite}
         onAddTag={handleOpenAddTag}

@@ -2,7 +2,7 @@ import { ContentType } from '@/shared/types'
 import { MarkdownEditor, parserMarkdownToSlateNode } from '@ant-design/agentic-ui'
 import type { Elements, MarkdownEditorInstance } from '@ant-design/agentic-ui'
 import React, { useEffect, useRef, useState } from 'react'
-import styled from 'styled-components'
+import { BuiltinPreviewContainer, BuiltinPreviewContentArea } from './styles'
 
 /**
  * 内置预览组件 Props
@@ -13,39 +13,6 @@ interface BuiltinPreviewProps {
   /** 内容类型 */
   contentType: ContentType
 }
-
-/**
- * 预览容器样式
- * 保持与宿主预览器相同的视觉效果：12px padding + 白色内容区
- */
-const PreviewContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  padding: 12px;
-  box-sizing: border-box;
-`
-
-/**
- * 内容区域样式
- */
-const ContentArea = styled.div`
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background: #fff;
-  border-radius: 12px;
-
-  /* MarkdownEditor 样式覆盖 */
-  .md-editor-container {
-    height: 100%;
-    border: none;
-    border-radius: 8px;
-  }
-
-  .md-editor-content {
-    padding: 16px;
-  }
-`
 
 /**
  * 将编辑器内容转换为 Slate 节点列表
@@ -130,10 +97,10 @@ export const BuiltinPreview: React.FC<BuiltinPreviewProps> = (props) => {
   }, [editorValue, contentType])
 
   return (
-    <PreviewContainer>
-      <ContentArea>
+    <BuiltinPreviewContainer>
+      <BuiltinPreviewContentArea>
         <MarkdownEditor editorRef={editorRef} initValue={initialValue} readonly height="100%" />
-      </ContentArea>
-    </PreviewContainer>
+      </BuiltinPreviewContentArea>
+    </BuiltinPreviewContainer>
   )
 }

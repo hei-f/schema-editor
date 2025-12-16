@@ -6,14 +6,17 @@ import {
 } from '@/shared/constants/keyboard-shortcuts'
 import type { ShortcutKey } from '@/shared/types'
 import { CheckOutlined, CloseOutlined, UndoOutlined } from '@ant-design/icons'
-import { Button, Tooltip } from 'antd'
+import { Tooltip } from 'antd'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActionButtonGroup,
   PlaceholderText,
   RecordingHintText,
+  ShortcutCancelButton,
+  ShortcutConfirmButton,
   ShortcutDisplayBox,
   ShortcutInputContainer,
+  ShortcutResetButton,
   WarningTag,
 } from './styles'
 
@@ -28,6 +31,12 @@ interface ShortcutInputProps {
   placeholder?: string
   /** 默认值，用于重置 */
   defaultValue?: ShortcutKey
+  /** 主题色 */
+  themeColor?: string
+  /** 悬浮态颜色 */
+  hoverColor?: string
+  /** 激活态颜色 */
+  activeColor?: string
 }
 
 /**
@@ -35,7 +44,16 @@ interface ShortcutInputProps {
  * 支持通过按键直接录入快捷键组合
  */
 export const ShortcutInput: React.FC<ShortcutInputProps> = (props) => {
-  const { value, onChange, disabled = false, placeholder = '点击录入快捷键', defaultValue } = props
+  const {
+    value,
+    onChange,
+    disabled = false,
+    placeholder = '点击录入快捷键',
+    defaultValue,
+    themeColor = '#1677ff',
+    hoverColor = '#4096ff',
+    activeColor = '#0958d9',
+  } = props
 
   const [isRecording, setIsRecording] = useState(false)
   const [tempShortcut, setTempShortcut] = useState<ShortcutKey | null>(null)
@@ -159,22 +177,23 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = (props) => {
       {isRecording ? (
         <ActionButtonGroup>
           <Tooltip title="确认 (Enter)">
-            <Button
+            <ShortcutConfirmButton
               size="small"
               type="primary"
               icon={<CheckOutlined />}
               onClick={confirmRecording}
               disabled={!tempShortcut || Boolean(isReserved)}
-              style={{ borderRadius: 6, background: '#13c2c2', borderColor: '#13c2c2' }}
+              $themeColor={themeColor}
+              $hoverColor={hoverColor}
+              $activeColor={activeColor}
               data-testid="shortcut-confirm-button"
             />
           </Tooltip>
           <Tooltip title="取消 (Esc)">
-            <Button
+            <ShortcutCancelButton
               size="small"
               icon={<CloseOutlined />}
               onClick={cancelRecording}
-              style={{ borderRadius: 6 }}
               data-testid="shortcut-cancel-button"
             />
           </Tooltip>
@@ -182,13 +201,12 @@ export const ShortcutInput: React.FC<ShortcutInputProps> = (props) => {
       ) : (
         defaultValue && (
           <Tooltip title="重置为默认">
-            <Button
+            <ShortcutResetButton
               size="small"
               type="text"
               icon={<UndoOutlined />}
               onClick={resetToDefault}
               disabled={disabled || !isModified}
-              style={{ borderRadius: 6, opacity: isModified ? 1 : 0.3 }}
             />
           </Tooltip>
         )

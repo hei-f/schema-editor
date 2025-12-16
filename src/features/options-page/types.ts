@@ -13,6 +13,12 @@ export interface SectionProps {
   onActiveChange?: (active: boolean) => void
   /** 恢复默认回调 */
   onResetDefault?: () => void
+  /** 主题色 */
+  themeColor?: string
+  /** 悬浮态颜色 */
+  hoverColor?: string
+  /** 激活态颜色 */
+  activeColor?: string
 }
 
 /**

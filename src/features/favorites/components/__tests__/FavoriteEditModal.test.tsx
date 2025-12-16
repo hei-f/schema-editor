@@ -40,6 +40,15 @@ vi.mock('@/features/schema-drawer/components/editor/CodeMirrorEditor', () => ({
 }))
 
 /**
+ * 默认主题色配置
+ */
+const defaultThemeColors = {
+  themeColor: '#1677ff',
+  hoverColor: '#4096ff',
+  activeColor: '#0958d9',
+}
+
+/**
  * 获取保存按钮
  */
 const getSaveButton = (): HTMLButtonElement => {
@@ -61,6 +70,7 @@ describe('FavoriteEditModal组件测试', () => {
     initialName: '测试收藏',
     initialContent: validJson,
     editorTheme: 'seeDark' as const,
+    ...defaultThemeColors,
     onSave: vi.fn().mockResolvedValue(undefined),
     onClose: vi.fn(),
   }

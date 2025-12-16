@@ -13,6 +13,7 @@ import {
   FormContent,
   FormSection,
   HelpTooltipIcon,
+  SecondaryHintText,
   SpacedAlert,
 } from '../styles/layout.styles'
 import type { SectionProps } from '../types'
@@ -253,9 +254,9 @@ export const ElementDetectionSection: React.FC<SectionProps> = (props) => {
               <Radio value="eventDriven">
                 <Space>
                   事件驱动
-                  <Text type="secondary" style={{ fontSize: 12 }}>
+                  <SecondaryHintText type="secondary" style={{ fontSize: 12, margin: 0 }}>
                     推荐，性能更好
-                  </Text>
+                  </SecondaryHintText>
                 </Space>
               </Radio>
             </Radio.Group>
@@ -374,15 +375,15 @@ export const ElementDetectionSection: React.FC<SectionProps> = (props) => {
                     <Space orientation="vertical">
                       <Radio value={'iframe' as IframeSchemaTarget}>
                         <Text strong>iframe 内部</Text>
-                        <Text type="secondary" style={{ marginLeft: 8 }}>
+                        <SecondaryHintText type="secondary" style={{ marginLeft: 8, margin: 0 }}>
                           向 iframe 的 window 发送 postMessage（默认）
-                        </Text>
+                        </SecondaryHintText>
                       </Radio>
                       <Radio value={'topFrame' as IframeSchemaTarget}>
                         <Text strong>主页面</Text>
-                        <Text type="secondary" style={{ marginLeft: 8 }}>
+                        <SecondaryHintText type="secondary" style={{ marginLeft: 8, margin: 0 }}>
                           向 top frame 的 window 发送 postMessage
-                        </Text>
+                        </SecondaryHintText>
                       </Radio>
                     </Space>
                   </Radio.Group>

@@ -13,6 +13,7 @@ import {
   PreviewModeContainer,
   PreviewPlaceholder,
   PreviewResizer,
+  SuspenseFallbackContainer,
 } from '../../styles/layout/drawer.styles'
 import { EditorContainer } from '../../styles/editor/editor.styles'
 import { LightSuccessNotification } from '../../styles/notifications/notifications.styles'
@@ -197,19 +198,7 @@ export const NormalModeLayout: React.FC<NormalModeLayoutProps> = (props) => {
               {/* 内置预览器模式：直接在占位区域内渲染 BuiltinPreview */}
               {useBuiltinPreview && !isClosingTransition && !isOpeningInitial && (
                 <Suspense
-                  fallback={
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '100%',
-                        color: '#999',
-                      }}
-                    >
-                      加载预览中...
-                    </div>
-                  }
+                  fallback={<SuspenseFallbackContainer>加载预览中...</SuspenseFallbackContainer>}
                 >
                   <BuiltinPreview editorValue={editorValue} contentType={contentType} />
                 </Suspense>

@@ -18,6 +18,11 @@ vi.mock('../FavoriteEditModal', () => ({
     visible ? <div data-testid="edit-modal">FavoriteEditModal</div> : null,
 }))
 
+vi.mock('../ApplyFavoriteConfirmModal', () => ({
+  ApplyFavoriteConfirmModal: ({ visible }: any) =>
+    visible ? <div data-testid="apply-confirm-modal">ApplyFavoriteConfirmModal</div> : null,
+}))
+
 describe('FavoritesManager组件测试', () => {
   const mockFavorite: Favorite = {
     id: 'fav_1',
@@ -36,6 +41,7 @@ describe('FavoritesManager组件测试', () => {
     editingFavoriteId: null,
     editingName: '',
     editingContent: '',
+    applyConfirmModalVisible: false,
     editorTheme: 'seeDark' as const,
     themeColor: '#1890ff',
     onAddFavoriteInputChange: vi.fn(),
@@ -44,6 +50,8 @@ describe('FavoritesManager组件测试', () => {
     onCloseFavoritesModal: vi.fn(),
     onEditFavorite: vi.fn(),
     onApplyFavorite: vi.fn(),
+    onConfirmApply: vi.fn(),
+    onCancelApply: vi.fn(),
     onDeleteFavorite: vi.fn(),
     onPinFavorite: vi.fn(),
     onAddTag: vi.fn(),
