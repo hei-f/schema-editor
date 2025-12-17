@@ -188,6 +188,12 @@ export const FORM_PATHS = {
 
   /** 主题色 */
   themeColor: ['themeColor'],
+
+  /** 右键菜单配置 */
+  contextMenuConfig: {
+    /** 是否启用右键菜单 */
+    enabled: ['contextMenuConfig', 'enabled'],
+  },
 }
 
 /**

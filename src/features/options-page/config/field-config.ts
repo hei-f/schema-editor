@@ -161,6 +161,12 @@ export const FIELD_GROUPS: Record<string, FieldGroup> = {
       await storage.setDrawerShortcuts(allValues.drawerShortcuts)
     },
   },
+  contextMenuConfig: {
+    fieldPaths: [FORM_PATHS.contextMenuConfig.enabled],
+    save: async (allValues: any) => {
+      await storage.setContextMenuConfig(allValues.contextMenuConfig)
+    },
+  },
 }
 
 /**

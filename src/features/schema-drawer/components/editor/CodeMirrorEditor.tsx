@@ -56,6 +56,10 @@ interface CodeMirrorEditorProps {
   enableAstHints?: boolean
   /** 判断当前内容是否为 AST 类型 */
   isAstContent?: () => boolean
+  /** 是否启用右键菜单 */
+  enableContextMenu?: boolean
+  /** 右键菜单事件回调 */
+  onContextMenuAction?: (event: MouseEvent, view: EditorView) => void
 }
 
 /**
@@ -74,6 +78,8 @@ export interface CodeMirrorEditorHandle {
   showErrorWidget: (line: number, column: number, message: string) => void
   /** 隐藏错误提示 widget */
   hideErrorWidget: () => void
+  /** 替换指定范围的文本 */
+  replaceRange: (from: number, to: number, text: string) => void
 }
 
 /** 错误提示 widget 的 effect */
@@ -300,6 +306,8 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
     placeholder: placeholderText = '',
     enableAstHints = false,
     isAstContent = () => false,
+    enableContextMenu = false,
+    onContextMenuAction,
   } = props
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
@@ -428,6 +436,13 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
         view.focus()
       },
       hideErrorWidget: hideErrorWidgetFn,
+      replaceRange: (from: number, to: number, text: string) => {
+        if (!viewRef.current) return
+        viewRef.current.dispatch({
+          changes: { from, to, insert: text },
+          selection: EditorSelection.cursor(from + text.length),
+        })
+      },
     }),
     []
   )
@@ -595,6 +610,14 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
                 )
                 return true
               }
+            }
+            return false
+          },
+          contextmenu: (event, view) => {
+            if (enableContextMenu && onContextMenuAction) {
+              event.preventDefault()
+              onContextMenuAction(event, view)
+              return true
             }
             return false
           },

@@ -73,6 +73,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         shortcuts,
         iframeConfigData,
         themeColor,
+        contextMenuConfig,
       ] = await Promise.all([
         storage.getApiConfig(),
         storage.getToolbarButtons(),
@@ -87,6 +88,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         storage.getDrawerShortcuts(),
         storage.getIframeConfig(),
         storage.getThemeColor(),
+        storage.getContextMenuConfig(),
       ])
       setDrawerConfig({
         apiConfig,
@@ -100,6 +102,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         recordingModeConfig,
         autoParseString,
         themeColor,
+        contextMenuConfig,
       })
       setDrawerShortcuts(shortcuts)
       setIframeConfig(iframeConfigData)

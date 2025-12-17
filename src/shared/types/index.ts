@@ -270,6 +270,18 @@ export interface DrawerShortcutsConfig {
 export type EditorTheme = 'light' | 'dark' | 'seeDark'
 
 /**
+ * 编辑器右键菜单配置
+ */
+export interface EditorContextMenuConfig {
+  /** 是否启用右键菜单 */
+  enabled: boolean
+  /** 是否显示定位错误选项 */
+  locateError: boolean
+  /** 是否显示JSON修复选项 */
+  repairJson: boolean
+}
+
+/**
  * SchemaDrawer 组件配置
  * 所有配置统一放在此对象中，由父组件加载后传入
  */
@@ -296,6 +308,8 @@ export interface SchemaDrawerConfig {
   autoParseString: boolean
   /** 主题色 */
   themeColor: string
+  /** 右键菜单配置 */
+  contextMenuConfig: EditorContextMenuConfig
 }
 
 /**
@@ -359,6 +373,8 @@ export interface StorageData {
   drawerShortcuts: DrawerShortcutsConfig
   /** 主题色 */
   themeColor: string
+  /** 右键菜单配置 */
+  contextMenuConfig: EditorContextMenuConfig
 }
 
 /**

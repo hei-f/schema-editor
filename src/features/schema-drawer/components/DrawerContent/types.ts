@@ -5,6 +5,7 @@ import type {
   SchemaSnapshot,
   ToolbarButtonsConfig,
 } from '@/shared/types'
+import type { EditorView } from '@codemirror/view'
 import type { EditorThemeVars } from '../../styles/editor/editor-theme-vars'
 import type { CodeMirrorEditorHandle } from '../editor/CodeMirrorEditor'
 import type { DiffToolbarActions } from '../toolbar/DrawerToolbar'
@@ -45,6 +46,8 @@ export interface EditorProps {
   enableAstTypeHints: boolean
   contentType: ContentType
   onChange: (value: string | undefined) => void
+  enableContextMenu?: boolean
+  onContextMenuAction?: (event: MouseEvent, view: EditorView) => void
 }
 
 /**
@@ -159,4 +162,10 @@ export interface DrawerContentProps {
   normalModeProps: Omit<NormalModeContentProps, keyof BaseContentProps>
   /** 基础 props */
   baseProps: BaseContentProps
+  /** 主题色 */
+  themeColor?: string
+  /** 悬浮态颜色 */
+  hoverColor?: string
+  /** 激活态颜色 */
+  activeColor?: string
 }

@@ -52,6 +52,12 @@ interface RecordingModeLayoutProps {
   recordingModeProps: Omit<RecordingModeContentProps, keyof BaseContentProps>
   previewModeProps: Omit<PreviewModeContentProps, keyof BaseContentProps>
   baseProps: BaseContentProps
+  /** 主题色 */
+  themeColor?: string
+  /** 悬浮态颜色 */
+  hoverColor?: string
+  /** 激活态颜色 */
+  activeColor?: string
 }
 
 /**
@@ -85,14 +91,25 @@ export const RecordingModeLayout: React.FC<RecordingModeLayoutProps> = (props) =
     recordingModeProps,
     previewModeProps,
     baseProps,
+    themeColor,
+    hoverColor,
+    activeColor,
   } = props
 
   const toolbarMode = getToolbarMode(isDiffMode, previewEnabled, isClosingPreview)
 
   // 编辑器相关 props
   const { editorProps, notificationProps } = baseProps
-  const { editorRef, editorValue, editorTheme, enableAstTypeHints, contentType, onChange } =
-    editorProps
+  const {
+    editorRef,
+    editorValue,
+    editorTheme,
+    enableAstTypeHints,
+    contentType,
+    onChange,
+    enableContextMenu,
+    onContextMenuAction,
+  } = editorProps
   const { lightNotifications } = notificationProps
 
   // 录制模式相关
@@ -143,6 +160,8 @@ export const RecordingModeLayout: React.FC<RecordingModeLayoutProps> = (props) =
         placeholder="在此输入 JSON Schema..."
         enableAstHints={enableAstTypeHints}
         isAstContent={() => contentType === ContentType.Ast}
+        enableContextMenu={enableContextMenu}
+        onContextMenuAction={onContextMenuAction}
       />
     </>
   )
@@ -162,6 +181,9 @@ export const RecordingModeLayout: React.FC<RecordingModeLayoutProps> = (props) =
       hasPendingRepair={!!diffModeProps.pendingRepairedValue}
       onApplyRepair={diffModeProps.onApplyRepair}
       onCancelRepair={diffModeProps.onCancelRepair}
+      themeColor={themeColor}
+      hoverColor={hoverColor}
+      activeColor={activeColor}
     />
   )
 

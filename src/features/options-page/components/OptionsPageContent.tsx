@@ -40,7 +40,7 @@ import {
 import type { OptionsPageContentProps } from '../types'
 
 /** 当前插件版本 */
-const CURRENT_VERSION = 'v2.1.1'
+const CURRENT_VERSION = 'v2.2.0'
 
 /**
  * 设置页面内容组件（纯UI组件）
@@ -220,6 +220,7 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
                     onClick={() => {
                       onCheckUpdate?.()
                     }}
+                    type="primary"
                   >
                     检查更新
                   </CheckUpdateButton>

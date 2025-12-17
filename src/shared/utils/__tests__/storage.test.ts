@@ -184,6 +184,11 @@ describe('Storage工具测试', () => {
           closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
         },
         themeColor: '#1677FF',
+        contextMenuConfig: {
+          enabled: true,
+          locateError: false,
+          repairJson: false,
+        },
       })
     })
 
@@ -288,6 +293,11 @@ describe('Storage工具测试', () => {
           closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
         },
         themeColor: '#1677FF',
+        contextMenuConfig: {
+          enabled: true,
+          locateError: false,
+          repairJson: false,
+        },
       })
     })
 
@@ -384,6 +394,11 @@ describe('Storage工具测试', () => {
           closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
         },
         themeColor: '#1677FF',
+        contextMenuConfig: {
+          enabled: true,
+          locateError: false,
+          repairJson: false,
+        },
       })
     })
   })
@@ -614,6 +629,11 @@ describe('Storage工具测试', () => {
           closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
         },
         themeColor: '#1677FF',
+        contextMenuConfig: {
+          enabled: true,
+          locateError: false,
+          repairJson: false,
+        },
       })
     })
   })

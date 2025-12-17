@@ -5,6 +5,7 @@ import type {
   ApiConfig,
   Draft,
   DrawerShortcutsConfig,
+  EditorContextMenuConfig,
   EditorTheme,
   ExportConfig,
   Favorite,
@@ -34,6 +35,7 @@ type StorageValueMap = {
   [STORAGE_KEYS.EXPORT_CONFIG]: Partial<ExportConfig>
   [STORAGE_KEYS.API_CONFIG]: Partial<ApiConfig>
   [STORAGE_KEYS.DRAWER_SHORTCUTS]: Partial<DrawerShortcutsConfig> & { togglePreview?: unknown }
+  [STORAGE_KEYS.CONTEXT_MENU_CONFIG]: Partial<EditorContextMenuConfig>
 }
 
 /**
@@ -269,6 +271,7 @@ class StorageManager {
       apiConfig,
       drawerShortcuts,
       themeColor,
+      contextMenuConfig,
     ] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
@@ -293,6 +296,7 @@ class StorageManager {
       this.getApiConfig(),
       this.getDrawerShortcuts(),
       this.getThemeColor(),
+      this.getContextMenuConfig(),
     ])
     const exportConfig = await this.getExportConfig()
     return {
@@ -320,6 +324,7 @@ class StorageManager {
       apiConfig,
       drawerShortcuts,
       themeColor,
+      contextMenuConfig,
     }
   }
 
@@ -851,6 +856,38 @@ class StorageManager {
    */
   async setDrawerShortcuts(config: DrawerShortcutsConfig): Promise<void> {
     return this.setSimple('drawerShortcuts', config)
+  }
+
+  /**
+   * 获取右键菜单配置
+   */
+  async getContextMenuConfig(): Promise<EditorContextMenuConfig> {
+    try {
+      const storedConfig = await this.getStorageValue(this.STORAGE_KEYS.CONTEXT_MENU_CONFIG)
+      if (!storedConfig) {
+        return this.DEFAULT_VALUES.contextMenuConfig
+      }
+      return {
+        ...this.DEFAULT_VALUES.contextMenuConfig,
+        ...storedConfig,
+      }
+    } catch (error) {
+      logger.error('获取右键菜单配置失败:', error)
+      return this.DEFAULT_VALUES.contextMenuConfig
+    }
+  }
+
+  /**
+   * 设置右键菜单配置
+   */
+  async setContextMenuConfig(config: EditorContextMenuConfig): Promise<void> {
+    try {
+      await chrome.storage.local.set({
+        [this.STORAGE_KEYS.CONTEXT_MENU_CONFIG]: config,
+      })
+    } catch (error) {
+      logger.error('设置右键菜单配置失败:', error)
+    }
   }
 
   /**
