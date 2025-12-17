@@ -271,6 +271,7 @@ class StorageManager {
       apiConfig,
       drawerShortcuts,
       themeColor,
+      contextMenuConfig,
     ] = await Promise.all([
       this.getActiveState(),
       this.getDrawerWidth(),
@@ -295,6 +296,7 @@ class StorageManager {
       this.getApiConfig(),
       this.getDrawerShortcuts(),
       this.getThemeColor(),
+      this.getContextMenuConfig(),
     ])
     const exportConfig = await this.getExportConfig()
     return {
@@ -322,6 +324,7 @@ class StorageManager {
       apiConfig,
       drawerShortcuts,
       themeColor,
+      contextMenuConfig,
     }
   }
 

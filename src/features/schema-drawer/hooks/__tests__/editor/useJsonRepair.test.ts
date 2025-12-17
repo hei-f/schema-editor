@@ -29,6 +29,7 @@ describe('useJsonRepair', () => {
       setValue: vi.fn(),
       focus: vi.fn(),
       goToPosition: vi.fn(),
+      replaceRange: vi.fn(),
     } as CodeMirrorEditorHandle,
   }
 
