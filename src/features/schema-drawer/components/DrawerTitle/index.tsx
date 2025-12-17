@@ -1,18 +1,17 @@
-import { EDITOR_THEME_OPTIONS } from '@/shared/constants/editor-themes'
 import { ExportIcon } from '@/shared/icons/drawer/title/ExportIcon'
 import { FolderIcon } from '@/shared/icons/drawer/title/FolderIcon'
 import { ImportIcon } from '@/shared/icons/drawer/title/ImportIcon'
 import { PreviewOffIcon } from '@/shared/icons/drawer/title/PreviewOffIcon'
 import { PreviewOnIcon } from '@/shared/icons/drawer/title/PreviewOnIcon'
 import { StarIcon } from '@/shared/icons/drawer/title/StarIcon'
-import { ThemeIcon } from '@/shared/icons/drawer/title/ThemeIcon'
 import type { EditorTheme, HistoryEntry, ToolbarButtonsConfig } from '@/shared/types'
-import { storage } from '@/shared/utils/browser/storage'
 import { DeleteOutlined, FileTextOutlined } from '@ant-design/icons'
-import { Dropdown, Space, Tooltip, Upload } from 'antd'
+import { generate } from '@ant-design/colors'
+import { Space, Tooltip, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { HistoryDropdown } from '../toolbar/HistoryDropdown'
+import { ThemeDropdown } from '../toolbar/ThemeDropdown'
 import {
   DraftAutoSaveSuccess,
   DraftNotification,
@@ -67,6 +66,8 @@ interface DrawerTitleProps {
   editorTheme: EditorTheme
   /** 设置编辑器主题 */
   onEditorThemeChange: (theme: EditorTheme) => void
+  /** 主题色 */
+  themeColor?: string
 }
 
 /**
@@ -77,6 +78,7 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
   const {
     toolbarButtons,
     draftAutoSaveStatus,
+    themeColor = '#0066ff',
     showDraftNotification,
     onImport,
     canParse,
@@ -98,6 +100,16 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
     editorTheme,
     onEditorThemeChange,
   } = props
+
+  /** 计算主题色梯度 */
+  const themeColors = useMemo(() => {
+    const colors = generate(themeColor)
+    return {
+      primaryColor: colors[5],
+      hoverColor: colors[4],
+      activeColor: colors[6],
+    }
+  }, [themeColor])
 
   return (
     <DrawerTitleContainer>
@@ -140,6 +152,8 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
               onLoadVersion={onLoadVersion}
               onClearHistory={onClearHistory}
               disabled={!hasHistory}
+              themeColor={themeColor}
+              editorTheme={editorTheme}
             />
           )}
 
@@ -154,6 +168,9 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
                 onClick={onTogglePreview}
                 disabled={!hasPreviewFunction}
                 loading={isPreviewTransitioning}
+                $themeColor={themeColors.primaryColor}
+                $hoverColor={themeColors.hoverColor}
+                $activeColor={themeColors.activeColor}
               />
             </Tooltip>
           )}
@@ -203,25 +220,11 @@ export const DrawerTitle: React.FC<DrawerTitleProps> = (props) => {
             </>
           )}
 
-          <Dropdown
-            menu={{
-              items: EDITOR_THEME_OPTIONS.map((t) => ({
-                key: t.value,
-                label: t.label,
-                onClick: () => {
-                  onEditorThemeChange(t.value)
-                  storage.setEditorTheme(t.value)
-                },
-              })),
-              selectedKeys: [editorTheme],
-            }}
-            trigger={['click']}
-            getPopupContainer={(node) => node.parentNode as HTMLElement}
-          >
-            <Tooltip title="切换主题">
-              <DrawerTitleButton size="small" type="text" icon={<ThemeIcon />} />
-            </Tooltip>
-          </Dropdown>
+          <ThemeDropdown
+            editorTheme={editorTheme}
+            onEditorThemeChange={onEditorThemeChange}
+            themeColor={themeColor}
+          />
         </Space>
       </DrawerTitleActions>
     </DrawerTitleContainer>
