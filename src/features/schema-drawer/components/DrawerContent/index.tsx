@@ -26,6 +26,9 @@ export const DrawerContent: React.FC<DrawerContentProps> = (props) => {
     recordingModeProps,
     previewModeProps,
     baseProps,
+    themeColor,
+    hoverColor,
+    activeColor,
   } = props
 
   // 录制模式：使用录制模式专用布局
@@ -40,6 +43,9 @@ export const DrawerContent: React.FC<DrawerContentProps> = (props) => {
         recordingModeProps={recordingModeProps}
         previewModeProps={previewModeProps}
         baseProps={baseProps}
+        themeColor={themeColor}
+        hoverColor={hoverColor}
+        activeColor={activeColor}
       />
     )
   }
@@ -54,6 +60,9 @@ export const DrawerContent: React.FC<DrawerContentProps> = (props) => {
       diffModeProps={diffModeProps}
       previewModeProps={previewModeProps}
       baseProps={baseProps}
+      themeColor={themeColor}
+      hoverColor={hoverColor}
+      activeColor={activeColor}
     />
   )
 }

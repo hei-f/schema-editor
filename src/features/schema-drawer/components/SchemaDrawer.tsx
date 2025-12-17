@@ -36,6 +36,7 @@ import { useLightNotifications } from '../hooks/ui/useLightNotifications'
 import { useSchemaSave } from '../hooks/schema/useSchemaSave'
 import { useToolbarActions } from '../hooks/editor/useToolbarActions'
 import { useJsonRepair } from '../hooks/editor/useJsonRepair'
+import { useEditorContextMenu } from '../hooks/editor/useEditorContextMenu'
 import type { EditorUpdateOptions } from '../types/editor'
 import type { ExportMetadata } from '../types/export'
 import { schemaTransformer } from '../services/schema-transformer'
@@ -46,6 +47,8 @@ import { DrawerContent } from './DrawerContent'
 import { DrawerFooter } from './DrawerFooter'
 import { DrawerTitle } from './DrawerTitle'
 import { formatSchemaContent as formatSchemaContentUtil } from '../utils/schema-content-formatter'
+import { EditorContextMenu } from './context-menu/EditorContextMenu'
+import { QuickEditModal } from './context-menu/QuickEditModal'
 
 interface SchemaDrawerProps {
   open: boolean
@@ -93,6 +96,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     recordingModeConfig: recordingConfig,
     autoParseString: autoParseEnabled,
     themeColor,
+    contextMenuConfig,
   } = config
 
   // 编辑器主题（支持运行时切换，初始值从 config 获取）
@@ -710,6 +714,23 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     showWarning: (msg) => message.warning(msg),
   })
 
+  /** 右键菜单 */
+  const {
+    menuVisible,
+    menuPosition,
+    selectionRange,
+    modalVisible,
+    modalContent,
+    handleContextMenu,
+    handleMenuSelect,
+    handleModalSave,
+    closeMenu,
+    closeModal,
+  } = useEditorContextMenu({
+    editorRef,
+    enabled: contextMenuConfig.enabled,
+  })
+
   /**
    * 当前内容类型是否支持内置预览（AST 或 RawString）
    */
@@ -1035,6 +1056,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             onDeleteDraft={handleDeleteDraft}
             onOpenAddFavorite={handleOpenAddFavorite}
             onOpenFavorites={handleOpenFavorites}
+            themeColor={themeColor}
             editorTheme={editorTheme}
             onEditorThemeChange={setEditorTheme}
           />
@@ -1110,6 +1132,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               enableAstTypeHints,
               contentType,
               onChange: handleEditorChange,
+              enableContextMenu: contextMenuConfig.enabled,
+              onContextMenuAction: handleContextMenu,
             },
             notificationProps: {
               lightNotifications,
@@ -1151,6 +1175,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           normalModeProps={{
             previewEnabled,
           }}
+          themeColor={themeColors.primaryColor}
+          hoverColor={themeColors.hoverColor}
+          activeColor={themeColors.activeColor}
         />
       </Drawer>
 
@@ -1189,6 +1216,30 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         onAdd={handleAddTag}
         onClose={closeAddTagModal}
       />
+
+      {contextMenuConfig.enabled && (
+        <>
+          <EditorContextMenu
+            visible={menuVisible}
+            position={menuPosition}
+            config={contextMenuConfig}
+            hasSelection={!!selectionRange?.text}
+            themeColor={themeColor}
+            editorTheme={editorTheme}
+            onSelect={handleMenuSelect}
+            onClose={closeMenu}
+          />
+
+          <QuickEditModal
+            visible={modalVisible}
+            content={modalContent}
+            editorTheme={editorTheme}
+            themeColor={themeColor}
+            onSave={handleModalSave}
+            onClose={closeModal}
+          />
+        </>
+      )}
     </>
   )
 }

@@ -16,8 +16,16 @@ interface EditorSectionProps {
  */
 export const EditorSection: React.FC<EditorSectionProps> = (props) => {
   const { editorProps, notificationProps } = props
-  const { editorRef, editorValue, editorTheme, enableAstTypeHints, contentType, onChange } =
-    editorProps
+  const {
+    editorRef,
+    editorValue,
+    editorTheme,
+    enableAstTypeHints,
+    contentType,
+    onChange,
+    enableContextMenu,
+    onContextMenuAction,
+  } = editorProps
   const { lightNotifications } = notificationProps
 
   return (
@@ -36,6 +44,8 @@ export const EditorSection: React.FC<EditorSectionProps> = (props) => {
         placeholder="在此输入 JSON Schema..."
         enableAstHints={enableAstTypeHints}
         isAstContent={() => contentType === ContentType.Ast}
+        enableContextMenu={enableContextMenu}
+        onContextMenuAction={onContextMenuAction}
       />
     </EditorContainer>
   )

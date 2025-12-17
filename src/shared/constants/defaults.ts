@@ -96,6 +96,9 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     closePreview: { key: 'p', ctrlOrCmd: false, shift: true, alt: true },
   },
   themeColor: '#1677FF',
+  contextMenuConfig: {
+    enabled: true,
+  },
 } as const
 
 /**
@@ -128,4 +131,5 @@ export const STORAGE_KEYS = {
   API_CONFIG: 'apiConfig',
   DRAWER_SHORTCUTS: 'drawerShortcuts',
   THEME_COLOR: 'themeColor',
+  CONTEXT_MENU_CONFIG: 'contextMenuConfig',
 } as const

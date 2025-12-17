@@ -58,6 +58,21 @@ export const EditorConfigSection: React.FC<SectionProps> = (props) => {
           >
             <Switch />
           </Form.Item>
+
+          <Form.Item
+            label={
+              <Space>
+                启用右键菜单
+                <Tooltip title="在编辑器中选中内容后右键可快速打开单独编辑弹窗">
+                  <HelpTooltipIcon />
+                </Tooltip>
+              </Space>
+            }
+            name={FORM_PATHS.contextMenuConfig.enabled}
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
         </FormContent>
       </FormSection>
 

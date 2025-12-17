@@ -15,6 +15,12 @@ interface ToolbarSectionProps {
   hasPendingRepair: boolean
   onApplyRepair: () => void
   onCancelRepair: () => void
+  /** 主题色 */
+  themeColor?: string
+  /** 悬浮态颜色 */
+  hoverColor?: string
+  /** 激活态颜色 */
+  activeColor?: string
 }
 
 /**
@@ -33,6 +39,9 @@ export const ToolbarSection: React.FC<ToolbarSectionProps> = (props) => {
     hasPendingRepair,
     onApplyRepair,
     onCancelRepair,
+    themeColor,
+    hoverColor,
+    activeColor,
   } = props
 
   return (
@@ -62,6 +71,9 @@ export const ToolbarSection: React.FC<ToolbarSectionProps> = (props) => {
       onApplyRepair={onApplyRepair}
       onCancelRepair={onCancelRepair}
       onCopyParam={baseProps.toolbarActions.onCopyParam}
+      themeColor={themeColor}
+      hoverColor={hoverColor}
+      activeColor={activeColor}
     />
   )
 }
