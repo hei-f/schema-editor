@@ -536,13 +536,13 @@ export const CheckUpdateButton = styled(Button)`
     justify-content: center;
     padding: 0 8px;
     height: 24px;
-    background: #ffffff;
+    /* background: #ffffff; */
     border-radius: 16px;
     font-size: 12px;
-    color: #666f8d;
+    /* color: #666f8d; */
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid transparent !important;
+    /* transition: all 0.2s ease; */
+    /* border: 1px solid transparent !important; */
   }
 `
 

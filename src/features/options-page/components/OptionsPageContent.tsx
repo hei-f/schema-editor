@@ -220,6 +220,7 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
                     onClick={() => {
                       onCheckUpdate?.()
                     }}
+                    type="primary"
                   >
                     检查更新
                   </CheckUpdateButton>
