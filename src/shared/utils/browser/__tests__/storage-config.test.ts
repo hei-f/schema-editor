@@ -368,7 +368,7 @@ describe('storage-config', () => {
     it('有效配置应该返回 true', () => {
       expect(
         validator?.({
-          requestTimeout: 5,
+          requestTimeout: 1,
         })
       ).toBe(true)
 

@@ -625,7 +625,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           await sendRequestToHost(
             messageType,
             { schema: result.data, containerId },
-            apiConfig?.requestTimeout ?? 5,
+            apiConfig?.requestTimeout ?? 1,
             apiConfig?.sourceConfig
           ).catch((error) => {
             logger.warn('拖拽结束后预览渲染请求失败:', error)
@@ -832,7 +832,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           await sendRequestToHost(
             messageType,
             { schema: result.data, containerId },
-            apiConfig?.requestTimeout ?? 5,
+            apiConfig?.requestTimeout ?? 1,
             apiConfig?.sourceConfig
           )
           logger.log('预览渲染请求已发送')

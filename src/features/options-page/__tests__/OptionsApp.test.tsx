@@ -122,7 +122,7 @@ describe.skip('OptionsApp组件测试', () => {
     },
     editorTheme: 'seeDark' as const,
     apiConfig: {
-      requestTimeout: 5,
+      requestTimeout: 1,
       sourceConfig: {
         contentSource: 'schema-element-editor-content',
         hostSource: 'schema-element-editor-host',
