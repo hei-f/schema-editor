@@ -27,6 +27,8 @@ interface UseEditorContextMenuReturn {
   modalContent: string
   /** 处理右键菜单事件 */
   handleContextMenu: (event: MouseEvent, view: EditorView) => void
+  /** 处理选中事件（自动显示菜单） */
+  handleSelection: (event: MouseEvent | null, view: EditorView, hasSelection: boolean) => void
   /** 处理菜单选择 */
   handleMenuSelect: (action: ContextMenuAction) => void
   /** 处理弹窗保存 */
@@ -77,6 +79,47 @@ export const useEditorContextMenu = (
 
       // 显示菜单
       setMenuVisible(true)
+    },
+    [enabled]
+  )
+
+  /**
+   * 处理选中事件（自动显示菜单）
+   */
+  const handleSelection = useCallback(
+    (event: MouseEvent | null, view: EditorView, hasSelection: boolean) => {
+      if (!enabled) return
+
+      if (hasSelection) {
+        // 获取选中内容
+        const { selection } = view.state
+        const { from, to } = selection.main
+        const text = view.state.sliceDoc(from, to)
+
+        // 只有真正有内容时才显示菜单
+        if (!text) return
+
+        // 保存选区信息
+        setSelectionRange({ from, to, text })
+
+        // 计算菜单位置
+        if (event) {
+          // 如果有鼠标事件，使用鼠标实际位置
+          setMenuPosition({ x: event.clientX, y: event.clientY })
+        } else {
+          // 否则使用选区的右下角（向后兼容）
+          const coords = view.coordsAtPos(to)
+          if (coords) {
+            setMenuPosition({ x: coords.right, y: coords.bottom })
+          }
+        }
+
+        // 显示菜单
+        setMenuVisible(true)
+      } else {
+        // 取消选中时隐藏菜单
+        setMenuVisible(false)
+      }
     },
     [enabled]
   )
@@ -141,6 +184,7 @@ export const useEditorContextMenu = (
     modalVisible,
     modalContent,
     handleContextMenu,
+    handleSelection,
     handleMenuSelect,
     handleModalSave,
     closeMenu,

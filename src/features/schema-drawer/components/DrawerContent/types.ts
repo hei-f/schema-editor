@@ -6,6 +6,7 @@ import type {
   ToolbarButtonsConfig,
 } from '@/shared/types'
 import type { EditorView } from '@codemirror/view'
+import type { ContextMenuTriggerMode } from '@/shared/constants/context-menu'
 import type { EditorThemeVars } from '../../styles/editor/editor-theme-vars'
 import type { CodeMirrorEditorHandle } from '../editor/CodeMirrorEditor'
 import type { DiffToolbarActions } from '../toolbar/DrawerToolbar'
@@ -47,7 +48,9 @@ export interface EditorProps {
   contentType: ContentType
   onChange: (value: string | undefined) => void
   enableContextMenu?: boolean
+  contextMenuTriggerMode?: ContextMenuTriggerMode
   onContextMenuAction?: (event: MouseEvent, view: EditorView) => void
+  onSelectionChange?: (event: MouseEvent | null, view: EditorView, hasSelection: boolean) => void
 }
 
 /**

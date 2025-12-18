@@ -722,6 +722,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     modalVisible,
     modalContent,
     handleContextMenu,
+    handleSelection,
     handleMenuSelect,
     handleModalSave,
     closeMenu,
@@ -1133,7 +1134,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               contentType,
               onChange: handleEditorChange,
               enableContextMenu: contextMenuConfig.enabled,
+              contextMenuTriggerMode: contextMenuConfig.triggerMode,
               onContextMenuAction: handleContextMenu,
+              onSelectionChange: handleSelection,
             },
             notificationProps: {
               lightNotifications,

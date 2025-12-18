@@ -108,7 +108,9 @@ export const RecordingModeLayout: React.FC<RecordingModeLayoutProps> = (props) =
     contentType,
     onChange,
     enableContextMenu,
+    contextMenuTriggerMode,
     onContextMenuAction,
+    onSelectionChange,
   } = editorProps
   const { lightNotifications } = notificationProps
 
@@ -167,7 +169,9 @@ export const RecordingModeLayout: React.FC<RecordingModeLayoutProps> = (props) =
           enableAstHints={enableAstTypeHints}
           isAstContent={() => contentType === ContentType.Ast}
           enableContextMenu={enableContextMenu}
+          contextMenuTriggerMode={contextMenuTriggerMode}
           onContextMenuAction={onContextMenuAction}
+          onSelectionChange={onSelectionChange}
         />
       </>
     )

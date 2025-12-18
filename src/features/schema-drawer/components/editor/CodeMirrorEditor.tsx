@@ -40,6 +40,11 @@ import {
 import { seeDark, seeDarkHighlighting } from '../../styles/editor/schema-element-editor-dark-theme'
 import { simpleDark } from '../../styles/editor/simple-dark-theme'
 import { createAstCompletionSource } from '../../utils/ast-completion'
+import {
+  CONTEXT_MENU_TRIGGER_MODE,
+  type ContextMenuTriggerMode,
+} from '@/shared/constants/context-menu'
+import { useLatest } from '@/shared/hooks/useLatest'
 
 interface CodeMirrorEditorProps {
   /** 组件引用（React 19 支持直接作为 prop 传递） */
@@ -58,8 +63,12 @@ interface CodeMirrorEditorProps {
   isAstContent?: () => boolean
   /** 是否启用右键菜单 */
   enableContextMenu?: boolean
+  /** 触发方式 */
+  contextMenuTriggerMode?: ContextMenuTriggerMode
   /** 右键菜单事件回调 */
   onContextMenuAction?: (event: MouseEvent, view: EditorView) => void
+  /** 选中内容回调（用于自动显示菜单） */
+  onSelectionChange?: (event: MouseEvent | null, view: EditorView, hasSelection: boolean) => void
 }
 
 /**
@@ -307,13 +316,19 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
     enableAstHints = false,
     isAstContent = () => false,
     enableContextMenu = false,
+    contextMenuTriggerMode = CONTEXT_MENU_TRIGGER_MODE.CONTEXT_MENU,
     onContextMenuAction,
+    onSelectionChange,
   } = props
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
-  const onChangeRef = useRef(onChange)
-  const enableAstHintsRef = useRef(enableAstHints)
-  const isAstContentRef = useRef(isAstContent)
+  const onChangeRef = useLatest(onChange)
+  const onSelectionChangeRef = useLatest(onSelectionChange)
+  const onContextMenuActionRef = useLatest(onContextMenuAction)
+  const enableAstHintsRef = useLatest(enableAstHints)
+  const isAstContentRef = useLatest(isAstContent)
+  const enableContextMenuRef = useLatest(enableContextMenu)
+  const contextMenuTriggerModeRef = useLatest(contextMenuTriggerMode)
   /** 初始值 ref（仅用于首次创建编辑器，不触发重新创建） */
   const initialValueRef = useRef(defaultValue)
   /** 保存的内容 ref（在编辑器销毁前保存内容，用于重建时恢复） */
@@ -325,19 +340,6 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
     chars: 0,
     selected: false,
   })
-
-  // 更新 refs
-  useEffect(() => {
-    onChangeRef.current = onChange
-  }, [onChange])
-
-  useEffect(() => {
-    enableAstHintsRef.current = enableAstHints
-  }, [enableAstHints])
-
-  useEffect(() => {
-    isAstContentRef.current = isAstContent
-  }, [isAstContent])
 
   /** 隐藏错误提示的方法 */
   const hideErrorWidgetFn = () => {
@@ -588,6 +590,14 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
                 chars: 0,
                 selected: false,
               })
+
+              // 选中模式：取消选中时隐藏菜单
+              if (
+                enableContextMenuRef.current &&
+                contextMenuTriggerModeRef.current === CONTEXT_MENU_TRIGGER_MODE.SELECTION
+              ) {
+                onSelectionChangeRef.current?.(null, update.view, false)
+              }
             }
           }
         }),
@@ -613,10 +623,30 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
             }
             return false
           },
+          mouseup: (event, view) => {
+            // 选中模式：鼠标松开时检查是否有选中内容，如果有则显示菜单
+            if (
+              enableContextMenuRef.current &&
+              contextMenuTriggerModeRef.current === CONTEXT_MENU_TRIGGER_MODE.SELECTION
+            ) {
+              const { selection } = view.state
+              const primary = selection.main
+              const hasSelection = !primary.empty
+
+              if (hasSelection) {
+                onSelectionChangeRef.current?.(event, view, true)
+              }
+            }
+            return false
+          },
           contextmenu: (event, view) => {
-            if (enableContextMenu && onContextMenuAction) {
+            if (
+              enableContextMenuRef.current &&
+              contextMenuTriggerModeRef.current === CONTEXT_MENU_TRIGGER_MODE.CONTEXT_MENU &&
+              onContextMenuActionRef.current
+            ) {
               event.preventDefault()
-              onContextMenuAction(event, view)
+              onContextMenuActionRef.current(event, view)
               return true
             }
             return false
@@ -640,6 +670,8 @@ export const CodeMirrorEditor = (props: CodeMirrorEditorProps) => {
       view.destroy()
       viewRef.current = null
     }
+    // useLatest 返回的 ref 对象本身是稳定的引用，不需要加入依赖数组
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [theme, readOnly, placeholderText])
 
   // 不再需要监听 value 的 useEffect！
