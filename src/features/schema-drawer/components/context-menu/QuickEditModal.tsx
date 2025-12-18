@@ -357,6 +357,8 @@ export const QuickEditModal: React.FC<QuickEditModalProps> = (props) => {
     return shadowRootManager.getContainer()
   }, [])
 
+  const isDark = editorTheme === 'dark' || editorTheme === 'seeDark'
+
   return (
     <ConfigProvider theme={modalTheme} getPopupContainer={getPortalContainer}>
       <App>
@@ -436,18 +438,15 @@ export const QuickEditModal: React.FC<QuickEditModalProps> = (props) => {
               {/* 编辑器内容 - 非 Diff 时显示 */}
               <ModeContentWrapper $active={!diffMode}>
                 <EditorContainer>
-                  {lightNotifications.map((notification, index) => {
-                    const isDark = editorTheme === 'dark' || editorTheme === 'seeDark'
-                    return (
-                      <LightSuccessNotification
-                        key={notification.id}
-                        style={{ top: `${16 + index * 48}px` }}
-                        $isDark={isDark}
-                      >
-                        {notification.text}
-                      </LightSuccessNotification>
-                    )
-                  })}
+                  {lightNotifications.map((notification, index) => (
+                    <LightSuccessNotification
+                      key={notification.id}
+                      style={{ top: `${16 + index * 48}px` }}
+                      $isDark={isDark}
+                    >
+                      {notification.text}
+                    </LightSuccessNotification>
+                  ))}
                   <CodeMirrorEditor
                     ref={editorRef}
                     defaultValue={content}
