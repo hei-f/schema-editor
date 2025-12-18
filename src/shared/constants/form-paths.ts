@@ -191,8 +191,10 @@ export const FORM_PATHS = {
 
   /** 右键菜单配置 */
   contextMenuConfig: {
-    /** 是否启用右键菜单 */
+    /** 是否启用单独编辑 */
     enabled: ['contextMenuConfig', 'enabled'],
+    /** 触发方式 */
+    triggerMode: ['contextMenuConfig', 'triggerMode'],
   },
 }
 

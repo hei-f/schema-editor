@@ -1,11 +1,14 @@
 import type { EditorTheme } from '@/shared/types'
+import type { ContextMenuTriggerMode } from '@/shared/constants/context-menu'
 
 /**
  * 编辑器右键菜单配置
  */
 export interface EditorContextMenuConfig {
-  /** 是否启用右键菜单 */
+  /** 是否启用单独编辑 */
   enabled: boolean
+  /** 触发方式 */
+  triggerMode: ContextMenuTriggerMode
 }
 
 /**
