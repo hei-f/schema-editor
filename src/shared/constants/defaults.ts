@@ -74,7 +74,7 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
   },
   editorTheme: DEFAULT_EDITOR_THEME,
   apiConfig: {
-    requestTimeout: 5,
+    requestTimeout: 1,
     sourceConfig: {
       contentSource: 'schema-element-editor-content',
       hostSource: 'schema-element-editor-host',
