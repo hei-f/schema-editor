@@ -1,5 +1,6 @@
 import type { StorageData } from '@/shared/types'
 import { DEFAULT_EDITOR_THEME } from './editor-themes'
+import { CONTEXT_MENU_TRIGGER_MODE } from './context-menu'
 
 /**
  * 录制模式左侧面板宽度（px）
@@ -73,7 +74,7 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
   },
   editorTheme: DEFAULT_EDITOR_THEME,
   apiConfig: {
-    requestTimeout: 5,
+    requestTimeout: 1,
     sourceConfig: {
       contentSource: 'schema-element-editor-content',
       hostSource: 'schema-element-editor-host',
@@ -98,6 +99,7 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
   themeColor: '#1677FF',
   contextMenuConfig: {
     enabled: true,
+    triggerMode: CONTEXT_MENU_TRIGGER_MODE.SELECTION,
   },
 } as const
 

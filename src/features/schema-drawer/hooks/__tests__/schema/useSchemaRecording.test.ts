@@ -29,7 +29,7 @@ describe('useSchemaRecording Hook 测试', () => {
     onSchemaChange: vi.fn(),
     apiConfig: {
       communicationMode: 'postMessage' as const,
-      requestTimeout: 5,
+      requestTimeout: 1,
       sourceConfig: {
         contentSource: 'test-content',
         hostSource: 'test-host',
@@ -109,7 +109,7 @@ describe('useSchemaRecording Hook 测试', () => {
       expect(mockSendRequestToHost).toHaveBeenCalledWith(
         'GET_SCHEMA',
         { params: 'param1,param2' },
-        5,
+        1,
         defaultProps.apiConfig.sourceConfig
       )
     })
@@ -234,7 +234,7 @@ describe('useSchemaRecording Hook 测试', () => {
       expect(mockSendRequestToHost).toHaveBeenCalledWith(
         'START_RECORDING',
         { params: 'param1,param2' },
-        5,
+        1,
         eventDrivenProps.apiConfig.sourceConfig
       )
     })
@@ -358,7 +358,7 @@ describe('useSchemaRecording Hook 测试', () => {
       expect(mockSendRequestToHost).toHaveBeenCalledWith(
         'STOP_RECORDING',
         { params: 'param1,param2' },
-        5,
+        1,
         defaultProps.apiConfig.sourceConfig
       )
       expect(cleanupFn).toHaveBeenCalled()
@@ -863,7 +863,7 @@ describe('useSchemaRecording Hook 测试', () => {
         expect(mockSendRequestToHost).toHaveBeenCalledWith(
           'STOP_RECORDING',
           { params: 'param1,param2' },
-          5,
+          1,
           defaultProps.apiConfig.sourceConfig
         )
       })
@@ -890,7 +890,7 @@ describe('useSchemaRecording Hook 测试', () => {
       expect(mockSendRequestToHost).toHaveBeenCalledWith(
         'GET_SCHEMA',
         expect.any(Object),
-        5, // 默认超时
+        1, // 默认超时
         undefined
       )
     })

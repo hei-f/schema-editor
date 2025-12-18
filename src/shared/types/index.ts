@@ -264,6 +264,8 @@ export interface DrawerShortcutsConfig {
   closePreview: ShortcutKey
 }
 
+import type { ContextMenuTriggerMode } from '../constants/context-menu'
+
 /**
  * 编辑器主题类型
  */
@@ -273,8 +275,10 @@ export type EditorTheme = 'light' | 'dark' | 'seeDark'
  * 编辑器右键菜单配置
  */
 export interface EditorContextMenuConfig {
-  /** 是否启用右键菜单 */
+  /** 是否启用单独编辑 */
   enabled: boolean
+  /** 触发方式 */
+  triggerMode: ContextMenuTriggerMode
 }
 
 /**

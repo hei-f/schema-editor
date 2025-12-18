@@ -103,7 +103,9 @@ export const NormalModeLayout: React.FC<NormalModeLayoutProps> = (props) => {
     contentType,
     onChange,
     enableContextMenu,
+    contextMenuTriggerMode,
     onContextMenuAction,
+    onSelectionChange,
   } = editorProps
   const { lightNotifications } = notificationProps
 
@@ -128,34 +130,22 @@ export const NormalModeLayout: React.FC<NormalModeLayoutProps> = (props) => {
   /**
    * 渲染编辑器
    */
-  const renderEditor = () => {
-    const isDark = editorTheme === 'dark' || editorTheme === 'seeDark'
-    return (
-      <>
-        {lightNotifications.map((notification, index) => (
-          <LightSuccessNotification
-            key={notification.id}
-            style={{ top: `${16 + index * 48}px` }}
-            $isDark={isDark}
-          >
-            {notification.text}
-          </LightSuccessNotification>
-        ))}
-        <CodeMirrorEditor
-          ref={editorRef}
-          height="100%"
-          defaultValue={editorValue}
-          onChange={onChange}
-          theme={editorTheme}
-          placeholder="在此输入 JSON Schema..."
-          enableAstHints={enableAstTypeHints}
-          isAstContent={() => contentType === ContentType.Ast}
-          enableContextMenu={enableContextMenu}
-          onContextMenuAction={onContextMenuAction}
-        />
-      </>
-    )
-  }
+  const renderEditor = () => (
+    <CodeMirrorEditor
+      ref={editorRef}
+      height="100%"
+      defaultValue={editorValue}
+      onChange={onChange}
+      theme={editorTheme}
+      placeholder="在此输入 JSON Schema..."
+      enableAstHints={enableAstTypeHints}
+      isAstContent={() => contentType === ContentType.Ast}
+      enableContextMenu={enableContextMenu}
+      contextMenuTriggerMode={contextMenuTriggerMode}
+      onContextMenuAction={onContextMenuAction}
+      onSelectionChange={onSelectionChange}
+    />
+  )
 
   /**
    * 渲染工具栏
@@ -182,29 +172,41 @@ export const NormalModeLayout: React.FC<NormalModeLayoutProps> = (props) => {
    * 渲染模式切换区域（编辑器/Diff 内容）
    * 动画只影响这个区域，工具栏不受影响
    */
-  const renderModeSwitchArea = () => (
-    <ModeSwitchContainer>
-      {/* 编辑器内容 - 非 Diff 时显示 */}
-      <ModeContentWrapper $active={!isDiffMode}>
-        <ContentAreaContainer>
-          <EditorContainer>{renderEditor()}</EditorContainer>
-        </ContentAreaContainer>
-      </ModeContentWrapper>
+  const renderModeSwitchArea = () => {
+    const isDark = editorTheme === 'dark' || editorTheme === 'seeDark'
+    return (
+      <ModeSwitchContainer>
+        {/* 编辑器内容 - 非 Diff 时显示 */}
+        <ModeContentWrapper $active={!isDiffMode}>
+          <ContentAreaContainer>
+            {lightNotifications.map((notification, index) => (
+              <LightSuccessNotification
+                key={notification.id}
+                style={{ top: `${16 + index * 48}px` }}
+                $isDark={isDark}
+              >
+                {notification.text}
+              </LightSuccessNotification>
+            ))}
+            <EditorContainer>{renderEditor()}</EditorContainer>
+          </ContentAreaContainer>
+        </ModeContentWrapper>
 
-      {/* Diff 内容 - Diff 时显示 */}
-      <ModeContentWrapper $active={isDiffMode}>
-        <ContentAreaContainer>
-          <DiffModeContent
-            {...baseProps}
-            {...diffModeProps}
-            diffLeftContent={diffLeftContent}
-            diffRightContent={diffRightContent}
-            diffToolbarActions={diffToolbarActions}
-          />
-        </ContentAreaContainer>
-      </ModeContentWrapper>
-    </ModeSwitchContainer>
-  )
+        {/* Diff 内容 - Diff 时显示 */}
+        <ModeContentWrapper $active={isDiffMode}>
+          <ContentAreaContainer>
+            <DiffModeContent
+              {...baseProps}
+              {...diffModeProps}
+              diffLeftContent={diffLeftContent}
+              diffRightContent={diffRightContent}
+              diffToolbarActions={diffToolbarActions}
+            />
+          </ContentAreaContainer>
+        </ModeContentWrapper>
+      </ModeSwitchContainer>
+    )
+  }
 
   /**
    * 渲染编辑器模式内容（预览/默认）

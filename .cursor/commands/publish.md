@@ -87,7 +87,7 @@
 
    **情况B：该组仅包含文件的部分改动（行级别提交）**
 
-   通过构造临时patch文件实现精确的行级别暂存（AI自动化操作）：
+   通过构造临时patch文件实现精确的行级别暂存：
 
    a. **生成完整diff**：
    - 执行：`git diff -- {文件路径} > .git/temp_commit.patch`
@@ -109,17 +109,79 @@
    - 执行：`git apply --cached --unidiff-zero .git/partial_commit.patch`
    - 如果失败，尝试：`git apply --cached .git/partial_commit.patch`（允许上下文行）
 
-   e. **提交并清理**：
+   e. **验证暂存区内容（提交前检查）**：
+   - 执行：`git diff --cached -- {文件路径}`
+   - 仔细检查暂存的改动是否与计划的行号范围一致
+   - 统计暂存的改动行数，确认与预期相符
+   - 如果发现问题，执行 `git reset` 清空暂存区，回到步骤c重新构造patch
+
+   f. **提交并清理**：
    - 执行：`git commit -m "{message}"`
    - 清理临时文件：`rm .git/temp_commit.patch .git/partial_commit.patch`
 
-   f. **验证**：
-   - 使用 `git show HEAD` 确认提交内容正确
-   - 使用 `git diff` 确认未提交的改动仍在工作区
+   g. **详细验证与对比**：
+
+   i. **查看提交内容**：
+   - 执行：`git show HEAD`
+   - 完整查看刚才的提交内容
+
+   ii. **自动提取并对比行号**：
+   - 执行：`git show HEAD --stat`
+   - 记录实际提交的改动统计（插入/删除行数）
+   - 与计划提交的行号范围进行对比验证：
+     ```
+     计划提交：{文件路径}:第{X}-{Y}行（共{N}行改动）
+     实际提交：检查git show输出，确认行号范围匹配
+     ```
+
+   iii. **确认工作区状态**：
+   - 执行：`git status`
+   - 确认仍有未暂存的改动（如果同文件还有其他改动）
+   - 执行：`git diff`
+   - 确认未提交的改动仍完整保留在工作区
+
+   iv. **量化验证**：
+   - 如果原文件有多处改动，确认：
+     - 已提交部分：在 `git show HEAD` 中可见
+     - 未提交部分：在 `git diff` 中可见
+     - 两者加起来 = 原始完整改动
+
+   h. **错误修正流程**：
+
+   如果在步骤g中发现提交内容与预期不符（提交错了行号、包含了不该提交的内容等），按以下流程修正：
+
+   **阶段1：在步骤e发现问题（还未commit）**
+   - 执行：`git reset`
+   - 效果：清空暂存区，所有内容回到工作区
+   - 工作区改动：完全不受影响，保持原样
+   - 后续操作：回到步骤c，重新构造正确的patch
+
+   **阶段2：在步骤g发现问题（已commit但未push）**
+   - 执行：`git reset --soft HEAD~1`
+   - 效果：撤销最近一次commit，改动回到暂存区
+   - 然后执行：`git reset`
+   - 效果：清空暂存区，所有内容回到工作区
+   - 工作区改动：完全恢复到commit前的状态
+   - 后续操作：回到步骤c，重新构造正确的patch
+
+   **阶段3：已经push到远程**
+   - 如果其他人尚未拉取：
+     - 本地执行：`git reset --hard HEAD~1`
+     - 强制推送：`git push -f origin {分支名}`
+     - ⚠️ 警告：仅在确认无人拉取时使用
+   - 如果已被他人拉取：
+     - 不要强制推送
+     - 创建新的commit修正错误
+     - 在commit message中说明：`fix: 修正前一次提交的内容错误`
+
+   **验证修正结果**：
+   - 修正后，重新执行完整的提交流程
+   - 在步骤g中再次仔细验证
+   - 确认这次提交内容完全正确
 
    **情况C：同时处理多个文件的部分改动**
 
-   合并多个文件的部分改动到一个patch（AI自动化操作）：
+   合并多个文件的部分改动到一个patch：
 
    a. **逐个文件生成diff并提取目标hunks**：
    - 对每个文件执行情况B的步骤a-c
@@ -129,9 +191,18 @@
    - 执行：`git apply --cached --unidiff-zero .git/combined_commit.patch`
    - 如果失败，尝试调整参数或拆分应用
 
-   c. **提交并清理**：
+   c. **验证合并的暂存区内容**：
+   - 执行：`git diff --cached`
+   - 检查所有文件的暂存改动是否与计划一致
+   - 如发现问题，执行 `git reset` 并回到步骤a重新构造
+
+   d. **提交并清理**：
    - 执行：`git commit -m "{message}"`
    - 清理所有临时patch文件
+
+   e. **详细验证与错误修正**：
+   - 参照情况B的步骤g进行详细验证（查看提交内容、对比行号、确认工作区状态、量化验证）
+   - 如发现错误，按情况B的步骤h的流程修正
 
 4. **验证提交结果**：
    - 使用 `git show HEAD` 查看刚才的提交内容
@@ -329,29 +400,31 @@ TypeScript 类型检查结果：
 
 - `package.json` 中的 `version` 字段
 - `src/manifest.json` 中的 `version` 字段
-- `src/features/options-page/OptionsApp.tsx` 中的版本号显示（搜索 `<VersionTag>v` 并更新版本号）
-- `README.md` 中的版本号badge（搜索 `badge/version-` 并更新版本号）
+- `src/features/options-page/components/OptionsPageContent.tsx` 中的 `CURRENT_VERSION` 常量（搜索 `const CURRENT_VERSION` 并更新版本号）
 - 版本号格式：`major.minor.patch`（如 `1.2.3`）
+- 注：README.md 中的版本号badge将在步骤6中一并更新
 
 ### 6. 检查README文档更新
 
 根据本次提交的改动内容，判断是否需要更新README文档：
 
-- **需要更新的情况**：
-  - 新增功能或移除功能
+- **必须更新的内容**（如有版本更新）：
+  - README.md 中的版本号badge（搜索 `badge/version-` 并更新为新版本号）
+- **可选更新的内容**：
+  - 新增功能或移除功能的说明
   - 修改了用户使用方式或配置方法
   - 更改了安装步骤或依赖要求
-  - 修复了影响用户体验的重要问题
-  - 更新了API或接口
+  - 修复了影响用户体验的重要问题的说明
+  - 更新了API或接口的文档
 - **检查要点**：
   - 功能介绍是否需要补充或修改
   - 使用说明是否需要更新
   - 截图或示例是否需要更换
 - **操作**：
-  - 向用户确认是否需要更新README
+  - 向用户确认是否需要更新README内容
   - 如需要，帮助用户修改README
   - 等待用户完成对README修改的确认后继续后续流程
-  - 注：README更新会在步骤9中作为独立的 `docs:` 类型提交
+  - 注：README所有更新（版本号badge + 内容）会在步骤9.2中作为独立的 `docs:` 类型提交
 
 ### 7. 构建打包并生成压缩包
 
@@ -371,10 +444,11 @@ TypeScript 类型检查结果：
 - `git add package.json src/manifest.json src/features/options-page/components/OptionsPageContent.tsx`
 - `git commit -m "chore: release v{版本号}"`
 
-**9.2 提交README更新（如有README改动）**
+**9.2 提交README更新（如有版本更新或README内容改动）**
 
 - `git add README.md`
 - `git commit -m "docs: 更新README文档"`
+- 注：此提交包含版本号badge更新和内容更新（如有）
 
 ### 10. 推送到远程
 

@@ -5,8 +5,8 @@ import {
 import { shadowDomContainerManager } from '@/core/content/core/shadow-dom'
 import { DEFAULT_VALUES, RECORDING_PANEL_WIDTH } from '@/shared/constants/defaults'
 import { FULL_SCREEN_MODE, type FullScreenMode } from '@/shared/constants/ui-modes'
-import { FavoritesManager } from '@/features/favorites/components/FavoritesManager'
-import { AddTagModal } from '@/features/favorites/components/AddTagModal'
+import { FavoritesManager } from '@/features/favorites/components/FavoritesManager.lazy'
+import { AddTagModal } from '@/features/favorites/components/AddTagModal.lazy'
 import { generate } from '@ant-design/colors'
 import type {
   DrawerShortcutsConfig,
@@ -24,7 +24,7 @@ import { useFullScreenMode } from '../hooks/ui/useFullScreenMode'
 import { useResizer } from '../hooks/ui/useResizer'
 import { useSchemaRecording } from '../hooks/schema/useSchemaRecording'
 import { App, Drawer } from 'antd'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDeferredEffect } from '@/shared/hooks/useDeferredEffect'
 import { useLatest } from '@/shared/hooks/useLatest'
 import { useContentDetection } from '../hooks/schema/useContentDetection'
@@ -47,8 +47,8 @@ import { DrawerContent } from './DrawerContent'
 import { DrawerFooter } from './DrawerFooter'
 import { DrawerTitle } from './DrawerTitle'
 import { formatSchemaContent as formatSchemaContentUtil } from '../utils/schema-content-formatter'
-import { EditorContextMenu } from './context-menu/EditorContextMenu'
-import { QuickEditModal } from './context-menu/QuickEditModal'
+import { EditorContextMenu } from './context-menu/EditorContextMenu.lazy'
+import { QuickEditModal } from './context-menu/QuickEditModal.lazy'
 
 interface SchemaDrawerProps {
   open: boolean
@@ -625,7 +625,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           await sendRequestToHost(
             messageType,
             { schema: result.data, containerId },
-            apiConfig?.requestTimeout ?? 5,
+            apiConfig?.requestTimeout ?? 1,
             apiConfig?.sourceConfig
           ).catch((error) => {
             logger.warn('拖拽结束后预览渲染请求失败:', error)
@@ -722,6 +722,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     modalVisible,
     modalContent,
     handleContextMenu,
+    handleSelection,
     handleMenuSelect,
     handleModalSave,
     closeMenu,
@@ -831,7 +832,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
           await sendRequestToHost(
             messageType,
             { schema: result.data, containerId },
-            apiConfig?.requestTimeout ?? 5,
+            apiConfig?.requestTimeout ?? 1,
             apiConfig?.sourceConfig
           )
           logger.log('预览渲染请求已发送')
@@ -1133,7 +1134,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
               contentType,
               onChange: handleEditorChange,
               enableContextMenu: contextMenuConfig.enabled,
+              contextMenuTriggerMode: contextMenuConfig.triggerMode,
               onContextMenuAction: handleContextMenu,
+              onSelectionChange: handleSelection,
             },
             notificationProps: {
               lightNotifications,
@@ -1181,44 +1184,46 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
         />
       </Drawer>
 
-      <FavoritesManager
-        addFavoriteModalVisible={addFavoriteModalVisible}
-        favoriteNameInput={favoriteNameInput}
-        favoritesModalVisible={favoritesModalVisible}
-        favoritesList={favoritesList}
-        editModalVisible={editModalVisible}
-        editingFavoriteId={editingFavoriteId}
-        editingName={editingName}
-        editingContent={editingContent}
-        applyConfirmModalVisible={applyConfirmModalVisible}
-        editorTheme={editorTheme}
-        themeColor={config.themeColor}
-        onAddFavoriteInputChange={setFavoriteNameInput}
-        onAddFavorite={handleAddFavorite}
-        onCloseAddFavoriteModal={closeAddFavoriteModal}
-        onCloseFavoritesModal={closeFavoritesModal}
-        onEditFavorite={handleEditFavorite}
-        onApplyFavorite={handleApplyFavorite}
-        onConfirmApply={handleConfirmApply}
-        onCancelApply={handleCancelApply}
-        onDeleteFavorite={handleDeleteFavorite}
-        onPinFavorite={handlePinFavorite}
-        onAddTag={handleOpenAddTag}
-        onRemoveTag={handleRemoveTag}
-        onSaveEdit={handleSaveEdit}
-        onCloseEditModal={closeEditModal}
-      />
+      <Suspense fallback={null}>
+        <FavoritesManager
+          addFavoriteModalVisible={addFavoriteModalVisible}
+          favoriteNameInput={favoriteNameInput}
+          favoritesModalVisible={favoritesModalVisible}
+          favoritesList={favoritesList}
+          editModalVisible={editModalVisible}
+          editingFavoriteId={editingFavoriteId}
+          editingName={editingName}
+          editingContent={editingContent}
+          applyConfirmModalVisible={applyConfirmModalVisible}
+          editorTheme={editorTheme}
+          themeColor={config.themeColor}
+          onAddFavoriteInputChange={setFavoriteNameInput}
+          onAddFavorite={handleAddFavorite}
+          onCloseAddFavoriteModal={closeAddFavoriteModal}
+          onCloseFavoritesModal={closeFavoritesModal}
+          onEditFavorite={handleEditFavorite}
+          onApplyFavorite={handleApplyFavorite}
+          onConfirmApply={handleConfirmApply}
+          onCancelApply={handleCancelApply}
+          onDeleteFavorite={handleDeleteFavorite}
+          onPinFavorite={handlePinFavorite}
+          onAddTag={handleOpenAddTag}
+          onRemoveTag={handleRemoveTag}
+          onSaveEdit={handleSaveEdit}
+          onCloseEditModal={closeEditModal}
+        />
 
-      <AddTagModal
-        visible={addTagModalVisible}
-        existingTags={currentFavoriteForTag?.tags}
-        themeColor={config.themeColor}
-        onAdd={handleAddTag}
-        onClose={closeAddTagModal}
-      />
+        <AddTagModal
+          visible={addTagModalVisible}
+          existingTags={currentFavoriteForTag?.tags}
+          themeColor={config.themeColor}
+          onAdd={handleAddTag}
+          onClose={closeAddTagModal}
+        />
+      </Suspense>
 
       {contextMenuConfig.enabled && (
-        <>
+        <Suspense fallback={null}>
           <EditorContextMenu
             visible={menuVisible}
             position={menuPosition}
@@ -1238,7 +1243,7 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             onSave={handleModalSave}
             onClose={closeModal}
           />
-        </>
+        </Suspense>
       )}
     </>
   )

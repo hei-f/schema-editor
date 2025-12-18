@@ -161,7 +161,7 @@ describe('Storage工具测试', () => {
         },
         editorTheme: 'seeDark',
         apiConfig: {
-          requestTimeout: 5,
+          requestTimeout: 1,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
             hostSource: 'schema-element-editor-host',
@@ -186,6 +186,7 @@ describe('Storage工具测试', () => {
         themeColor: '#1677FF',
         contextMenuConfig: {
           enabled: true,
+          triggerMode: 'selection',
         },
       })
     })
@@ -268,7 +269,7 @@ describe('Storage工具测试', () => {
         },
         editorTheme: 'seeDark',
         apiConfig: {
-          requestTimeout: 5,
+          requestTimeout: 1,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
             hostSource: 'schema-element-editor-host',
@@ -293,6 +294,7 @@ describe('Storage工具测试', () => {
         themeColor: '#1677FF',
         contextMenuConfig: {
           enabled: true,
+          triggerMode: 'selection',
         },
       })
     })
@@ -367,7 +369,7 @@ describe('Storage工具测试', () => {
         },
         editorTheme: 'seeDark',
         apiConfig: {
-          requestTimeout: 5,
+          requestTimeout: 1,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
             hostSource: 'schema-element-editor-host',
@@ -392,6 +394,7 @@ describe('Storage工具测试', () => {
         themeColor: '#1677FF',
         contextMenuConfig: {
           enabled: true,
+          triggerMode: 'selection',
         },
       })
     })
@@ -600,7 +603,7 @@ describe('Storage工具测试', () => {
         },
         editorTheme: 'seeDark',
         apiConfig: {
-          requestTimeout: 5,
+          requestTimeout: 1,
           sourceConfig: {
             contentSource: 'schema-element-editor-content',
             hostSource: 'schema-element-editor-host',
@@ -625,6 +628,7 @@ describe('Storage工具测试', () => {
         themeColor: '#1677FF',
         contextMenuConfig: {
           enabled: true,
+          triggerMode: 'selection',
         },
       })
     })
@@ -1381,7 +1385,7 @@ describe('Storage工具测试', () => {
       const result = await storage.getApiConfig()
 
       expect(result).toEqual({
-        requestTimeout: 5,
+        requestTimeout: 1,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
           hostSource: 'schema-element-editor-host',
@@ -1545,7 +1549,7 @@ describe('Storage工具测试', () => {
 
       const result = await storage.getApiConfig()
       expect(result).toEqual({
-        requestTimeout: 5,
+        requestTimeout: 1,
         sourceConfig: {
           contentSource: 'schema-element-editor-content',
           hostSource: 'schema-element-editor-host',

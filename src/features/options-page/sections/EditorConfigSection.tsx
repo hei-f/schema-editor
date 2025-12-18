@@ -1,6 +1,7 @@
 import { FORM_PATHS } from '@/shared/constants/form-paths'
+import { CONTEXT_MENU_TRIGGER_MODE } from '@/shared/constants/context-menu'
 import { DesktopOutlined } from '@ant-design/icons'
-import { Form, Space, Switch, Tooltip } from 'antd'
+import { Form, Select, Space, Switch, Tooltip } from 'antd'
 import React from 'react'
 import { ColorPickerField } from '../components/ColorPickerField'
 import { SectionCard } from '../components/SectionCard'
@@ -62,8 +63,8 @@ export const EditorConfigSection: React.FC<SectionProps> = (props) => {
           <Form.Item
             label={
               <Space>
-                启用右键菜单
-                <Tooltip title="在编辑器中选中内容后右键可快速打开单独编辑弹窗">
+                启用单独编辑
+                <Tooltip title="在编辑器中对选中的内容快速打开单独编辑弹窗">
                   <HelpTooltipIcon />
                 </Tooltip>
               </Space>
@@ -72,6 +73,37 @@ export const EditorConfigSection: React.FC<SectionProps> = (props) => {
             valuePropName="checked"
           >
             <Switch />
+          </Form.Item>
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) =>
+              prevValues.contextMenuConfig?.enabled !== currentValues.contextMenuConfig?.enabled
+            }
+          >
+            {({ getFieldValue }) =>
+              getFieldValue(FORM_PATHS.contextMenuConfig.enabled) ? (
+                <Form.Item
+                  label={
+                    <Space>
+                      单独编辑触发方式
+                      <Tooltip title="选择单独编辑弹窗的触发方式">
+                        <HelpTooltipIcon />
+                      </Tooltip>
+                    </Space>
+                  }
+                  name={FORM_PATHS.contextMenuConfig.triggerMode}
+                >
+                  <Select
+                    style={{ width: 200 }}
+                    options={[
+                      { label: '选中自动出现', value: CONTEXT_MENU_TRIGGER_MODE.SELECTION },
+                      { label: '右键出现', value: CONTEXT_MENU_TRIGGER_MODE.CONTEXT_MENU },
+                    ]}
+                  />
+                </Form.Item>
+              ) : null
+            }
           </Form.Item>
         </FormContent>
       </FormSection>

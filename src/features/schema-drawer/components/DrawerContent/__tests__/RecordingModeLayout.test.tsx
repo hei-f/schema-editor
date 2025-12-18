@@ -76,7 +76,7 @@ vi.mock('../shared/ToolbarSection', () => ({
   ),
 }))
 
-vi.mock('../../recording/RecordingStatusBar', () => ({
+vi.mock('../../recording/RecordingStatusBar.lazy', () => ({
   RecordingStatusBar: (props: any) => (
     <div data-testid="recording-status-bar">
       <div data-testid="status-is-recording">{String(props.isRecording)}</div>
@@ -91,7 +91,7 @@ vi.mock('../../recording/RecordingStatusBar', () => ({
   ),
 }))
 
-vi.mock('../../recording/VersionHistoryPanel', () => ({
+vi.mock('../../recording/VersionHistoryPanel.lazy', () => ({
   VersionHistoryPanel: (props: any) => (
     <div data-testid="version-history-panel">
       <div data-testid="history-is-recording">{String(props.isRecording)}</div>

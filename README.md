@@ -2,7 +2,7 @@
 
 Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 
-![Version](https://img.shields.io/badge/version-2.3.0-blue)
+![Version](https://img.shields.io/badge/version-2.3.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ## 功能
@@ -12,7 +12,7 @@ Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 - 🔦 **批量高亮**: 支持快捷键（Alt+字母/数字）一键高亮页面所有可编辑元素，可配置快捷键和数量上限
 - 🔴 **录制模式**: 按 Alt+R 进入录制模式，轮询检测Schema变化并记录快照，支持多版本Diff对比
 - 📝 **Schema编辑器**: 内置CodeMirror编辑器，支持JSON格式化、压缩、转义/去转义等操作
-- 🖱️ **右键快速编辑**: 在编辑器中选中内容后右键快速打开独立编辑弹窗，支持完整的编辑和格式化功能
+- 🖱️ **快速单独编辑**: 在编辑器中选中内容后可快速打开独立编辑弹窗，支持选中自动显示或右键触发两种模式，提供完整的编辑和格式化功能
 - 🔧 **JSON 智能修复**: 自动检测JSON语法错误，一键定位错误位置并尝试智能修复，支持 Diff 对比查看修复前后差异
 - 🧠 **AST 智能补全**: 编辑 AST 类型数据时提供字段名和类型的智能提示，支持快捷键触发
 - 👁️ **实时预览**: 支持在编辑时实时预览Schema效果，可自定义预览组件
