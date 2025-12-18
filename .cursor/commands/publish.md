@@ -157,10 +157,9 @@
    - 后续操作：回到步骤c，重新构造正确的patch
 
    **阶段2：在步骤g发现问题（已commit但未push）**
-   - 执行：`git reset --soft HEAD~1`
-   - 效果：撤销最近一次commit，改动回到暂存区
-   - 然后执行：`git reset`
-   - 效果：清空暂存区，所有内容回到工作区
+   - 执行：`git reset HEAD~1`
+   - 效果：撤销最近一次commit，并将改动直接放回工作区（变为未暂存状态）
+   - 说明：此命令等同于先执行 `git reset --soft HEAD~1` 再执行 `git reset`，一步完成撤销并清空暂存区
    - 工作区改动：完全恢复到commit前的状态
    - 后续操作：回到步骤c，重新构造正确的patch
 
