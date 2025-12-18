@@ -325,12 +325,12 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #39c5bb 0%, #7ec8e3 50%, #f78da7 100%);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s ease;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #39c5bb 0%, rgba(57, 197, 187, 0.3) 100%);
+  border-radius: 20px 0 0 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .featureCard:hover {
@@ -340,7 +340,7 @@
 }
 
 .featureCard:hover::before {
-  transform: scaleX(1);
+  opacity: 1;
 }
 
 .featureNumber {
