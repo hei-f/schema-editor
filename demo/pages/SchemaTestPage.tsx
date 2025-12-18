@@ -343,6 +343,54 @@ const initialSchemaStore: Record<string, any> = {
     title: 'z-index 配置测试',
     description: '用于验证预览模式下弹窗能否正常显示',
   },
+  'editor-scroll-test': {
+    metadata: {
+      title: '编辑器滚动测试',
+      description: '包含大量数据以测试编辑器垂直滚动功能',
+      createdAt: '2024-01-01T00:00:00.000Z',
+    },
+    longText:
+      '这是一段很长的文本内容。'.repeat(50) +
+      ' Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(30),
+    users: Array.from({ length: 100 }, (_, i) => ({
+      id: `user-${i + 1}`,
+      name: `User ${i + 1}`,
+      email: `user${i + 1}@example.com`,
+      age: 20 + (i % 50),
+      address: {
+        street: `Street ${i + 1}`,
+        city: `City ${i % 10}`,
+        country: 'China',
+        zipCode: `${100000 + i}`,
+      },
+      preferences: {
+        theme: i % 2 === 0 ? 'dark' : 'light',
+        notifications: i % 3 === 0,
+        language: i % 4 === 0 ? 'zh-CN' : 'en-US',
+      },
+      tags: [`tag-${i % 5}`, `category-${i % 3}`, `level-${i % 4}`],
+    })),
+    settings: {
+      level1: {
+        level2: {
+          level3: {
+            level4: {
+              level5: {
+                deepValue: '这是一个深层嵌套的值',
+                items: Array.from({ length: 20 }, (_, i) => `item-${i + 1}`),
+              },
+            },
+          },
+        },
+      },
+    },
+    logs: Array.from({ length: 50 }, (_, i) => ({
+      timestamp: `2024-01-01T${String(i % 24).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}:00.000Z`,
+      level: ['info', 'warn', 'error', 'debug'][i % 4],
+      message: `日志消息 ${i + 1}: 这是一条测试日志信息，用于验证编辑器滚动功能`,
+      data: { requestId: `req-${i + 1}`, duration: `${i * 10}ms` },
+    })),
+  },
 }
 
 const testElements: TestElement[] = [
@@ -557,6 +605,16 @@ const testElements: TestElement[] = [
     description: '开启预览后，点击预览区域的按钮测试 Modal/Drawer 能否正常显示',
     attrs: { 'data-id': 'zindex-test' },
     schemaKey: 'zindex-test',
+    badge: 'success',
+    badgeText: '有效',
+    typeTag: 'UI',
+  },
+  {
+    id: 'editor-scroll-test',
+    title: '📜 编辑器滚动测试',
+    description: '包含100个用户对象、50条日志、深层嵌套结构等大量数据，用于测试编辑器垂直滚动能力',
+    attrs: { 'data-id': 'editor-scroll-test' },
+    schemaKey: 'editor-scroll-test',
     badge: 'success',
     badgeText: '有效',
     typeTag: 'UI',
