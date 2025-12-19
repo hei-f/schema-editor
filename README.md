@@ -5,6 +5,8 @@ Chrome扩展程序，用于实时查看和编辑DOM元素的Schema数据。
 ![Version](https://img.shields.io/badge/version-2.3.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
+📚 [完整文档](https://hei-f.github.io/schema-element-editor/)
+
 ## 功能
 
 - 🎯 **智能元素检测**: 按住 Alt/Option 键时自动检测和高亮目标元素
