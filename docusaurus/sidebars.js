@@ -28,7 +28,7 @@ const sidebars = {
     {
       type: 'category',
       label: '功能指南',
-      collapsed: true,
+      collapsed: false,
       collapsible: true,
       items: [
         'guides/元素检测与高亮',
@@ -44,7 +44,7 @@ const sidebars = {
     {
       type: 'category',
       label: '开发者集成',
-      collapsed: true,
+      collapsed: false,
       collapsible: true,
       items: ['integration/概述', 'integration/postMessage模式', 'integration/SDK使用指南'],
     },
