@@ -124,6 +124,7 @@ vi.mock('@/shared/utils/shadow-root-manager', () => {
       init: vi.fn(),
       get: vi.fn(() => mockShadowRoot),
       getContainer: vi.fn(() => mockContainer),
+      reset: vi.fn(),
     },
   }
 })
