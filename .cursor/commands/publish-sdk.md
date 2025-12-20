@@ -108,12 +108,24 @@
 - **major（主版本）**：存在 BREAKING CHANGE 或不兼容的API变更
 - **minor（次版本）**：存在 `feat:` 类型的新功能
 - **patch（修订版本）**：仅有 `fix:` 或 `perf:` 类型的修复
+- **注意**：如果检测到tag冲突（当前版本tag已存在但有新commit），必须强制更新版本号
 
 **4.3 向用户确认版本更新**
 
 - 列出自上次版本以来的所有SDK相关commit
-- 给出版本更新建议
-- 询问用户确认：接受建议 / 自定义版本级别 / 不更新版本
+- **检查tag冲突**：
+  - 执行 `git log --oneline --decorate -- packages/schema-element-editor-sdk | head -10`
+  - 如果当前版本号的tag已存在且指向不同的commit：
+    - ⚠️ **警告**：检测到版本号冲突
+    - 显示：`schema-element-editor-sdk-v{当前版本} tag指向: {旧commit hash}`
+    - 显示：`当前HEAD位于: {新commit hash}`
+    - 显示：`自tag以来SDK新增了 {N} 个commit`
+    - **强制要求**：必须更新版本号（不允许选择"保持版本号不变"）
+- 给出版本更新建议（major/minor/patch）
+- 询问用户确认：
+  - **接受建议**：按推荐的版本级别更新
+  - **自定义**：用户指定版本级别（major/minor/patch）
+  - **不更新版本**：仅当无tag冲突且无重要功能变更时可选
 - 在得到用户明确的回答之后再执行后续步骤
 
 ### 5. 更新版本号（如需要）
@@ -193,11 +205,28 @@ npm run publish:sdk
 git push
 ```
 
-**10.2 创建并推送Tag**
+**10.2 检查tag状态**
+
+- 检查当前SDK版本的tag是否已存在：`git tag -l "schema-element-editor-sdk-v{版本号}"`
+- 如果tag已存在：
+  - 检查tag指向：`git log --oneline --decorate | grep "tag: schema-element-editor-sdk-v{版本号}"`
+  - 如果tag不在当前HEAD：
+    - ⚠️ **错误**：tag已存在但指向不同commit，这不应该发生
+    - 说明：步骤4应该已强制更新版本号
+    - **操作**：终止流程，返回步骤4重新检查并更新版本号
+  - 如果tag正好在当前HEAD：
+    - 说明：tag已经存在且位置正确
+    - **操作**：跳过tag创建，继续步骤11
+
+**10.3 创建并推送新tag**
+
+仅当tag不存在时执行：
 
 - Tag命名格式：`schema-element-editor-sdk-v{版本号}`（如 `schema-element-editor-sdk-v1.2.3`）
 - 创建tag：`git tag schema-element-editor-sdk-v{版本号}`
+- 验证tag创建成功：`git tag -l "schema-element-editor-sdk-v{版本号}"`
 - 推送tag：`git push origin schema-element-editor-sdk-v{版本号}`
+- 验证tag位置：`git log --oneline --decorate -- packages/schema-element-editor-sdk | head -5`
 
 ### 11. 发布总结
 

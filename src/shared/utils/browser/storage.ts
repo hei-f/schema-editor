@@ -752,41 +752,6 @@ class StorageManager {
   }
 
   /**
-   * 更新预设配置的最后使用时间
-   */
-  async updateConfigPresetUsedTime(id: string): Promise<void> {
-    try {
-      await presetManager.updatePresetUsedTime(
-        id,
-        () => this.getRawConfigPresets(),
-        (presets) => this.saveConfigPresets(presets)
-      )
-    } catch (error) {
-      console.error('更新预设配置使用时间失败:', error)
-    }
-  }
-
-  /**
-   * 清理超过最大数量的预设配置（使用LRU算法）
-   */
-  async cleanOldConfigPresets(): Promise<void> {
-    try {
-      const maxCount = await this.getMaxConfigPresetsCount()
-      const cleanedCount = await presetManager.cleanOldPresets(
-        maxCount,
-        () => this.getRawConfigPresets(),
-        (presets) => this.saveConfigPresets(presets)
-      )
-
-      if (cleanedCount > 0) {
-        logger.log(`已清理 ${cleanedCount} 个最少使用的预设配置`)
-      }
-    } catch (error) {
-      console.error('清理预设配置失败:', error)
-    }
-  }
-
-  /**
    * 获取历史记录上限配置
    */
   async getMaxHistoryCount(): Promise<number> {

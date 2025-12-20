@@ -71,6 +71,10 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
    */
   const [themeColor, setThemeColor] = useState(DEFAULT_VALUES.themeColor)
 
+  /** 预设配置数量状态 */
+  const [presetCount, setPresetCount] = useState(0)
+  const [maxPresetCount, setMaxPresetCount] = useState(DEFAULT_VALUES.maxConfigPresetsCount)
+
   /** 光晕层 refs */
   const pageRootRef = useRef<HTMLDivElement>(null)
   const bgGlowRef = useRef<HTMLDivElement>(null)
@@ -109,9 +113,6 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
         // 批量保存所有配置到 storage（使用适配器）
         await storage.setAllConfig(preset.config)
 
-        // 更新使用时间（使用全局 storage）
-        await globalStorage.updateConfigPresetUsedTime(preset.id)
-
         message.success('预设配置已应用', 1.5)
       } catch (error) {
         console.error('应用预设配置失败:', error)
@@ -142,6 +143,45 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
     onSuccess: (msg) => message.success(msg, 1.5),
   })
 
+  /** 加载预设数量和上限 */
+  const loadPresetLimits = useCallback(async () => {
+    try {
+      const presets = await globalStorage.getConfigPresets()
+      const max = await globalStorage.getMaxConfigPresetsCount()
+      setPresetCount(presets.length)
+      setMaxPresetCount(max)
+    } catch (error) {
+      console.error('加载预设配置上限失败:', error)
+    }
+  }, [])
+
+  /** 包装 handleOpenAddPreset 以检查上限 */
+  const handleOpenAddPresetWithCheck = useCallback(async () => {
+    await loadPresetLimits()
+    if (presetCount >= maxPresetCount) {
+      message.error(
+        `已达到预设配置数量上限（${presetCount}/${maxPresetCount}），请删除旧预设后再添加`
+      )
+      return
+    }
+    handleOpenAddPreset()
+  }, [presetCount, maxPresetCount, handleOpenAddPreset, loadPresetLimits])
+
+  /** 包装 handleAddPreset 以在添加后刷新数量 */
+  const handleAddPresetWithRefresh = useCallback(async () => {
+    await handleAddPreset()
+    await loadPresetLimits()
+  }, [handleAddPreset, loadPresetLimits])
+
+  /** 包装 handleDeletePreset 以在删除后刷新数量 */
+  const handleDeletePresetWithRefresh = useCallback(
+    async (id: string) => {
+      await handleDeletePreset(id)
+      await loadPresetLimits()
+    },
+    [handleDeletePreset, loadPresetLimits]
+  )
+
   /**
    * 为光晕层设置随机负延迟，使每次刷新从不同位置开始
    */
@@ -161,6 +201,7 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
   /** 加载设置 */
   useDeferredEffect(() => {
     loadSettings()
+    loadPresetLimits()
   }, [])
 
   /** 监听配置变化（如应用预设配置时） */
@@ -275,9 +316,21 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
                   </CheckUpdateButton>
 
                   <VersionDivider />
-                  <SavePresetButton onClick={handleOpenAddPreset} type="default">
-                    保存为预设配置
-                  </SavePresetButton>
+                  <Tooltip
+                    title={
+                      presetCount >= maxPresetCount
+                        ? `已达到预设配置数量上限（${presetCount}/${maxPresetCount}），请删除旧预设后再添加`
+                        : '保存当前配置为预设'
+                    }
+                  >
+                    <SavePresetButton
+                      onClick={handleOpenAddPresetWithCheck}
+                      type="default"
+                      disabled={presetCount >= maxPresetCount}
+                    >
+                      保存为预设配置
+                    </SavePresetButton>
+                  </Tooltip>
                   <Tooltip title="管理预设配置">
                     <ManagePresetButton onClick={handleOpenPresets} icon={<SettingOutlined />} />
                   </Tooltip>
@@ -387,11 +440,11 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
             presetsList={presetsList}
             themeColor={themeColors.primaryColor}
             onAddPresetInputChange={setPresetNameInput}
-            onAddPreset={handleAddPreset}
+            onAddPreset={handleAddPresetWithRefresh}
             onCloseAddPresetModal={closeAddPresetModal}
             onClosePresetsModal={closePresetsModal}
             onApplyPreset={handleApplyPresetFromHook}
-            onDeletePreset={handleDeletePreset}
+            onDeletePreset={handleDeletePresetWithRefresh}
           />
         </PageRoot>
       </Form>

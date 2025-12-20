@@ -173,6 +173,21 @@ describe('useFavoritesManagement Hook 测试', () => {
         await result.current.handleAddFavorite()
       })
 
+      expect(mockOnError).toHaveBeenCalledWith('Add error')
+    })
+
+    it('添加失败时如果不是Error对象应该显示通用错误信息', async () => {
+      mockStorage.addFavorite.mockRejectedValue('String error')
+      const { result } = renderHook(() => useFavoritesManagement(defaultProps))
+
+      act(() => {
+        result.current.setFavoriteNameInput('My Favorite')
+      })
+
+      await act(async () => {
+        await result.current.handleAddFavorite()
+      })
+
       expect(mockOnError).toHaveBeenCalledWith('添加收藏失败')
     })
   })
