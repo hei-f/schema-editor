@@ -44,8 +44,10 @@ export const createMockStorageAdapter = (): SettingsStorage => {
       const keys = SECTION_DEFAULT_KEYS[sectionKey]
       const defaultValues: Record<string, unknown> = {}
 
-      for (const key of keys) {
-        defaultValues[key] = (DEFAULT_VALUES as Record<string, unknown>)[key]
+      if (keys && Array.isArray(keys)) {
+        for (const key of keys) {
+          defaultValues[key] = (DEFAULT_VALUES as Record<string, unknown>)[key]
+        }
       }
 
       return defaultValues
