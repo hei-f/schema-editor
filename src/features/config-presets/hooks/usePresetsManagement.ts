@@ -71,7 +71,8 @@ export const usePresetsManagement = ({
       setPresetNameInput('')
     } catch (error) {
       console.error('添加预设配置失败:', error)
-      onError?.('添加预设配置失败')
+      const errorMessage = error instanceof Error ? error.message : '添加预设配置失败'
+      onError?.(errorMessage)
     }
   }, [presetNameInput, onWarning, onError, onSuccess])
 

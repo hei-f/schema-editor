@@ -100,7 +100,8 @@ export const useFavoritesManagement = ({
       setFavoriteNameInput('')
     } catch (error) {
       console.error('添加收藏失败:', error)
-      onError?.('添加收藏失败')
+      const errorMessage = error instanceof Error ? error.message : '添加收藏失败'
+      onError?.(errorMessage)
     }
   }, [favoriteNameInput, editorValue, onWarning, onError, onSuccess])
 
