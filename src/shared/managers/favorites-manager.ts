@@ -35,6 +35,7 @@ export class FavoritesManager {
   /**
    * 添加收藏
    * @param maxCount 最大收藏数量
+   * @throws 如果达到上限则抛出错误
    */
   async addFavorite(
     name: string,
@@ -44,6 +45,11 @@ export class FavoritesManager {
     saveFavorites: (favorites: Favorite[]) => Promise<void>
   ): Promise<void> {
     const favorites = await getFavorites()
+
+    // 检查是否达到上限
+    if (favorites.length >= maxCount) {
+      throw new Error(`已达到收藏数量上限（${favorites.length}/${maxCount}），请删除旧收藏后再添加`)
+    }
 
     const now = Date.now()
     const newFavorite: Favorite = {
@@ -57,10 +63,7 @@ export class FavoritesManager {
     // 添加到列表开头
     favorites.unshift(newFavorite)
 
-    // 应用LRU清理策略
-    const cleanedFavorites = this.applyLRUCleanup(favorites, maxCount)
-
-    await saveFavorites(cleanedFavorites)
+    await saveFavorites(favorites)
   }
 
   /**

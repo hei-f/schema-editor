@@ -73,7 +73,7 @@ describe('FavoritesManager 测试', () => {
       expect(favorite.lastUsedTime).toBeGreaterThanOrEqual(beforeAdd)
     })
 
-    it('超过最大数量时应该应用LRU清理', async () => {
+    it('超过最大数量时应该抛出错误', async () => {
       const now = Date.now()
       const existingFavorites = [
         { ...createMockFavorite('old1'), name: 'old1', lastUsedTime: now - 3000 },
@@ -83,14 +83,12 @@ describe('FavoritesManager 测试', () => {
       const mockGetter = vi.fn().mockResolvedValue(existingFavorites)
       const mockSaver = vi.fn().mockResolvedValue(undefined)
 
-      await manager.addFavorite('New', 'content', 3, mockGetter, mockSaver)
+      await expect(manager.addFavorite('New', 'content', 3, mockGetter, mockSaver)).rejects.toThrow(
+        '已达到收藏数量上限（3/3），请删除旧收藏后再添加'
+      )
 
-      const savedFavorites = mockSaver.mock.calls[0][0] as Favorite[]
-      expect(savedFavorites).toHaveLength(3)
-      // 应该保留新添加的和最近使用的
-      expect(savedFavorites.map((f) => f.name)).toContain('New')
-      expect(savedFavorites.map((f) => f.name)).toContain('recent')
-      expect(savedFavorites.map((f) => f.id)).not.toContain('old1')
+      // 不应该调用 save 函数
+      expect(mockSaver).not.toHaveBeenCalled()
     })
 
     it('未超过最大数量时不应该删除', async () => {
