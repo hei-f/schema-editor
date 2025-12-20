@@ -433,8 +433,6 @@ export interface ConfigPreset {
   config: StorageData
   /** 保存时间戳 */
   timestamp: number
-  /** 最后使用时间（用于LRU算法） */
-  lastUsedTime: number
 }
 
 /**
