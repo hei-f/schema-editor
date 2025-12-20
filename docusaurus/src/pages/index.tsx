@@ -11,8 +11,8 @@ type FeatureItem = {
 
 const FeatureItems: FeatureItem[] = [
   {
-    title: 'Agentic UI 原生支持',
-    description: <>内置 postMessage 通信适配，开发环境下可直接调试 Bubble 组件数据</>,
+    title: 'Agentic UI 开箱即用',
+    description: <>Agentic UI 已集成插件支持，开发环境下可直接调试 Bubble 组件数据</>,
   },
   {
     title: '智能元素检测',
