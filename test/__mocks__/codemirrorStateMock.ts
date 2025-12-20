@@ -14,11 +14,15 @@ export class EditorState {
   constructor(public config?: any) {}
 
   get doc() {
+    const docContent = this.config?.doc || ''
     return {
-      toString: () => this.config?.doc || '',
-      length: this.config?.doc?.length || 0,
+      toString: () => docContent,
+      length: docContent.length || 0,
       lines: 1,
       lineAt: () => ({ from: 0, to: 0, number: 1, text: '' }),
+      sliceString: (from?: number, to?: number) => {
+        return docContent.slice(from, to)
+      },
     }
   }
 
