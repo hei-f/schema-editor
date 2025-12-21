@@ -24,7 +24,7 @@ export enum ContextType {
 /**
  * 上下文分析结果
  */
-export interface ContextAnalysisResult {
+interface ContextAnalysisResult {
   /** 上下文类型 */
   type: ContextType
   /** 当前对象的 type 字段值（如果存在） */

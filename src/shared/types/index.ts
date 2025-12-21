@@ -95,7 +95,7 @@ export interface ToolbarButtonsConfig {
 /**
  * z-index 配置接口
  */
-export interface ZIndexConfig {
+interface ZIndexConfig {
   /** 默认状态 z-index */
   default: number
   /** 预览模式 z-index */
@@ -185,7 +185,7 @@ export interface PostMessageSourceConfig {
 /**
  * postMessage 模式的消息类型名称配置
  */
-export interface PostMessageTypeConfig {
+interface PostMessageTypeConfig {
   /** 获取 Schema 的消息类型 */
   getSchema: string
   /** 更新 Schema 的消息类型 */
@@ -310,15 +310,6 @@ export interface SchemaDrawerConfig {
   themeColor: string
   /** 右键菜单配置 */
   contextMenuConfig: EditorContextMenuConfig
-}
-
-/**
- * SchemaDrawer 运行时配置
- * 包含 SchemaDrawerConfig 加上快捷键配置
- */
-export interface SchemaDrawerRuntimeConfig extends SchemaDrawerConfig {
-  /** 抽屉快捷键配置 */
-  drawerShortcuts: DrawerShortcutsConfig
 }
 
 /**
@@ -470,38 +461,11 @@ export interface HistoryEntry {
 }
 
 /**
- * sessionStorage 存储的历史数据结构
- */
-export interface EditHistoryStorage {
-  /** 普通历史列表（受限制） */
-  entries: HistoryEntry[]
-  /** 特殊版本（不计入限制） */
-  specialEntries: HistoryEntry[]
-  /** 当前版本索引（在合并列表中） */
-  currentIndex: number
-}
-
-/**
  * 消息接口
  */
 export interface Message<T = any> {
   type: MessageType
   payload?: T
-}
-
-/**
- * 获取Schema的消息载荷
- */
-export interface GetSchemaPayload {
-  params: string
-}
-
-/**
- * 更新Schema的消息载荷
- */
-export interface UpdateSchemaPayload {
-  params: string
-  schema: any
 }
 
 /**
@@ -612,40 +576,22 @@ export interface PreviewPosition {
 }
 
 /**
- * 渲染预览载荷
- */
-export interface RenderPreviewPayload {
-  /** 预览数据 */
-  data: any
-  /** 预览位置 */
-  position: PreviewPosition
-}
-
-/**
- * 预览函数检查结果载荷
- */
-export interface PreviewFunctionResultPayload {
-  /** 预览函数是否存在 */
-  exists: boolean
-}
-
-/**
  * Schema 数据类型
  * 支持所有 JSON.parse 可返回的类型
  */
-export type SchemaValue = Record<string, unknown> | unknown[] | string | number | boolean | null
+type SchemaValue = Record<string, unknown> | unknown[] | string | number | boolean | null
 
 /**
  * 获取Schema的函数类型
  * @template T Schema数据类型，支持所有 JSON 类型
  */
-export type GetSchemaFunction<T extends SchemaValue = SchemaValue> = (params: string) => T
+type GetSchemaFunction<T extends SchemaValue = SchemaValue> = (params: string) => T
 
 /**
  * 更新Schema的函数类型
  * @template T Schema数据类型，支持所有 JSON 类型
  */
-export type UpdateSchemaFunction<T extends SchemaValue = SchemaValue> = (
+type UpdateSchemaFunction<T extends SchemaValue = SchemaValue> = (
   schema: T,
   params: string
 ) => boolean
@@ -655,7 +601,7 @@ export type UpdateSchemaFunction<T extends SchemaValue = SchemaValue> = (
  * @param data - 预览数据
  * @returns React 节点
  */
-export type PreviewFunction = (data: any) => React.ReactNode
+type PreviewFunction = (data: any) => React.ReactNode
 
 /**
  * 扩展window对象，添加页面提供的方法

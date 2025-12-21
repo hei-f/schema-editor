@@ -16,7 +16,7 @@ import {
 /**
  * 转换操作的结果
  */
-export interface TransformResult {
+interface TransformResult {
   success: boolean
   data?: string
   error?: string

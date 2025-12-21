@@ -5,7 +5,7 @@ import { parserMarkdownToSlateNode, parserSlateNodeToMarkdown } from '@ant-desig
 /**
  * 转换结果类型
  */
-export interface TransformResult {
+interface TransformResult {
   success: boolean
   data?: string
   error?: string

@@ -8,7 +8,7 @@
 /**
  * 字段定义接口
  */
-export interface FieldDefinition {
+interface FieldDefinition {
   /** 字段名称 */
   name: string
   /** 字段类型描述 */
@@ -55,8 +55,6 @@ export const ELEMENT_TYPES = [
   'table-row',
   'table-cell',
 ] as const
-
-export type ElementType = (typeof ELEMENT_TYPES)[number]
 
 /**
  * 所有 Element 共有的通用字段
@@ -760,7 +758,7 @@ const FOOTNOTE_FIELDS: FieldDefinition[] = [
 /**
  * Element 类型到字段映射表
  */
-export const ELEMENT_FIELDS_MAP: Record<string, FieldDefinition[]> = {
+const ELEMENT_FIELDS_MAP: Record<string, FieldDefinition[]> = {
   code: CODE_FIELDS,
   paragraph: PARAGRAPH_FIELDS,
   blockquote: [], // 只有通用字段

@@ -14,7 +14,7 @@ import type { DiffToolbarActions } from '../toolbar/DrawerToolbar'
 /**
  * 轻量通知类型
  */
-export interface LightNotification {
+interface LightNotification {
   id: string
   text: string
 }
@@ -22,7 +22,7 @@ export interface LightNotification {
 /**
  * 工具栏操作回调
  */
-export interface ToolbarActions {
+interface ToolbarActions {
   onFormat: () => void
   onEscape: () => void
   onUnescape: () => void

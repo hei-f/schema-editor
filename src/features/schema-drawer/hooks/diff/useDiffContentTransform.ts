@@ -11,7 +11,7 @@ import {
 /**
  * Diff 内容转换 Hook 的配置选项
  */
-export interface UseDiffContentTransformOptions {
+interface UseDiffContentTransformOptions {
   /** 是否处于 Diff 模式 */
   isDiffMode: boolean
   /** 原始左侧内容（进入 Diff 模式时的初始值） */
@@ -27,7 +27,7 @@ export interface UseDiffContentTransformOptions {
 /**
  * Diff 工具栏动作集合
  */
-export interface DiffToolbarActions {
+interface DiffToolbarActions {
   onDiffSegmentChange: (value: ContentType) => void
   onDiffFormat: () => void
   onDiffEscape: () => void
@@ -41,7 +41,7 @@ export interface DiffToolbarActions {
 /**
  * Diff 内容转换 Hook 的返回值
  */
-export interface UseDiffContentTransformReturn {
+interface UseDiffContentTransformReturn {
   /** 当前 Diff 内容类型 */
   diffContentType: ContentType
   /** 转换后的左侧内容 */

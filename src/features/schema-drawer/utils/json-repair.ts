@@ -4,7 +4,7 @@ import { jsonrepair } from 'jsonrepair'
 /**
  * JSON 错误信息
  */
-export interface JsonErrorInfo {
+interface JsonErrorInfo {
   /** 完整错误消息（包含 codeFrame） */
   message: string
   /** 简短错误消息（不含 codeFrame，用于 UI 显示） */
@@ -20,7 +20,7 @@ export interface JsonErrorInfo {
 /**
  * JSON 分析结果
  */
-export interface JsonAnalysisResult {
+interface JsonAnalysisResult {
   /** 是否为有效 JSON */
   isValid: boolean
   /** 格式化后的内容（如果有效） */

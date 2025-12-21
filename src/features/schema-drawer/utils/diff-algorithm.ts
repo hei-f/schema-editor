@@ -1,10 +1,8 @@
 import { diffLines, diffChars } from 'diff'
 
-/** 行类型 */
-export type LineType = 'unchanged' | 'added' | 'removed' | 'modified'
+type LineType = 'unchanged' | 'added' | 'removed' | 'modified'
 
-/** 单侧行信息 */
-export interface SideLine {
+interface SideLine {
   /** 行类型，placeholder 表示占位行 */
   type: LineType | 'placeholder'
   /** 行内容 */
@@ -36,7 +34,7 @@ export interface DiffResult {
 }
 
 /** 行内 diff 片段 */
-export interface InlineDiffPart {
+interface InlineDiffPart {
   /** 文本内容 */
   value: string
   /** 是否新增 */

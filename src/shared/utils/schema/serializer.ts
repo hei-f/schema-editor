@@ -1,7 +1,7 @@
 /**
  * JSON处理结果接口
  */
-export interface JsonProcessResult {
+interface JsonProcessResult {
   success: boolean
   data?: string
   parseCount?: number

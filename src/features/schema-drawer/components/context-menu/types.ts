@@ -4,7 +4,7 @@ import type { ContextMenuTriggerMode } from '@/shared/constants/context-menu'
 /**
  * 编辑器右键菜单配置
  */
-export interface EditorContextMenuConfig {
+interface EditorContextMenuConfig {
   /** 是否启用单独编辑 */
   enabled: boolean
   /** 触发方式 */
