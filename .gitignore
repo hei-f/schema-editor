@@ -49,6 +49,10 @@ pnpm-debug.log*
 coverage/
 playwright-report/
 
+# knip 工具输出
+knip-output.json
+knip-result.json
+
 # 文档文件（除了 README、docs 和 cursor commands）
 *.md
 !README.md

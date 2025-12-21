@@ -200,9 +200,3 @@ export const FORM_PATHS = {
     triggerMode: ['contextMenuConfig', 'triggerMode'],
   },
 }
-
-/**
- * 表单路径类型
- * 从 FORM_PATHS 中提取所有路径的联合类型
- */
-export type FormPath = (typeof FORM_PATHS)[keyof typeof FORM_PATHS]

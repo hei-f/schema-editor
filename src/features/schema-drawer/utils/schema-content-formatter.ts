@@ -4,7 +4,7 @@ import { schemaTransformer } from '../services/schema-transformer'
 /**
  * 格式化 Schema 内容的选项
  */
-export interface FormatSchemaOptions {
+interface FormatSchemaOptions {
   /** 是否处于录制模式 */
   isRecordingMode: boolean
   /** 是否启用自动解析 */
@@ -14,7 +14,7 @@ export interface FormatSchemaOptions {
 /**
  * 格式化 Schema 内容的结果
  */
-export interface FormatSchemaResult {
+interface FormatSchemaResult {
   /** 格式化后的内容 */
   content: string
   /** 原始数据是否为字符串类型 */

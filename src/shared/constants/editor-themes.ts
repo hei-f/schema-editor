@@ -17,7 +17,7 @@ export const DEFAULT_EDITOR_THEME: EditorTheme = EDITOR_THEMES.SEE_DARK
 /**
  * 编辑器主题定义接口
  */
-export interface EditorThemeOption {
+interface EditorThemeOption {
   value: EditorTheme
   label: string
   category: 'light' | 'dark'
