@@ -114,6 +114,17 @@ CSSStyleDeclaration.prototype.setProperty = function (
   }
 }
 
+// Suppress getComputedStyle pseudo-element warnings from jsdom
+// jsdom不完全支持伪元素，但项目中不使用伪元素，可以安全地抑制警告
+const originalGetComputedStyle = window.getComputedStyle
+window.getComputedStyle = function (element: Element, pseudoElement?: string | null) {
+  // 伪元素在测试中不会被使用，直接返回空样式对象
+  if (pseudoElement) {
+    return {} as CSSStyleDeclaration
+  }
+  return originalGetComputedStyle(element)
+} as typeof window.getComputedStyle
+
 // Mock shadowRootManager for tests
 vi.mock('@/shared/utils/shadow-root-manager', () => {
   const mockContainer = document.createElement('div')
