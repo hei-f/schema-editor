@@ -1,7 +1,6 @@
 import { render, waitFor } from '@test/test-utils'
 import { BuiltinPreview } from '../../preview/BuiltinPreview'
 import { ContentType } from '@/shared/types'
-import React from 'react'
 
 /**
  * Mock MarkdownEditor
