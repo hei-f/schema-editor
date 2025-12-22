@@ -11,18 +11,33 @@ const mockStore = {
 }
 
 vi.mock('@ant-design/agentic-ui', () => ({
-  MarkdownEditor: vi.fn(({ editorRef, initValue }: any) => {
-    // 模拟设置 ref
-    if (editorRef && editorRef.current) {
-      editorRef.current.store = mockStore
-    } else if (editorRef) {
+  MarkdownEditor: ({ editorRef, initValue }: any) => {
+    // 立即设置 ref，确保父组件的 useEffect 能访问到
+    if (editorRef && !editorRef.current) {
       editorRef.current = { store: mockStore }
     }
     return <div data-testid="markdown-editor">{initValue || 'Editor'}</div>
+  },
+  parserMarkdownToSlateNode: vi.fn((markdown: string) => {
+    // 模拟将Markdown字符串转为AST节点
+    return {
+      schema: [{ type: 'paragraph', children: [{ text: markdown }] }],
+    }
   }),
-  parserMarkdownToSlateNode: vi.fn((markdown: string) => ({
-    schema: [{ type: 'paragraph', children: [{ text: markdown }] }],
-  })),
+  parserSlateNodeToMarkdown: vi.fn((nodes: any[]) => {
+    // 模拟将AST节点转为Markdown字符串
+    if (!nodes || !Array.isArray(nodes) || nodes.length === 0) return ''
+    const firstNode = nodes[0]
+    if (
+      firstNode &&
+      firstNode.children &&
+      Array.isArray(firstNode.children) &&
+      firstNode.children[0]
+    ) {
+      return firstNode.children[0].text || ''
+    }
+    return ''
+  }),
 }))
 
 describe('BuiltinPreview', () => {
@@ -60,16 +75,16 @@ describe('BuiltinPreview', () => {
       expect(getByTestId('markdown-editor')).toBeInTheDocument()
     })
 
-    it('应该使用initValue初始化RawString类型内容', () => {
+    it('应该使用initValue初始化RawString类型内容', async () => {
       const markdownText = '# Test Title'
       const editorValue = JSON.stringify(markdownText)
 
-      const { getByTestId } = render(
-        <BuiltinPreview editorValue={editorValue} contentType={ContentType.RawString} />
-      )
+      render(<BuiltinPreview editorValue={editorValue} contentType={ContentType.RawString} />)
 
-      const editor = getByTestId('markdown-editor')
-      expect(editor.textContent).toContain(markdownText)
+      // 新逻辑：统一通过 updateNodeList 更新，而不是 initValue
+      await waitFor(() => {
+        expect(mockUpdateNodeList).toHaveBeenCalled()
+      })
     })
   })
 
