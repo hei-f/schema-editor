@@ -280,7 +280,7 @@ export const AgenticDemoPage: React.FC<AgenticDemoPageProps> = () => {
           ? {
               ...msg,
               extra: {
-                ...(msg as RichMessageData).extra,
+                ...((msg as RichMessageData).extra ?? {}),
                 liked: true,
                 disliked: false,
               },
@@ -299,7 +299,7 @@ export const AgenticDemoPage: React.FC<AgenticDemoPageProps> = () => {
           ? {
               ...msg,
               extra: {
-                ...(msg as RichMessageData).extra,
+                ...((msg as RichMessageData).extra ?? {}),
                 liked: false,
                 disliked: true,
               },
