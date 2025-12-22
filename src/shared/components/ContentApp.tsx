@@ -21,6 +21,7 @@ import zhCN from 'antd/locale/zh_CN'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheetManager } from 'styled-components'
 import { IframeHighlightOverlay } from './IframeHighlightOverlay'
+import { GlobalStyles } from './GlobalStyles'
 
 interface AppProps {
   shadowRoot: ShadowRoot
@@ -442,6 +443,7 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
     return {
       cssVar: { prefix: 'see' },
       token: {
+        // ...shadowDomTheme.token,
         colorPrimary: primaryColor,
         colorPrimaryHover: hoverColor,
         colorPrimaryActive: activeColor,
@@ -452,6 +454,9 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         colorTextLightSolid: '#ffffff',
         colorBgSolid: primaryColor,
       },
+      // components: {
+      //   ...shadowDomTheme.components,
+      // },
     }
   }, [drawerConfig?.themeColor])
 
@@ -474,6 +479,9 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
   return (
     <StyleSheetManager target={shadowRoot as unknown as HTMLElement}>
       <StyleProvider container={shadowRoot as unknown as HTMLElement} layer>
+        {/* Shadow DOM 全局样式修复 */}
+        <GlobalStyles />
+
         <ConfigProvider
           locale={zhCN}
           theme={dynamicTheme}

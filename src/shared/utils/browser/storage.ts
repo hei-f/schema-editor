@@ -492,9 +492,21 @@ class StorageManager {
   }
 
   /**
-   * 获取收藏列表
+   * 获取收藏列表（已排序：Pin的在前，然后按LRU排序）
    */
   async getFavorites(): Promise<Favorite[]> {
+    try {
+      return await favoritesManager.getFavorites(() => this.getRawFavorites())
+    } catch (error) {
+      console.error('获取收藏列表失败:', error)
+      return []
+    }
+  }
+
+  /**
+   * 获取原始收藏列表（未排序，用于内部存储操作）
+   */
+  private async getRawFavorites(): Promise<Favorite[]> {
     try {
       const storedValue = await this.getStorageValue(this.STORAGE_KEYS.FAVORITES)
       return storedValue ?? []
@@ -524,7 +536,7 @@ class StorageManager {
         name,
         content,
         maxCount,
-        () => this.getFavorites(),
+        () => this.getRawFavorites(),
         (favorites) => this.saveFavorites(favorites)
       )
     } catch (error) {
@@ -542,7 +554,7 @@ class StorageManager {
         id,
         name,
         content,
-        () => this.getFavorites(),
+        () => this.getRawFavorites(),
         (favorites) => this.saveFavorites(favorites)
       )
     } catch (error) {
@@ -558,7 +570,7 @@ class StorageManager {
     try {
       await favoritesManager.deleteFavorite(
         id,
-        () => this.getFavorites(),
+        () => this.getRawFavorites(),
         (favorites) => this.saveFavorites(favorites)
       )
     } catch (error) {
@@ -574,7 +586,7 @@ class StorageManager {
     try {
       await favoritesManager.updateFavoriteUsedTime(
         id,
-        () => this.getFavorites(),
+        () => this.getRawFavorites(),
         (favorites) => this.saveFavorites(favorites)
       )
     } catch (error) {
@@ -590,7 +602,7 @@ class StorageManager {
       const maxCount = await this.getMaxFavoritesCount()
       const cleanedCount = await favoritesManager.cleanOldFavorites(
         maxCount,
-        () => this.getFavorites(),
+        () => this.getRawFavorites(),
         (favorites) => this.saveFavorites(favorites)
       )
 
@@ -611,7 +623,7 @@ class StorageManager {
       await favoritesManager.togglePin(
         id,
         maxPinned,
-        () => this.getFavorites(),
+        () => this.getRawFavorites(),
         (favorites) => this.saveFavorites(favorites)
       )
     } catch (error) {
@@ -625,7 +637,7 @@ class StorageManager {
    */
   async updateFavoriteTags(id: string, tags: FavoriteTag[]): Promise<void> {
     try {
-      const favorites = await this.getFavorites()
+      const favorites = await this.getRawFavorites()
       const favorite = favorites.find((fav) => fav.id === id)
 
       if (favorite) {
