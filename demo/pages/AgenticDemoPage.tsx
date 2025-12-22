@@ -336,9 +336,8 @@ export const AgenticDemoPage: React.FC<AgenticDemoPageProps> = () => {
       const extra = generateResponseMetadata()
 
       // 创建初始 AI 消息（空内容，准备流式输出）
-      const aiMessageId = generateId()
       const aiMessage = createMessage('assistant', '', false, extra)
-      aiMessage.id = aiMessageId
+      const aiMessageId = aiMessage.id
       aiMessage.typing = true
 
       setChatList((prev) => [...prev, aiMessage])
