@@ -108,7 +108,7 @@ export const PresetsDropdown: React.FC<PresetsDropdownProps> = ({
       trigger={['click']}
       open={open}
       onOpenChange={setOpen}
-      placement="bottomRight"
+      placement="bottom"
       getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
     >
       <Tooltip title="预设配置">

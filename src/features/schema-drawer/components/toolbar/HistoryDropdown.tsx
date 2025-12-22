@@ -122,7 +122,7 @@ export const HistoryDropdown: React.FC<HistoryDropdownProps> = ({
       trigger={['click']}
       open={open}
       onOpenChange={setOpen}
-      placement="bottomRight"
+      placement="bottom"
       getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
     >
       <Tooltip title="编辑历史">
