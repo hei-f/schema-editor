@@ -221,6 +221,13 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
   const leftEditorRef = useRef<DiffEditorHandle>(null)
   const rightEditorRef = useRef<DiffEditorHandle>(null)
 
+  // 判断是否为简单对比模式（非录制模式，只有2个快照且 timestamp 为连续的 0 和 1）
+  const isSimpleDiffMode = useMemo(() => {
+    if (snapshots.length !== 2) return false
+    // 检查是否是编辑模式下的对比（timestamp 为 0 和 1）
+    return snapshots[0].timestamp === 0 && snapshots[1].timestamp === 1
+  }, [snapshots])
+
   // 获取原始内容
   const leftRawContent = useMemo(() => {
     const snapshot = snapshots.find((s) => s.id === leftVersionId)
@@ -232,14 +239,16 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
     return snapshot?.content || ''
   }, [snapshots, rightVersionId])
 
-  // 转换后的内容（优先使用父组件提供的转换内容）
+  // 转换后的内容
+  // 录制模式：使用根据版本选择计算的 rawContent（支持版本切换）
+  // 简单对比模式：优先使用父组件提供的转换内容（支持 AST/RawString 切换等操作）
   const leftTransformed = useMemo(() => {
-    return transformedLeftContent ?? leftRawContent
-  }, [transformedLeftContent, leftRawContent])
+    return isSimpleDiffMode ? (transformedLeftContent ?? leftRawContent) : leftRawContent
+  }, [isSimpleDiffMode, transformedLeftContent, leftRawContent])
 
   const rightTransformed = useMemo(() => {
-    return transformedRightContent ?? rightRawContent
-  }, [transformedRightContent, rightRawContent])
+    return isSimpleDiffMode ? (transformedRightContent ?? rightRawContent) : rightRawContent
+  }, [isSimpleDiffMode, transformedRightContent, rightRawContent])
 
   // Diff 同步
   const { setLeftContent, setRightContent, diffRows, isComputing } = useDiffSync({
@@ -252,12 +261,12 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
   useEffect(() => {
     setLeftContent(leftTransformed)
     leftEditorRef.current?.setValue(leftTransformed)
-  }, [leftTransformed])
+  }, [leftTransformed, setLeftContent])
 
   useEffect(() => {
     setRightContent(rightTransformed)
     rightEditorRef.current?.setValue(rightTransformed)
-  }, [rightTransformed])
+  }, [rightTransformed, setRightContent])
 
   // 计算编辑器的 diff 行信息
   const leftDiffLines = useMemo(() => {
@@ -280,13 +289,6 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = (props) => {
       value: snapshot.id,
       label: `版本 ${index + 1} (${formatTimestamp(snapshot.timestamp)})`,
     }))
-  }, [snapshots])
-
-  // 判断是否为简单对比模式（非录制模式，只有2个快照且 timestamp 为连续的 0 和 1）
-  const isSimpleDiffMode = useMemo(() => {
-    if (snapshots.length !== 2) return false
-    // 检查是否是编辑模式下的对比（timestamp 为 0 和 1）
-    return snapshots[0].timestamp === 0 && snapshots[1].timestamp === 1
   }, [snapshots])
 
   // 版本信息显示
