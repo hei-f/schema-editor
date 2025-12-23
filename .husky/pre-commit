@@ -1,3 +1,9 @@
+#!/bin/sh
+
+# 加载 NVM 环境
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 # ESLint 和 Prettier 检查
 echo "🔧 Running lint-staged..."
 bunx lint-staged
