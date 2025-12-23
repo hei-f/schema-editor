@@ -11,7 +11,6 @@ const createMockSnapshots = (count: number): SchemaSnapshot[] => {
     id: index + 1,
     timestamp: (index + 1) * 1000, // 1000ms, 2000ms, 3000ms, ...
     content: `{"version": ${index + 1}}`,
-    type: 'auto' as const,
   }))
 }
 
@@ -178,7 +177,7 @@ describe('VersionSelector 组件测试', () => {
   })
 
   it('应该处理非常小的时间戳（毫秒级）', async () => {
-    const snapshots: SchemaSnapshot[] = [{ id: 1, timestamp: 500, content: '{}', type: 'auto' }]
+    const snapshots: SchemaSnapshot[] = [{ id: 1, timestamp: 500, content: '{}' }]
     render(<VersionSelector {...defaultProps} snapshots={snapshots} value={1} />)
     const select = screen.getByRole('combobox')
 
@@ -189,7 +188,7 @@ describe('VersionSelector 组件测试', () => {
   })
 
   it('应该处理边界时间戳（正好1000ms）', async () => {
-    const snapshots: SchemaSnapshot[] = [{ id: 1, timestamp: 1000, content: '{}', type: 'auto' }]
+    const snapshots: SchemaSnapshot[] = [{ id: 1, timestamp: 1000, content: '{}' }]
     render(<VersionSelector {...defaultProps} snapshots={snapshots} value={1} />)
     const select = screen.getByRole('combobox')
 
@@ -200,7 +199,7 @@ describe('VersionSelector 组件测试', () => {
   })
 
   it('应该处理小数时间戳', async () => {
-    const snapshots: SchemaSnapshot[] = [{ id: 1, timestamp: 1234, content: '{}', type: 'auto' }]
+    const snapshots: SchemaSnapshot[] = [{ id: 1, timestamp: 1234, content: '{}' }]
     render(<VersionSelector {...defaultProps} snapshots={snapshots} value={1} />)
     const select = screen.getByRole('combobox')
 
@@ -335,11 +334,11 @@ describe('VersionSelector 组件测试', () => {
     })
   })
 
-  it('应该处理快照的不同类型', async () => {
+  it('应该处理多个快照', async () => {
     const snapshots: SchemaSnapshot[] = [
-      { id: 1, timestamp: 1000, content: '{}', type: 'auto' },
-      { id: 2, timestamp: 2000, content: '{}', type: 'manual' },
-      { id: 3, timestamp: 3000, content: '{}', type: 'auto' },
+      { id: 1, timestamp: 1000, content: '{}' },
+      { id: 2, timestamp: 2000, content: '{}' },
+      { id: 3, timestamp: 3000, content: '{}' },
     ]
     render(<VersionSelector {...defaultProps} snapshots={snapshots} />)
     const select = screen.getByRole('combobox')
