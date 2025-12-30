@@ -1,7 +1,6 @@
 import type { HistoryEntry } from '@/shared/types'
 import { HistoryEntryType } from '@/shared/types'
 import { useDeferredEffect } from '@/shared/hooks/useDeferredEffect'
-import { logger } from '@/shared/utils/logger'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface UseEditHistoryProps {
@@ -85,9 +84,6 @@ export const useEditHistory = ({
         setSpecialEntries(data.specialEntries || [])
         setCurrentIndex(data.currentIndex ?? -1)
         lastRecordedContentRef.current = ''
-        logger.log(
-          `加载历史记录: ${data.entries.length} 条普通, ${data.specialEntries.length} 条特殊`
-        )
       } else {
         // 没有存储的历史时，重置状态（避免显示其他 params 的历史）
         setEntries([])
@@ -96,7 +92,7 @@ export const useEditHistory = ({
         lastRecordedContentRef.current = ''
       }
     } catch (error) {
-      logger.error('加载历史记录失败:', error)
+      console.error('加载历史记录失败:', error)
       // 加载失败时也重置状态
       setEntries([])
       setSpecialEntries([])
@@ -118,7 +114,7 @@ export const useEditHistory = ({
         }
         sessionStorage.setItem(storageKey, JSON.stringify(data))
       } catch (error) {
-        logger.error('保存历史记录失败:', error)
+        console.error('保存历史记录失败:', error)
       }
     },
     [storageKey]
@@ -258,7 +254,6 @@ export const useEditHistory = ({
   const loadHistoryVersion = useCallback(
     (index: number) => {
       if (index < 0 || index >= mergedHistory.length) {
-        logger.warn(`无效的历史索引: ${index}`)
         return
       }
 
@@ -287,7 +282,6 @@ export const useEditHistory = ({
     saveToStorage([], [], -1)
 
     onClearHistory?.()
-    logger.log('历史记录已清除')
   }, [saveToStorage, onClearHistory])
 
   /**

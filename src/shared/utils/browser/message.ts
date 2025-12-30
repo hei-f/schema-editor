@@ -1,5 +1,4 @@
 import type { Message, PostMessageSourceConfig } from '@/shared/types'
-import { logger } from '@/shared/utils/logger'
 
 /** 默认消息来源标识 */
 export const MESSAGE_SOURCE = {
@@ -30,7 +29,7 @@ export async function sendMessageToBackground<T = any>(message: Message): Promis
     const response = await chrome.runtime.sendMessage(message)
     return response
   } catch (error) {
-    logger.error('发送消息到Background失败:', error)
+    console.error('发送消息到Background失败:', error)
     throw error
   }
 }
@@ -43,7 +42,7 @@ export async function sendMessageToContent<T = any>(tabId: number, message: Mess
     const response = await chrome.tabs.sendMessage(tabId, message)
     return response
   } catch (error) {
-    logger.error('发送消息到Content Script失败:', error)
+    console.error('发送消息到Content Script失败:', error)
     throw error
   }
 }

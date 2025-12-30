@@ -7,7 +7,6 @@ import type {
   IframeHighlightAllResponsePayload,
 } from '@/shared/types'
 import { IframeBridgeMessageType as MessageType } from '@/shared/types'
-import { logger } from './logger'
 
 /** iframe bridge 消息来源标识 */
 const IFRAME_BRIDGE_SOURCE = 'schema-element-editor-iframe-bridge'
@@ -116,7 +115,7 @@ export function convertMousePositionToTopFrame(
  */
 function sendToTopFrame<T>(type: IframeBridgeMessageType, payload: T): void {
   if (!window.top) {
-    logger.error('无法发送消息：window.top 不存在')
+    console.error('无法发送消息：window.top 不存在')
     return
   }
 
@@ -126,7 +125,6 @@ function sendToTopFrame<T>(type: IframeBridgeMessageType, payload: T): void {
     payload,
   }
 
-  logger.log('[iframe-bridge] 发送消息到 top frame:', type, payload)
   window.top.postMessage(message, '*')
 }
 
@@ -206,7 +204,6 @@ export function broadcastAltKeyState(
   isPressed: boolean,
   mousePosition: { x: number; y: number }
 ): void {
-  logger.log('[iframe-bridge] 广播 Alt 键状态到 iframes:', { isPressed, mousePosition })
   broadcastToIframes(MessageType.SYNC_ALT_KEY, { isPressed, mousePosition })
 }
 
@@ -245,14 +242,11 @@ export interface IframeBridgeHandlers {
  * @returns 清理函数
  */
 export function initIframeBridgeListener(handlers: IframeBridgeHandlers): () => void {
-  logger.log('[iframe-bridge] 初始化 iframe bridge 监听器')
-
   const listener = (event: MessageEvent) => {
     // 只处理来自同源的消息
     if (!event.data || event.data.source !== IFRAME_BRIDGE_SOURCE) return
 
     const message = event.data as IframeBridgeMessage
-    logger.log('[iframe-bridge] 收到消息:', message.type, message.payload)
 
     switch (message.type) {
       case MessageType.ELEMENT_HOVER:

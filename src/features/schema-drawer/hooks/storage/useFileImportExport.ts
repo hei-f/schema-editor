@@ -6,7 +6,6 @@ import {
   validateFileSize,
 } from '../../utils/file-helpers'
 import { MODAL_Z_INDEX } from '@/shared/constants/theme'
-import { logger } from '@/shared/utils/logger'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { Modal } from 'antd'
 import React, { useCallback } from 'react'
@@ -104,10 +103,9 @@ export const useFileImportExport = ({
         setTimeout(() => URL.revokeObjectURL(url), 100)
 
         showLightNotification('✅ 已导出到文件')
-        logger.log('Export successful:', { fileName: finalFileName, size: blob.size })
       } catch (error) {
         onError('导出失败：数据处理错误')
-        logger.error('Export failed:', error)
+        console.error('Export failed:', error)
       }
     },
     [editorValue, paramsKey, wasStringData, showLightNotification, onError]
@@ -229,21 +227,15 @@ export const useFileImportExport = ({
           } else {
             showLightNotification('✅ 已导入 JSON 文件')
           }
-
-          logger.log('Import successful:', {
-            hasMetadata: detection.hasMetadata,
-            params: detection.metadata?.params,
-            size: file.size,
-          })
         } catch (error) {
           onError('导入失败：文件格式错误或非法 JSON')
-          logger.error('Import failed:', error)
+          console.error('Import failed:', error)
         }
       }
 
       reader.onerror = () => {
         onError('文件读取失败')
-        logger.error('FileReader error')
+        console.error('FileReader error')
       }
 
       reader.readAsText(file)

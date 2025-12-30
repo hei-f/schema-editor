@@ -1,5 +1,4 @@
 import type { Draft } from '@/shared/types'
-import { logger } from '@/shared/utils/logger'
 
 /**
  * 草稿管理服务
@@ -91,12 +90,11 @@ export class DraftManager {
 
       if (expiredKeys.length > 0) {
         await removeKeys(expiredKeys)
-        logger.log(`已清理 ${expiredKeys.length} 个过期草稿`)
       }
 
       return expiredKeys.length
     } catch (error) {
-      logger.error('清理过期草稿失败:', error)
+      console.error('清理过期草稿失败:', error)
       return 0
     }
   }

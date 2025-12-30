@@ -10,7 +10,6 @@ import type {
   SchemaResponsePayload,
   UpdateResultPayload,
 } from '@/shared/types'
-import { logger } from '@/shared/utils/logger'
 import { initHostMessageListener, sendRequestToHost } from '@/shared/utils/browser/message'
 import { storage } from '@/shared/utils/browser/storage'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
@@ -149,7 +148,6 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
       const hasConfigChange = configKeys.some((key) => key in changes)
 
       if (hasConfigChange) {
-        logger.log('检测到配置变化，重新加载配置')
         loadConfig()
       }
     }
@@ -189,10 +187,8 @@ export const App: React.FC<AppProps> = ({ shadowRoot }) => {
         apiConfig.sourceConfig
       )
       setHasPreviewFunction(response.exists === true)
-      logger.log('预览函数检测结果:', response.exists)
     } catch {
       setHasPreviewFunction(false)
-      logger.log('预览函数检测超时，认为不存在')
     }
   }, [drawerConfig])
 
