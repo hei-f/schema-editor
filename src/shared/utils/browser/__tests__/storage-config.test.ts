@@ -8,7 +8,6 @@ describe('storage-config', () => {
         'attributeName',
         'drawerWidth',
         'autoParseString',
-        'enableDebugLog',
         'highlightColor',
         'maxFavoritesCount',
         'draftRetentionDays',
