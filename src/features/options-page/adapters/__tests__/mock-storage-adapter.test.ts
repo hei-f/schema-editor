@@ -163,13 +163,6 @@ describe('createMockStorageAdapter 测试', () => {
       expect(result.drawerShortcuts).toEqual(DEFAULT_VALUES.drawerShortcuts)
     })
 
-    it('应该返回debug section的默认值', async () => {
-      const result = await adapter.resetSectionToDefault(SECTION_KEYS.DEBUG)
-
-      expect(result).toBeDefined()
-      expect(result.autoParseString).toBe(DEFAULT_VALUES.autoParseString)
-    })
-
     it('应该使用已知的section键', async () => {
       // 所有section键都应该能正常工作
       const result = await adapter.resetSectionToDefault(SECTION_KEYS.ELEMENT_DETECTION)

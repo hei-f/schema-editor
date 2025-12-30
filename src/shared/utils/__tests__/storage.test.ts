@@ -108,7 +108,6 @@ describe('Storage工具测试', () => {
           throttleInterval: 16,
         },
         autoParseString: true,
-        enableDebugLog: false,
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
@@ -217,7 +216,6 @@ describe('Storage工具测试', () => {
           throttleInterval: 8,
         },
         autoParseString: true,
-        enableDebugLog: false,
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
@@ -318,7 +316,6 @@ describe('Storage工具测试', () => {
           throttleInterval: 16,
         },
         autoParseString: true,
-        enableDebugLog: false,
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
@@ -553,7 +550,6 @@ describe('Storage工具测试', () => {
           throttleInterval: 20,
         },
         autoParseString: true,
-        enableDebugLog: false,
         enableAstTypeHints: true,
         toolbarButtons: {
           astRawStringToggle: true,
@@ -1070,23 +1066,6 @@ describe('Storage工具测试', () => {
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith({
         autoParseString: false,
-      })
-    })
-
-    it('getEnableDebugLog应该返回配置值', async () => {
-      ;(chrome.storage.local.get as Mock).mockResolvedValue({
-        enableDebugLog: true,
-      })
-
-      const result = await storage.getEnableDebugLog()
-      expect(result).toBe(true)
-    })
-
-    it('setEnableDebugLog应该设置配置', async () => {
-      await storage.setEnableDebugLog(true)
-
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({
-        enableDebugLog: true,
       })
     })
 

@@ -1,7 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { DataManagementSection } from '../DataManagementSection'
-import { DebugSection } from '../DebugSection'
 import { EditorConfigSection } from '../EditorConfigSection'
 import { ElementDetectionSection } from '../ElementDetectionSection'
 import { FeatureToggleSection } from '../FeatureToggleSection'
@@ -33,19 +32,6 @@ describe('Section组件基础测试', () => {
 
     it('应该接受themeColor prop', () => {
       const { container } = render(<DataManagementSection themeColor="#52c41a" />)
-      expect(container).toBeDefined()
-    })
-  })
-
-  describe('DebugSection', () => {
-    it('应该成功渲染', () => {
-      expect(() => {
-        render(<DebugSection themeColor={mockThemeColor} />)
-      }).not.toThrow()
-    })
-
-    it('应该接受themeColor prop', () => {
-      const { container } = render(<DebugSection themeColor="#52c41a" />)
       expect(container).toBeDefined()
     })
   })
@@ -184,7 +170,6 @@ describe('Section组件基础测试', () => {
   describe('所有Section组件通用测试', () => {
     const sections = [
       { name: 'DataManagementSection', component: DataManagementSection },
-      { name: 'DebugSection', component: DebugSection },
       { name: 'EditorConfigSection', component: EditorConfigSection },
       { name: 'ElementDetectionSection', component: ElementDetectionSection },
       { name: 'FeatureToggleSection', component: FeatureToggleSection },
