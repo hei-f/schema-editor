@@ -12,7 +12,6 @@ vi.mock('@/shared/utils/browser/storage', () => ({
     getAttributeName: vi.fn(),
     getSearchConfig: vi.fn(),
     getAutoParseString: vi.fn(),
-    getEnableDebugLog: vi.fn(),
     getToolbarButtons: vi.fn(),
     getDrawerWidth: vi.fn(),
     getHighlightColor: vi.fn(),
@@ -33,7 +32,6 @@ vi.mock('@/shared/utils/browser/storage', () => ({
     setAttributeName: vi.fn(),
     setSearchConfig: vi.fn(),
     setAutoParseString: vi.fn(),
-    setEnableDebugLog: vi.fn(),
     setToolbarButtons: vi.fn(),
     setDrawerWidth: vi.fn(),
     setHighlightColor: vi.fn(),
@@ -62,7 +60,6 @@ describe('ChromeStorageAdapter', () => {
       ;(storage.getAttributeName as Mock).mockResolvedValue(DEFAULT_VALUES.attributeName)
       ;(storage.getSearchConfig as Mock).mockResolvedValue(DEFAULT_VALUES.searchConfig)
       ;(storage.getAutoParseString as Mock).mockResolvedValue(DEFAULT_VALUES.autoParseString)
-      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(DEFAULT_VALUES.enableDebugLog)
       ;(storage.getToolbarButtons as Mock).mockResolvedValue(DEFAULT_VALUES.toolbarButtons)
       ;(storage.getDrawerWidth as Mock).mockResolvedValue(DEFAULT_VALUES.drawerWidth)
       ;(storage.getHighlightColor as Mock).mockResolvedValue(DEFAULT_VALUES.highlightColor)
@@ -93,7 +90,6 @@ describe('ChromeStorageAdapter', () => {
         drawerWidth: DEFAULT_VALUES.drawerWidth,
         searchConfig: DEFAULT_VALUES.searchConfig,
         autoParseString: DEFAULT_VALUES.autoParseString,
-        enableDebugLog: DEFAULT_VALUES.enableDebugLog,
         toolbarButtons: DEFAULT_VALUES.toolbarButtons,
         highlightColor: DEFAULT_VALUES.highlightColor,
         maxFavoritesCount: DEFAULT_VALUES.maxFavoritesCount,
@@ -124,7 +120,6 @@ describe('ChromeStorageAdapter', () => {
       ;(storage.getDrawerWidth as Mock).mockResolvedValue(mockValues.drawerWidth)
       ;(storage.getSearchConfig as Mock).mockResolvedValue(mockValues.searchConfig)
       ;(storage.getAutoParseString as Mock).mockResolvedValue(DEFAULT_VALUES.autoParseString)
-      ;(storage.getEnableDebugLog as Mock).mockResolvedValue(DEFAULT_VALUES.enableDebugLog)
       ;(storage.getToolbarButtons as Mock).mockResolvedValue(DEFAULT_VALUES.toolbarButtons)
       ;(storage.getHighlightColor as Mock).mockResolvedValue(DEFAULT_VALUES.highlightColor)
       ;(storage.getMaxFavoritesCount as Mock).mockResolvedValue(DEFAULT_VALUES.maxFavoritesCount)
@@ -260,7 +255,6 @@ describe('ChromeStorageAdapter', () => {
       ;(storage.setDrawerWidth as Mock).mockResolvedValue(undefined)
       ;(storage.setSearchConfig as Mock).mockResolvedValue(undefined)
       ;(storage.setAutoParseString as Mock).mockResolvedValue(undefined)
-      ;(storage.setEnableDebugLog as Mock).mockResolvedValue(undefined)
       ;(storage.setToolbarButtons as Mock).mockResolvedValue(undefined)
       ;(storage.setHighlightColor as Mock).mockResolvedValue(undefined)
       ;(storage.setMaxFavoritesCount as Mock).mockResolvedValue(undefined)
@@ -296,7 +290,6 @@ describe('ChromeStorageAdapter', () => {
         storage.setDrawerWidth,
         storage.setSearchConfig,
         storage.setAutoParseString,
-        storage.setEnableDebugLog,
         storage.setToolbarButtons,
         storage.setHighlightColor,
         storage.setMaxFavoritesCount,

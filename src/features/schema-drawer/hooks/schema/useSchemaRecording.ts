@@ -11,7 +11,6 @@ import {
   sendRequestToHost,
   type HostPushPayload,
 } from '@/shared/utils/browser/message'
-import { logger } from '@/shared/utils/logger'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLatest } from '@/shared/hooks/useLatest'
 
@@ -188,7 +187,7 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
       try {
         await sendRequestToHost(stopRecordingType, { params }, requestTimeout, sourceConfig)
       } catch (error) {
-        logger.error('[Recording] 发送停止录制指令失败:', error)
+        console.error('[Recording] 发送停止录制指令失败:', error)
       }
     }
 
@@ -218,9 +217,8 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
       if (response.success && response.data !== undefined) {
         handleSchemaPush({ success: true, data: response.data })
       }
-    } catch (error) {
+    } catch {
       // 轮询中的单次失败可以忽略
-      logger.warn('[Recording] 轮询获取数据失败:', error)
     }
   }
 
@@ -245,7 +243,6 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
 
     if (isEventDrivenMode) {
       // 事件驱动模式：先设置监听，再发送开始指令
-      logger.log('[Recording] 使用事件驱动模式')
       pushListenerCleanupRef.current = listenHostPush(
         schemaPushType,
         handleSchemaPush,
@@ -262,7 +259,7 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
         )
 
         if (!response.success) {
-          logger.error('[Recording] 开始录制失败:', response.error)
+          console.error('[Recording] 开始录制失败:', response.error)
           // 清理监听
           if (pushListenerCleanupRef.current) {
             pushListenerCleanupRef.current()
@@ -274,7 +271,7 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
           return
         }
       } catch (error) {
-        logger.error('[Recording] 发送开始录制指令失败:', error)
+        console.error('[Recording] 发送开始录制指令失败:', error)
         // 清理监听
         if (pushListenerCleanupRef.current) {
           pushListenerCleanupRef.current()
@@ -287,7 +284,6 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
       }
     } else {
       // 轮询模式：定期调用 GET_SCHEMA
-      logger.log('[Recording] 使用轮询模式')
       // 立即执行一次
       pollSchema()
       // 启动定时轮询
@@ -364,7 +360,7 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
           { params: paramsRef.current },
           requestTimeoutRef.current,
           sourceConfigRef.current
-        ).catch((error) => logger.error('[Recording] 卸载时发送停止录制指令失败:', error))
+        ).catch((error) => console.error('[Recording] 卸载时发送停止录制指令失败:', error))
       }
 
       // 清理定时器和监听器

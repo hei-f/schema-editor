@@ -20,7 +20,6 @@ import type {
   StorageData,
   ToolbarButtonsConfig,
 } from '@/shared/types'
-import { logger } from '@/shared/utils/logger'
 import { SIMPLE_STORAGE_FIELDS, type StorageFieldName } from './storage-config'
 
 /**
@@ -188,20 +187,6 @@ class StorageManager {
   }
 
   /**
-   * 获取调试日志启用状态
-   */
-  async getEnableDebugLog(): Promise<boolean> {
-    return this.getSimple<boolean>('enableDebugLog')
-  }
-
-  /**
-   * 设置调试日志启用状态
-   */
-  async setEnableDebugLog(enabled: boolean): Promise<void> {
-    return this.setSimple('enableDebugLog', enabled)
-  }
-
-  /**
    * 获取工具栏按钮配置
    * 合并存储值和默认值，确保新增字段也能获取到默认值
    */
@@ -255,7 +240,6 @@ class StorageManager {
       attributeName,
       searchConfig,
       autoParseString,
-      enableDebugLog,
       toolbarButtons,
       highlightColor,
       maxFavoritesCount,
@@ -281,7 +265,6 @@ class StorageManager {
       this.getAttributeName(),
       this.getSearchConfig(),
       this.getAutoParseString(),
-      this.getEnableDebugLog(),
       this.getToolbarButtons(),
       this.getHighlightColor(),
       this.getMaxFavoritesCount(),
@@ -309,7 +292,6 @@ class StorageManager {
       attributeName,
       searchConfig,
       autoParseString,
-      enableDebugLog,
       toolbarButtons,
       highlightColor,
       maxFavoritesCount,
@@ -600,15 +582,11 @@ class StorageManager {
   async cleanOldFavorites(): Promise<void> {
     try {
       const maxCount = await this.getMaxFavoritesCount()
-      const cleanedCount = await favoritesManager.cleanOldFavorites(
+      await favoritesManager.cleanOldFavorites(
         maxCount,
         () => this.getRawFavorites(),
         (favorites) => this.saveFavorites(favorites)
       )
-
-      if (cleanedCount > 0) {
-        logger.log(`已清理 ${cleanedCount} 个最少使用的收藏`)
-      }
     } catch (error) {
       console.error('清理收藏失败:', error)
     }
@@ -1000,7 +978,7 @@ class StorageManager {
         ...storedConfig,
       }
     } catch (error) {
-      logger.error('获取右键菜单配置失败:', error)
+      console.error('获取右键菜单配置失败:', error)
       return this.DEFAULT_VALUES.contextMenuConfig
     }
   }
@@ -1014,7 +992,7 @@ class StorageManager {
         [this.STORAGE_KEYS.CONTEXT_MENU_CONFIG]: config,
       })
     } catch (error) {
-      logger.error('设置右键菜单配置失败:', error)
+      console.error('设置右键菜单配置失败:', error)
     }
   }
 
@@ -1044,7 +1022,6 @@ class StorageManager {
         this.setAttributeName(config.attributeName),
         this.setSearchConfig(config.searchConfig),
         this.setAutoParseString(config.autoParseString),
-        this.setEnableDebugLog(config.enableDebugLog),
         this.setToolbarButtons(config.toolbarButtons),
         this.setHighlightColor(config.highlightColor),
         this.setMaxFavoritesCount(config.maxFavoritesCount),

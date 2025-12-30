@@ -10,7 +10,7 @@ import { lazy } from 'react'
  * - 收藏相关模态框需要显示时
  */
 export const FavoritesManager = lazy(() =>
-  import('./FavoritesManager').then((module) => ({
+  import('../index').then((module) => ({
     default: module.FavoritesManager,
   }))
 )

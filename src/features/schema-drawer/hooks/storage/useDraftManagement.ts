@@ -1,6 +1,5 @@
 import { MODAL_Z_INDEX } from '@/shared/constants/theme'
 import { storage } from '@/shared/utils/browser/storage'
-import { logger } from '@/shared/utils/logger'
 import { shadowRootManager } from '@/shared/utils/shadow-root-manager'
 import { Modal } from 'antd'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -79,7 +78,7 @@ export const useDraftManagement = ({
         setShowDraftNotification(false)
       }
     } catch (error) {
-      logger.error('检查草稿失败:', error)
+      console.error('检查草稿失败:', error)
     }
   }, [paramsKey, enabled])
 
@@ -201,7 +200,7 @@ export const useDraftManagement = ({
             setDraftAutoSaveStatus('idle')
           }, 2000)
         } catch (error) {
-          logger.error('自动保存草稿失败:', error)
+          console.error('自动保存草稿失败:', error)
           setDraftAutoSaveStatus('idle')
         }
       }, autoSaveDebounce)

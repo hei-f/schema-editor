@@ -10,7 +10,6 @@ vi.mock('@/shared/utils/browser/storage', () => ({
     getAttributeName: vi.fn(),
     getSearchConfig: vi.fn(),
     getAutoParseString: vi.fn(),
-    getEnableDebugLog: vi.fn(),
     getToolbarButtons: vi.fn(),
     getDrawerWidth: vi.fn(),
     getHighlightColor: vi.fn(),
@@ -27,7 +26,6 @@ vi.mock('@/shared/utils/browser/storage', () => ({
     setAttributeName: vi.fn(),
     setSearchConfig: vi.fn(),
     setAutoParseString: vi.fn(),
-    setEnableDebugLog: vi.fn(),
     setToolbarButtons: vi.fn(),
     setDrawerWidth: vi.fn(),
     setHighlightColor: vi.fn(),
@@ -74,7 +72,6 @@ describe.skip('OptionsApp组件测试', () => {
     attributeName: 'id',
     searchConfig: { limitUpwardSearch: false, searchDepthUp: 3, throttleInterval: 200 },
     autoParseString: true,
-    enableDebugLog: false,
     toolbarButtons: {
       astRawStringToggle: true,
       escape: true,
@@ -148,7 +145,6 @@ describe.skip('OptionsApp组件测试', () => {
     mockStorage.getAttributeName.mockResolvedValue(defaultMockValues.attributeName)
     mockStorage.getSearchConfig.mockResolvedValue(defaultMockValues.searchConfig)
     mockStorage.getAutoParseString.mockResolvedValue(defaultMockValues.autoParseString)
-    mockStorage.getEnableDebugLog.mockResolvedValue(defaultMockValues.enableDebugLog)
     mockStorage.getToolbarButtons.mockResolvedValue(defaultMockValues.toolbarButtons)
     mockStorage.getDrawerWidth.mockResolvedValue(defaultMockValues.drawerWidth)
     mockStorage.getHighlightColor.mockResolvedValue(defaultMockValues.highlightColor)
@@ -203,7 +199,6 @@ describe.skip('OptionsApp组件测试', () => {
         expect(mockStorage.getAttributeName).toHaveBeenCalled()
         expect(mockStorage.getSearchConfig).toHaveBeenCalled()
         expect(mockStorage.getAutoParseString).toHaveBeenCalled()
-        expect(mockStorage.getEnableDebugLog).toHaveBeenCalled()
         expect(mockStorage.getToolbarButtons).toHaveBeenCalled()
         expect(mockStorage.getDrawerWidth).toHaveBeenCalled()
         expect(mockStorage.getHighlightColor).toHaveBeenCalled()

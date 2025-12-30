@@ -6,9 +6,9 @@ import manifest from './src/manifest.json'
 
 /**
  * 发布模式开关
- * - true: 发布版本，移除所有 console，隐藏调试开关
- * - false: 开发版本，保留 console，显示调试开关
- * 发布前改为 true，发布后改回 false
+ * - true: 发布版本，移除所有 console
+ * - false: 开发版本，保留 console
+ * 发布前通过 scripts/package.sh 自动切换
  */
 const IS_RELEASE_BUILD = false
 
@@ -24,10 +24,6 @@ export default defineConfig({
       '@core': path.resolve(__dirname, './src/core'),
       '@test': path.resolve(__dirname, './test'),
     },
-  },
-  define: {
-    /** 注入发布模式标识到代码中 */
-    __IS_RELEASE_BUILD__: JSON.stringify(IS_RELEASE_BUILD),
   },
   esbuild: {
     /** 发布模式移除所有 console 和 debugger */

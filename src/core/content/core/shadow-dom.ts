@@ -1,6 +1,5 @@
 import { DEFAULT_VALUES } from '@/shared/constants/defaults'
 import { UI_ELEMENT_ATTR } from '@/shared/constants/dom'
-import { logger } from '@/shared/utils/logger'
 import ReactDOM from 'react-dom/client'
 
 /** Shadow DOM 容器 ID（仅在文件内使用）*/
@@ -145,7 +144,7 @@ const loadAndInjectCSS = async (
     styleElement.setAttribute('data-source', sourceName)
     shadowRoot.appendChild(styleElement)
   } catch (error) {
-    logger.error(`加载CSS失败: ${sourceName}`, error)
+    console.error(`加载CSS失败: ${sourceName}`, error)
   }
 }
 
@@ -244,7 +243,7 @@ const loadAllStyles = async (shadowRoot: ShadowRoot): Promise<void> => {
           const href = node.href
           if (href) {
             loadAndInjectCSS(shadowRoot, href, `dynamic-link: ${href}`).catch((error) => {
-              logger.error(`加载动态CSS失败: ${href}`, error)
+              console.error(`加载动态CSS失败: ${href}`, error)
             })
           }
         }

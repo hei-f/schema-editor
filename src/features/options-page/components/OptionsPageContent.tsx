@@ -12,7 +12,6 @@ import { PresetsManager } from '@/features/config-presets/components/PresetsMana
 import { storage as globalStorage } from '@/shared/utils/browser/storage'
 import type { ConfigPreset } from '@/shared/types'
 import { DataManagementSection } from '../sections/DataManagementSection'
-import { DebugSection } from '../sections/DebugSection'
 import { EditorConfigSection } from '../sections/EditorConfigSection'
 import { ElementDetectionSection } from '../sections/ElementDetectionSection'
 import { FeatureToggleSection } from '../sections/FeatureToggleSection'
@@ -46,7 +45,7 @@ import {
 import type { OptionsPageContentProps } from '../types'
 
 /** 当前插件版本 */
-const CURRENT_VERSION = 'v2.5.0'
+const CURRENT_VERSION = 'v2.6.1'
 
 /**
  * 设置页面内容组件（纯UI组件）
@@ -54,11 +53,7 @@ const CURRENT_VERSION = 'v2.5.0'
  */
 export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => {
   const { storage, actions = {} } = props
-  const {
-    onCheckUpdate,
-    shouldSetDocumentTitle = true,
-    isReleaseBuild = typeof __IS_RELEASE_BUILD__ !== 'undefined' ? __IS_RELEASE_BUILD__ : false,
-  } = actions
+  const { onCheckUpdate, shouldSetDocumentTitle = true } = actions
 
   const [form] = Form.useForm()
 
@@ -288,7 +283,6 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
             activeSection={activeSection}
             onMenuClick={scrollToSection}
             onSubMenuClick={scrollToAnchor}
-            isReleaseBuild={isReleaseBuild}
           />
 
           {/* 内容区域 */}
@@ -414,15 +408,6 @@ export const OptionsPageContent: React.FC<OptionsPageContentProps> = (props) => 
                 hoverColor={themeColors.hoverColor}
                 activeColor={themeColors.activeColor}
               />
-
-              {!isReleaseBuild && (
-                <DebugSection
-                  sectionId="section-debug"
-                  isActive={expandedSections.has('section-debug')}
-                  onActiveChange={(active) => toggleSectionExpanded('section-debug', active)}
-                  onResetDefault={() => resetSectionToDefault(SECTION_KEYS.DEBUG)}
-                />
-              )}
 
               <UsageGuideSection
                 sectionId="section-usage-guide"

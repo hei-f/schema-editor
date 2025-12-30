@@ -17,7 +17,6 @@ describe('useSettingsForm', () => {
       drawerWidth: DEFAULT_VALUES.drawerWidth,
       searchConfig: DEFAULT_VALUES.searchConfig,
       autoParseString: DEFAULT_VALUES.autoParseString,
-      enableDebugLog: DEFAULT_VALUES.enableDebugLog,
       toolbarButtons: DEFAULT_VALUES.toolbarButtons,
       highlightColor: DEFAULT_VALUES.highlightColor,
       maxFavoritesCount: DEFAULT_VALUES.maxFavoritesCount,

@@ -20,7 +20,7 @@ echo "🚀 开始打包 Schema Element Editor (SEE)..."
 VERSION=$(grep '"version"' src/manifest.json | sed 's/.*"version": "\(.*\)".*/\1/')
 echo "📦 版本号: v$VERSION"
 
-# 切换到发布模式（移除 console，隐藏调试开关）
+# 切换到发布模式（移除 console）
 echo "🔧 切换到发布模式..."
 sed -i '' 's/const IS_RELEASE_BUILD = false/const IS_RELEASE_BUILD = true/' vite.config.ts
 

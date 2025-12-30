@@ -26,7 +26,6 @@ describe('createMockStorageAdapter 测试', () => {
       expect(result.formValues.drawerWidth).toBe(DEFAULT_VALUES.drawerWidth)
       expect(result.formValues.searchConfig).toEqual(DEFAULT_VALUES.searchConfig)
       expect(result.formValues.autoParseString).toBe(DEFAULT_VALUES.autoParseString)
-      expect(result.formValues.enableDebugLog).toBe(DEFAULT_VALUES.enableDebugLog)
       expect(result.formValues.toolbarButtons).toEqual(DEFAULT_VALUES.toolbarButtons)
       expect(result.formValues.highlightColor).toBe(DEFAULT_VALUES.highlightColor)
       expect(result.formValues.maxFavoritesCount).toBe(DEFAULT_VALUES.maxFavoritesCount)
@@ -70,7 +69,6 @@ describe('createMockStorageAdapter 测试', () => {
     it('应该接受任意字段名和值', async () => {
       await adapter.saveField(['attributeName'], { attributeName: 'test-attr' })
       await adapter.saveField(['drawerWidth'], { drawerWidth: 400 })
-      await adapter.saveField(['enableDebugLog'], { enableDebugLog: true })
       await adapter.saveField(['searchConfig'], { searchConfig: { maxDepth: 10 } })
     })
 
@@ -165,14 +163,6 @@ describe('createMockStorageAdapter 测试', () => {
       expect(result.drawerShortcuts).toEqual(DEFAULT_VALUES.drawerShortcuts)
     })
 
-    it('应该返回debug section的默认值', async () => {
-      const result = await adapter.resetSectionToDefault(SECTION_KEYS.DEBUG)
-
-      expect(result).toBeDefined()
-      expect(result.enableDebugLog).toBe(DEFAULT_VALUES.enableDebugLog)
-      expect(result.autoParseString).toBe(DEFAULT_VALUES.autoParseString)
-    })
-
     it('应该使用已知的section键', async () => {
       // 所有section键都应该能正常工作
       const result = await adapter.resetSectionToDefault(SECTION_KEYS.ELEMENT_DETECTION)
@@ -196,7 +186,6 @@ describe('createMockStorageAdapter 测试', () => {
       expect(result.drawerWidth).toBe(DEFAULT_VALUES.drawerWidth)
       expect(result.searchConfig).toEqual(DEFAULT_VALUES.searchConfig)
       expect(result.autoParseString).toBe(DEFAULT_VALUES.autoParseString)
-      expect(result.enableDebugLog).toBe(DEFAULT_VALUES.enableDebugLog)
       expect(result.toolbarButtons).toEqual(DEFAULT_VALUES.toolbarButtons)
       expect(result.highlightColor).toBe(DEFAULT_VALUES.highlightColor)
       expect(result.maxFavoritesCount).toBe(DEFAULT_VALUES.maxFavoritesCount)
@@ -228,7 +217,6 @@ describe('createMockStorageAdapter 测试', () => {
       // resetAllToDefault返回的是平铺的对象，loadAllSettings返回的是带formValues的对象
       expect(loadResult.formValues.attributeName).toBe(resetResult.attributeName)
       expect(loadResult.formValues.drawerWidth).toBe(resetResult.drawerWidth)
-      expect(loadResult.formValues.enableDebugLog).toBe(resetResult.enableDebugLog)
     })
   })
 

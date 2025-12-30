@@ -19,7 +19,6 @@ import {
   sendHighlightAllResponseToTop,
   type AltKeySyncPayload,
 } from '@/shared/utils/iframe-bridge'
-import { logger } from '@/shared/utils/logger'
 import { HIGHLIGHT_CLASS, UI_ELEMENT_ATTR, UI_ELEMENT_SELECTOR } from '@/shared/constants/dom'
 import {
   findElementWithSchemaParams,
@@ -102,8 +101,6 @@ export class ElementMonitor {
 
     this.isActive = true
     this.isIframeMode = isIframeMode
-    const modeInfo = isIframeMode ? '(iframe 模式)' : '(top frame)'
-    logger.log(`[Monitor] 启动 ${modeInfo}`, { url: window.location.href })
 
     // 加载搜索配置
     this.searchConfig = await storage.getSearchConfig()
@@ -147,19 +144,8 @@ export class ElementMonitor {
   private initIframeBridgeListener(): void {
     this.iframeBridgeCleanup = initIframeBridgeListener({
       onHighlightAllRequest: () => {
-        // DEBUG: 打印到 top frame 的控制台
-        console.log(
-          '[Monitor iframe] 收到 HIGHLIGHT_ALL_REQUEST, currentElement:',
-          this.currentElement
-        )
-        window.top?.postMessage(
-          { type: 'DEBUG', message: '[iframe] 收到 HIGHLIGHT_ALL_REQUEST' },
-          '*'
-        )
-
         // 清除单元素高亮
         this.clearHighlight()
-        console.log('[Monitor iframe] 已调用 clearHighlight')
 
         // 转发给子 iframe（支持多层嵌套）
         if (this.iframeEnabled) {
@@ -170,7 +156,6 @@ export class ElementMonitor {
       },
       onAltKeySync: (payload: AltKeySyncPayload) => {
         // 收到主页面的 Alt 键状态同步
-        logger.log('[Monitor iframe] 收到 Alt 键状态同步:', payload)
         this.handleAltKeySync(payload)
       },
     })
@@ -278,7 +263,7 @@ export class ElementMonitor {
 
     this.isActive = false
     this.isControlPressed = false
-    logger.log('元素监听器已停止')
+    this.isPaused = false
 
     // 移除事件监听
     document.removeEventListener('mousemove', this.handleMouseMove, true)
@@ -318,7 +303,6 @@ export class ElementMonitor {
     this.isControlPressed = false
     this.clearHighlight()
     this.clearAllHighlights()
-    logger.log('元素监听器已暂停（抽屉已打开）')
   }
 
   /**
@@ -333,7 +317,6 @@ export class ElementMonitor {
     if (!this.isIframeMode && this.iframeEnabled) {
       broadcastAltKeyState(false, { x: 0, y: 0 })
     }
-    logger.log('元素监听器已恢复')
   }
 
   /**
@@ -471,7 +454,6 @@ export class ElementMonitor {
 
     this.isRecordingMode = true
     this.isControlPressed = true
-    logger.log('录制模式: 开启')
 
     // 清除当前高亮框，重新用录制模式颜色创建
     this.clearHighlight()
@@ -502,7 +484,6 @@ export class ElementMonitor {
     if (!this.isRecordingMode) return
 
     this.isRecordingMode = false
-    logger.log('录制模式: 关闭')
 
     // 触发录制模式变化事件
     window.dispatchEvent(
@@ -909,8 +890,6 @@ export class ElementMonitor {
    * 高亮所有合法元素
    */
   private async highlightAll(): Promise<void> {
-    console.log('[Monitor] highlightAll 被调用, isIframeMode:', this.isIframeMode)
-
     if (!this.highlightAllConfig) return
 
     // 清除单元素高亮（如果存在）
@@ -930,14 +909,15 @@ export class ElementMonitor {
     // 查找所有合法元素
     const allElements = document.querySelectorAll(`[${dataAttrName}]`)
 
-    logger.log(`找到 ${allElements.length} 个合法元素`)
-
     // 应用数量限制
     const maxCount = this.highlightAllConfig.maxHighlightCount
     const elementsToHighlight = Array.from(allElements).slice(0, maxCount)
 
+    // 提示用户元素数量被截断
     if (allElements.length > maxCount) {
-      logger.log(`仅高亮前 ${maxCount} 个元素`)
+      console.warn(
+        `[SEE] 找到 ${allElements.length} 个可编辑元素，受配置限制仅高亮前 ${maxCount} 个。可在配置页面调整"最大高亮数量"。`
+      )
     }
 
     elementsToHighlight.forEach((el) => {
@@ -967,7 +947,6 @@ export class ElementMonitor {
 
     // 如果是 top frame，向所有 iframe 广播高亮请求
     if (!this.isIframeMode) {
-      console.log('[Monitor] 广播 HIGHLIGHT_ALL_REQUEST 到 iframe')
       broadcastHighlightAllRequest()
     }
   }
@@ -1033,8 +1012,6 @@ export class ElementMonitor {
     this.highlightAllBoxes = []
     this.highlightAllElements = []
     this.isHighlightingAll = false
-
-    logger.log('已清除所有高亮')
   }
 
   /**

@@ -104,10 +104,10 @@ export const useEditorContextMenu = (
 
         // 计算菜单位置
         if (event) {
-          // 如果有鼠标事件，使用鼠标实际位置
+          // 如果是鼠标触发的选择，使用鼠标实际位置
           setMenuPosition({ x: event.clientX, y: event.clientY })
         } else {
-          // 否则使用选区的右下角（向后兼容）
+          // 如果是非鼠标触发（如键盘选择、程序化选择），使用选区的右下角坐标
           const coords = view.coordsAtPos(to)
           if (coords) {
             setMenuPosition({ x: coords.right, y: coords.bottom })
