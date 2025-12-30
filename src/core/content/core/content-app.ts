@@ -11,7 +11,6 @@ import {
   isTopFrame,
   type IframeBridgeHandlers,
 } from '@/shared/utils/iframe-bridge'
-import { logger } from '@/shared/utils/logger'
 import React from 'react'
 import type ReactDOM from 'react-dom/client'
 import { ElementMonitor } from './monitor'
@@ -52,13 +51,11 @@ export class SEEContent {
   constructor() {
     // 如果已有旧实例且版本不同，先清理旧实例
     if (window.__SEE_INSTANCE__ && window.__SEE_VERSION__ !== EXTENSION_VERSION) {
-      logger.log(`检测到旧版本实例 (${window.__SEE_VERSION__})，正在清理...`)
       window.__SEE_INSTANCE__.destroy()
     }
 
     // 如果已有相同版本的实例，不重复创建
     if (window.__SEE_INSTANCE__ && window.__SEE_VERSION__ === EXTENSION_VERSION) {
-      logger.log('已存在相同版本的实例，跳过创建')
       this.isDestroyed = true // 标记为无效实例
       return
     }
@@ -78,7 +75,6 @@ export class SEEContent {
     if (this.isDestroyed) return
     this.isDestroyed = true
 
-    logger.log('销毁 SEE 实例')
     this.stop()
 
     // 清理 iframe bridge 监听器
@@ -104,45 +100,41 @@ export class SEEContent {
    * 初始化
    */
   private async init(): Promise<void> {
-    logger.log('[SEE] 初始化开始', {
-      isTop: this.isTop,
-      isIframe: this.isIframe,
-      isSameOrigin: this.isSameOrigin,
-      url: window.location.href,
-    })
-
     // 加载 iframe 配置
     this.iframeConfig = await storage.getIframeConfig()
-    logger.log('[SEE] iframe 配置:', this.iframeConfig)
 
     // 检查初始激活状态
     this.isActive = await storage.getActiveState()
-    logger.log('[SEE] 激活状态:', this.isActive)
 
     // iframe 内且 iframe 功能未启用时，跳过初始化
     if (this.isIframe && !this.iframeConfig.enabled) {
-      logger.log('[SEE] iframe 内且功能未启用，跳过初始化')
       this.isDestroyed = true
       return
     }
 
     // iframe 内且非同源时，跳过初始化（跨域 iframe 不支持）
     if (this.isIframe && !this.isSameOrigin) {
-      logger.log('[SEE] 跨域 iframe，跳过初始化')
       this.isDestroyed = true
       return
     }
 
     if (this.isActive) {
-      logger.log('[SEE] 开始启动 monitor...')
       this.start()
-    } else {
-      logger.log('[SEE] 插件未激活，跳过启动 monitor')
     }
 
-    // 监听来自background的消息
+    // 监听来自background的消息（用于 PING 等其他消息类型）
     listenChromeMessages((message: Message, _sender, sendResponse) => {
       return this.handleMessage(message, sendResponse)
+    })
+
+    // 监听 storage 中激活状态的变化
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (this.isDestroyed) return
+
+      if (areaName === 'local' && changes.isActive) {
+        const newValue = changes.isActive.newValue as boolean
+        this.handleActiveStateChanged(newValue)
+      }
     })
 
     // 设置元素点击回调
@@ -157,12 +149,8 @@ export class SEEContent {
 
     // 如果是 top frame 且 iframe 功能启用，初始化 iframe bridge 监听器
     if (this.isTop && this.iframeConfig.enabled) {
-      logger.log('[SEE] top frame: 初始化 iframe bridge 监听器')
       this.initIframeBridge()
     }
-
-    const frameInfo = this.isTop ? 'top frame' : `iframe (同源: ${this.isSameOrigin})`
-    logger.log(`[SEE] 初始化完成 [${frameInfo}], 激活状态:`, this.isActive)
   }
 
   /**
@@ -198,8 +186,7 @@ export class SEEContent {
         window.dispatchEvent(event)
       },
       onCrossOriginDetected: () => {
-        // 跨域 iframe 检测到，可以显示提示
-        logger.log('检测到跨域 iframe')
+        // 跨域 iframe 检测到（静默处理）
       },
     }
 
@@ -233,7 +220,6 @@ export class SEEContent {
    * 处理激活状态变化
    */
   private handleActiveStateChanged(isActive: boolean): void {
-    logger.log('激活状态变化:', isActive)
     this.isActive = isActive
 
     if (isActive) {
@@ -246,16 +232,14 @@ export class SEEContent {
   /**
    * 启动监听
    */
-  private async start(): Promise<void> {
-    const frameInfo = this.isTop ? 'top frame' : 'iframe'
-    logger.log(`启动 SEE [${frameInfo}]`)
-
+  private start(): void {
     // 标记已初始化
     if (!this.isInitialized && this.isTop) {
       this.isInitialized = true
     }
 
     // 启动元素监听器（传入 iframe 模式标识）
+    // 无需 await，让其异步加载配置，不阻塞 UI 初始化
     this.monitor.start(this.isIframe)
 
     // 仅 top frame 需要创建 React UI
@@ -268,12 +252,18 @@ export class SEEContent {
    * 停止监听
    */
   private stop(): void {
-    logger.log('停止 SEE')
     this.monitor.stop()
+
+    // 卸载 React 应用
+    if (this.reactRoot) {
+      this.reactRoot.unmount()
+      this.reactRoot = null
+    }
 
     // 移除UI容器（完全清除DOM元素）
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container)
+      this.container = null
     }
   }
 
