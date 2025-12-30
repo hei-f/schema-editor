@@ -121,7 +121,6 @@ const AppContent = styled(Content)<{
 
 type PageKey =
   | 'ast-test'
-  | 'schema-test'
   | 'agentic-demo'
   | 'iframe-test'
   | 'options-test'
@@ -151,7 +150,6 @@ const getPageFromHash = (): PageKey => {
   const hash = window.location.hash.slice(1) // 移除 #
   const validPages: PageKey[] = [
     'ast-test',
-    'schema-test',
     'agentic-demo',
     'iframe-test',
     'options-test',
@@ -316,6 +314,9 @@ export const TestApp: React.FC = () => {
         return <BuiltinPreviewTestPage siderCollapsed={siderCollapsed} />
       case 'options-test':
         return <OptionsTestPage siderCollapsed={siderCollapsed} />
+      default:
+        console.error(`[TestApp] 未知的页面 key: ${currentPage}`)
+        return <div>页面未找到: {currentPage}</div>
     }
   }
 
