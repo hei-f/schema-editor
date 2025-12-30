@@ -1,6 +1,7 @@
 import { ConfigProvider } from 'antd'
 import { render, RenderOptions } from '@testing-library/react'
 import { ReactElement } from 'react'
+import type { ConfigPreset, StorageData } from '@/shared/types'
 
 /**
  * antd 组件使用的自定义前缀
@@ -22,6 +23,26 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
  */
 const customRender = (ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
   render(ui, { wrapper: AllTheProviders, ...options })
+
+/**
+ * 创建用于测试的 ConfigPreset mock 数据
+ * @param overrides 需要覆盖的 ConfigPreset 属性
+ * @returns 完整的 ConfigPreset 对象
+ */
+export const createMockConfigPreset = (
+  overrides: Partial<ConfigPreset> & { config?: Partial<StorageData> } = {}
+): ConfigPreset => {
+  const { config = {}, ...restOverrides } = overrides
+  return {
+    id: 'test-preset-id',
+    name: 'Test Preset',
+    timestamp: Date.now(),
+    config: {
+      ...config,
+    } as StorageData,
+    ...restOverrides,
+  }
+}
 
 // 重新导出所有 @testing-library/react 的内容
 export * from '@testing-library/react'

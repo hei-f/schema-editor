@@ -288,9 +288,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       { containerId: PREVIEW_CONTAINER_ID },
       2,
       apiConfig?.sourceConfig
-    ).catch((err) => {
+    ).catch((error) => {
       // 清理通知失败不影响流程，但需要记录
-      console.error('通知宿主清理预览失败:', err)
+      console.error('通知宿主清理预览失败:', error)
     })
   }, [apiConfig])
 
@@ -425,8 +425,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       await storage.setAllConfig(preset.config)
 
       message.success('预设配置已应用')
-    } catch (err) {
-      console.error('应用预设配置失败:', err)
+    } catch (error) {
+      console.error('应用预设配置失败:', error)
       message.error('应用预设配置失败')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -479,8 +479,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
       const max = await storage.getMaxFavoritesCount()
       setFavoriteCount(favorites.length)
       setMaxFavoriteCount(max)
-    } catch (err) {
-      console.error('加载收藏上限失败:', err)
+    } catch (error) {
+      console.error('加载收藏上限失败:', error)
     }
   }, [])
 
@@ -623,8 +623,8 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
     try {
       const { content, wasStringData } = formatSchemaContent(schemaData)
       updateEditorContent(content, { ...initLoadOptions, wasStringData })
-    } catch (err) {
-      console.error('处理Schema数据失败:', err)
+    } catch (error) {
+      console.error('处理Schema数据失败:', error)
       updateEditorContent(JSON.stringify(schemaData), { ...initLoadOptions, wasStringData: false })
     } finally {
       setTimeout(() => {
@@ -688,9 +688,9 @@ export const SchemaDrawer: React.FC<SchemaDrawerProps> = ({
             { schema: result.data, containerId },
             apiConfig?.requestTimeout ?? 1,
             apiConfig?.sourceConfig
-          ).catch((err) => {
+          ).catch((error) => {
             // 预览渲染失败不影响编辑，但需要记录
-            console.error('渲染预览失败:', err)
+            console.error('渲染预览失败:', error)
           })
         }
 

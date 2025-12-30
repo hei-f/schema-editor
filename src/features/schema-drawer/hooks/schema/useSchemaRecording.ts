@@ -217,8 +217,9 @@ export function useSchemaRecording(props: UseSchemaRecordingOptions): UseSchemaR
       if (response.success && response.data !== undefined) {
         handleSchemaPush({ success: true, data: response.data })
       }
-    } catch {
-      // 轮询中的单次失败可以忽略
+    } catch (error) {
+      // 轮询中的单次失败可以忽略,但在开发中打印警告有助于调试
+      console.warn('[Recording] 轮询获取数据失败:', error)
     }
   }
 
