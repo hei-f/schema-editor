@@ -263,6 +263,7 @@ export class ElementMonitor {
 
     this.isActive = false
     this.isControlPressed = false
+    this.isPaused = false
 
     // 移除事件监听
     document.removeEventListener('mousemove', this.handleMouseMove, true)
