@@ -291,16 +291,12 @@ describe('PresetsDropdown 组件测试', () => {
       })
 
       const presetItem = screen.getByText('深色主题配置')
+      await user.click(presetItem)
 
-      // 捕获错误
-      try {
-        await user.click(presetItem)
-        await waitFor(() => {
-          expect(onApplyPreset).toHaveBeenCalled()
-        })
-      } catch (_error) {
-        // 预期会抛出错误
-      }
+      await waitFor(() => {
+        expect(onApplyPreset).toHaveBeenCalled()
+        expect(consoleError).toHaveBeenCalledWith('应用预设配置失败:', expect.any(Error))
+      })
 
       consoleError.mockRestore()
     })

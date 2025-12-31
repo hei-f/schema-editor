@@ -311,7 +311,6 @@ describe('PresetsListModal 组件测试', () => {
       render(<PresetsListModal {...defaultProps} />)
 
       const modal = screen.getByRole('dialog')
-      // 检查modal是否存在
       expect(modal).toBeInTheDocument()
     })
 

@@ -69,8 +69,13 @@ export const PresetsDropdown: React.FC<PresetsDropdownProps> = ({
   }, [open, loadPresets])
 
   const handlePresetClick = async (preset: ConfigPreset) => {
-    await onApplyPreset(preset)
-    setOpen(false)
+    try {
+      await onApplyPreset(preset)
+      setOpen(false)
+    } catch (error) {
+      console.error('应用预设配置失败:', error)
+      setOpen(false)
+    }
   }
 
   const dropdownContent = (
