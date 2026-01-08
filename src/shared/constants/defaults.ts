@@ -19,6 +19,7 @@ export const DEFAULT_VALUES: Readonly<StorageData> = {
     limitUpwardSearch: false,
     searchDepthUp: 5,
     throttleInterval: 16,
+    allowHighlightedElementClick: false,
   },
   autoParseString: true,
   toolbarButtons: {

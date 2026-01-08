@@ -64,6 +64,8 @@ export interface SearchConfig {
   searchDepthUp: number
   /** 节流间隔(ms) */
   throttleInterval: number
+  /** 是否允许触发高亮元素的点击事件 */
+  allowHighlightedElementClick: boolean
 }
 
 /**
