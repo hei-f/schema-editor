@@ -40,6 +40,9 @@ describe('FavoritesListModal组件测试', () => {
   const defaultProps = {
     visible: true,
     favoritesList: mockFavorites,
+    themeColor: '#1890ff',
+    hoverColor: '#40a9ff',
+    activeColor: '#096dd9',
     onEdit: vi.fn(),
     onApply: vi.fn(),
     onDelete: vi.fn().mockResolvedValue(undefined),

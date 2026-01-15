@@ -1,4 +1,4 @@
-import type { Favorite, FavoriteMeta, FavoriteTag } from '@/shared/types'
+import type { FavoriteMeta, FavoriteTag } from '@/shared/types'
 import { storage } from '@/shared/utils/browser/storage'
 import { useCallback, useState } from 'react'
 
@@ -24,9 +24,9 @@ interface UseFavoritesManagementReturn {
   editingName: string
   editingContent: string
   addTagModalVisible: boolean
-  currentFavoriteForTag: Favorite | null
+  currentFavoriteForTag: FavoriteMeta | null
   applyConfirmModalVisible: boolean
-  pendingApplyFavorite: Favorite | null
+  pendingApplyFavorite: FavoriteMeta | null
   setFavoriteNameInput: (value: string) => void
   handleOpenAddFavorite: () => void
   handleAddFavorite: () => Promise<void>

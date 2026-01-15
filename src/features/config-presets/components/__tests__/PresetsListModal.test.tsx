@@ -34,6 +34,7 @@ describe('PresetsListModal 组件测试', () => {
   const defaultProps = {
     visible: true,
     presetsList: mockPresets,
+    themeColor: '#1890ff',
     onApply: vi.fn(),
     onDelete: vi.fn().mockResolvedValue(undefined),
     onClose: vi.fn(),
