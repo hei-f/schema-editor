@@ -65,6 +65,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/chrome": "^0.1.32",
+    "@types/node": "^25.0.10",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/styled-components": "^5.1.36",

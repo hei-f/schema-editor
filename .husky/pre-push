@@ -1,5 +1,0 @@
-#!/bin/sh
-
-# TypeScript 类型检查
-sh "$(dirname "$0")/../scripts/type-check.sh"
-
