@@ -1,9 +1,12 @@
-#!/bin/sh
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
 # 加载 NVM 环境
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-# ESLint 和 Prettier 检查
-echo "🔧 Running lint-staged..."
+# 类型检查
+bunx tsgo --incremental --noEmit || exit $?
+
+# 代码格式化、linting
 bunx lint-staged
